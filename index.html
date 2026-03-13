@@ -3,648 +3,1471 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Фронт сигналу — Конспект</title>
+<title>UI Kit — Конспект · Embedded Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Unbounded:wght@300;600;900&display=swap');
+/* ============================================================
+   DESIGN TOKENS — базові змінні системи
+   ============================================================ */
+:root {
+  /* Колір фону */
+  --bg-base:        #0d0f10;
+  --bg-surface:     #141618;
+  --bg-elevated:    #1a1d20;
+  --bg-overlay:     #21252a;
 
-  :root {
-    --bg:     #0a0e17;
-    --card:   #131c2e;
-    --border: #1e2d45;
-    --rise:   #00e5ff;
-    --fall:   #ff4d6d;
-    --clk:    #a78bfa;
-    --text:   #e2e8f0;
-    --muted:  #64748b;
-    --accent: #f59e0b;
-  }
+  /* Рамки */
+  --border-dim:     rgba(255,255,255,0.06);
+  --border-mid:     rgba(255,255,255,0.12);
+  --border-bright:  rgba(255,255,255,0.22);
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* Текст */
+  --text-primary:   #e8e6e0;
+  --text-secondary: #8b897e;
+  --text-muted:     #52504a;
+  --text-inverse:   #0d0f10;
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+  /* Акцент — зелений (осцилограф / термінал) */
+  --accent:         #00d084;
+  --accent-dim:     rgba(0,208,132,0.12);
+  --accent-mid:     rgba(0,208,132,0.25);
+  --accent-glow:    rgba(0,208,132,0.06);
 
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(0,229,255,.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,255,.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+  /* Семантичні кольори */
+  --rising:         #00d084;   /* наростаючий фронт */
+  --falling:        #ff6b4a;   /* спадаючий фронт */
+  --clk:            #4a9eff;   /* CLK сигнал */
+  --warning:        #f5c842;   /* попередження */
+  --danger:         #ff4a4a;   /* небезпека */
 
-  .wrapper { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
+  /* Типографія */
+  --font-mono:      'JetBrains Mono', 'Courier New', monospace;
+  --font-sans:      'IBM Plex Sans', system-ui, sans-serif;
 
-  header { text-align: center; margin-bottom: 60px; }
-  .header-label { font-size: 11px; letter-spacing: 4px; color: var(--rise); text-transform: uppercase; margin-bottom: 12px; }
-  header h1 {
-    font-family: 'Unbounded', sans-serif;
-    font-size: clamp(28px, 5vw, 52px); font-weight: 900; line-height: 1.1;
-    background: linear-gradient(135deg, var(--rise) 0%, var(--clk) 50%, var(--fall) 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    margin-bottom: 16px;
-  }
-  header p { color: var(--muted); font-size: 13px; line-height: 1.7; max-width: 560px; margin: 0 auto; }
+  /* Радіуси */
+  --r-sm:  4px;
+  --r-md:  6px;
+  --r-lg:  10px;
+  --r-xl:  14px;
 
-  .section { margin-bottom: 48px; }
-  .section-title {
-    font-family: 'Unbounded', sans-serif;
-    font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
-    color: var(--accent); margin-bottom: 20px;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+  /* Тіні */
+  --shadow-sm:  0 1px 4px rgba(0,0,0,0.4);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.6);
+  --glow-accent: 0 0 20px rgba(0,208,132,0.15);
 
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; }
-  .card-title { font-family: 'Unbounded', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
-  .rise-color { color: var(--rise); }
-  .fall-color { color: var(--fall); }
-  .clk-color  { color: var(--clk);  }
-  .card p { font-size: 13px; line-height: 1.8; }
-  .card ul { list-style: none; margin-top: 10px; }
-  .card ul li { font-size: 13px; line-height: 1.9; padding-left: 16px; position: relative; }
-  .card ul li::before { content: '▸'; position: absolute; left: 0; color: var(--muted); }
+  /* Розміри тексту */
+  --text-xs:   11px;
+  --text-sm:   12px;
+  --text-base: 14px;
+  --text-md:   15px;
+  --text-lg:   17px;
+  --text-xl:   20px;
+  --text-2xl:  24px;
+  --text-3xl:  30px;
+  --text-4xl:  38px;
+}
 
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th { text-align: left; padding: 10px 14px; background: rgba(255,255,255,.04); color: var(--muted); font-weight: 400; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
-  td { padding: 10px 14px; border-bottom: 1px solid rgba(30,45,69,.6); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
-  .tag-rise { background: rgba(0,229,255,.12);   color: var(--rise); }
-  .tag-fall { background: rgba(255,77,109,.12);  color: var(--fall); }
-  .tag-both { background: rgba(167,139,250,.12); color: var(--clk);  }
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
 
-  .canvas-wrap { background: #080c14; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; position: relative; }
-  .canvas-wrap canvas { display: block; width: 100%; }
-  .canvas-label { position: absolute; top: 12px; left: 16px; font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+/* ============================================================
+   UI KIT СТОРІНКА
+   ============================================================ */
+.kit-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
 
-  .controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
-  .btn { background: transparent; border: 1px solid var(--border); color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all .2s; }
-  .btn:hover { border-color: var(--rise); color: var(--rise); }
-  .btn.active { border-color: var(--rise); background: rgba(0,229,255,.08); color: var(--rise); }
-  .slider-wrap { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
-  input[type=range] { -webkit-appearance: none; width: 120px; height: 4px; background: var(--border); border-radius: 2px; outline: none; }
-  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--rise); cursor: pointer; }
+/* --- Сайдбар навігації --- */
+.kit-nav {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-dim);
+  padding: 28px 0;
+}
+.kit-nav-logo {
+  padding: 0 20px 24px;
+  border-bottom: 1px solid var(--border-dim);
+  margin-bottom: 16px;
+}
+.kit-nav-logo .logo-tag {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.kit-nav-logo .logo-name {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-top: 4px;
+}
+.kit-nav-section {
+  padding: 4px 20px 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-top: 16px;
+}
+.kit-nav-link {
+  display: block;
+  padding: 7px 20px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+  cursor: pointer;
+}
+.kit-nav-link:hover { color: var(--text-primary); background: var(--border-dim); }
+.kit-nav-link.active { color: var(--accent); }
 
-  .pills { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-  .pill { padding: 6px 14px; border-radius: 20px; font-size: 12px; border: 1px solid; }
-  .pill-rise { border-color: var(--rise); color: var(--rise); background: rgba(0,229,255,.06); }
-  .pill-fall { border-color: var(--fall); color: var(--fall); background: rgba(255,77,109,.06); }
-  .pill-clk  { border-color: var(--clk);  color: var(--clk);  background: rgba(167,139,250,.06); }
+/* --- Основний контент --- */
+.kit-main {
+  max-width: 900px;
+  padding: 60px 56px;
+  overflow-x: hidden;
+}
 
-  .highlight { border-left: 3px solid var(--accent); background: rgba(245,158,11,.05); padding: 14px 18px; border-radius: 0 8px 8px 0; font-size: 13px; line-height: 1.8; margin-top: 12px; }
-  .highlight strong { color: var(--accent); }
+.kit-section {
+  margin-bottom: 80px;
+  scroll-margin-top: 24px;
+}
+.kit-section-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.kit-section-name {
+  font-size: var(--text-2xl);
+  font-weight: 300;
+  color: var(--text-primary);
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-dim);
+}
+.kit-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+.kit-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
 
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media(max-width:600px){ .grid2 { grid-template-columns: 1fr; } }
+/* ============================================================
+   1. КОЛЬОРОВА ПАЛІТРА
+   ============================================================ */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.color-swatch {
+  border-radius: var(--r-md);
+  overflow: hidden;
+  border: 1px solid var(--border-dim);
+}
+.color-swatch-block {
+  height: 56px;
+  width: 100%;
+}
+.color-swatch-info {
+  padding: 8px 10px;
+  background: var(--bg-elevated);
+}
+.color-swatch-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+.color-swatch-hex {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
 
-  #tooltip { position: fixed; background: #1e2d45; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 100; max-width: 220px; line-height: 1.6; }
+/* ============================================================
+   2. ТИПОГРАФІЯ
+   ============================================================ */
+.type-sample { margin-bottom: 20px; }
+.type-h1 { font-size: var(--text-4xl); font-weight: 300; color: var(--text-primary); line-height: 1.15; }
+.type-h2 { font-size: var(--text-3xl); font-weight: 300; color: var(--text-primary); line-height: 1.2; }
+.type-h3 { font-size: var(--text-2xl); font-weight: 400; color: var(--text-primary); }
+.type-section {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+}
+.type-body { font-size: var(--text-md); color: var(--text-primary); line-height: 1.75; }
+.type-secondary { font-size: var(--text-base); color: var(--text-secondary); line-height: 1.7; }
+.type-mono { font-family: var(--font-mono); font-size: var(--text-base); color: var(--text-primary); }
+.type-code-inline {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-dim);
+  padding: 2px 6px;
+  border-radius: var(--r-sm);
+  color: var(--accent);
+}
+.type-tag-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 3px 8px;
+  border-radius: 2px;
+}
 
-  .quiz-item { margin-bottom: 10px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
-  .quiz-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: var(--card); cursor: pointer; user-select: none; transition: background .2s; }
-  .quiz-header:hover { background: #161f33; }
-  .quiz-header.open { background: #0d1a2d; }
-  .quiz-cat { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; font-family: 'Unbounded', sans-serif; }
-  .quiz-q { font-size: 13px; line-height: 1.6; color: var(--text); }
-  .quiz-arrow { color: var(--muted); font-size: 16px; transition: transform .3s; flex-shrink: 0; margin-left: auto; }
-  .quiz-arrow.open { transform: rotate(180deg); }
-  .quiz-body { max-height: 0; overflow: hidden; transition: max-height .45s cubic-bezier(.4,0,.2,1); background: #0d1520; }
-  .quiz-body.open { max-height: 700px; }
-  .quiz-inner { padding: 20px 24px; font-size: 13px; line-height: 1.9; border-top: 1px solid var(--border); color: var(--text); }
+/* ============================================================
+   3. КНОПКИ
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: var(--r-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn:active { transform: scale(0.97); }
 
-  code { background: rgba(255,255,255,.06); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--rise); }
+.btn-primary {
+  background: var(--accent);
+  color: var(--text-inverse);
+}
+.btn-primary:hover { background: #00e890; box-shadow: var(--glow-accent); }
 
-  footer { text-align: center; margin-top: 60px; font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+.btn-outline {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+.btn-outline:hover { background: var(--accent-dim); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-mid);
+}
+.btn-ghost:hover { color: var(--text-primary); border-color: var(--border-bright); background: var(--bg-elevated); }
+
+.btn-danger {
+  background: transparent;
+  color: var(--falling);
+  border: 1px solid var(--falling);
+}
+.btn-danger:hover { background: rgba(255,107,74,0.1); }
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  justify-content: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-dim);
+  color: var(--text-secondary);
+  border-radius: var(--r-md);
+}
+.btn-icon:hover { color: var(--text-primary); border-color: var(--border-mid); }
+
+.btn-sm { padding: 5px 12px; font-size: 11px; }
+.btn-lg { padding: 12px 24px; font-size: var(--text-base); }
+
+.btn-dot::before {
+  content: '';
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+}
+
+/* ============================================================
+   4. BADGES / TAGS
+   ============================================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+.badge-rising   { background: rgba(0,208,132,0.12); color: var(--rising); border: 1px solid rgba(0,208,132,0.25); }
+.badge-falling  { background: rgba(255,107,74,0.12); color: var(--falling); border: 1px solid rgba(255,107,74,0.25); }
+.badge-clk      { background: rgba(74,158,255,0.12); color: var(--clk); border: 1px solid rgba(74,158,255,0.25); }
+.badge-warning  { background: rgba(245,200,66,0.12); color: var(--warning); border: 1px solid rgba(245,200,66,0.25); }
+.badge-neutral  { background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border-dim); }
+.badge-pill     { border-radius: 100px; }
+
+.badge::before { content: ''; display: block; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+/* ============================================================
+   5. КАРТКИ / CARDS
+   ============================================================ */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--r-xl);
+  padding: 24px;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--border-mid); }
+
+.card-number {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: var(--text-xl);
+  font-weight: 400;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-subtitle {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+.card-body { color: var(--text-secondary); font-size: var(--text-base); line-height: 1.7; }
+
+/* Варіант з лівою кольоровою смугою */
+.card-accent-rising  { border-left: 2px solid var(--rising); }
+.card-accent-falling { border-left: 2px solid var(--falling); }
+.card-accent-clk     { border-left: 2px solid var(--clk); }
+
+/* Stat card */
+.stat-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  min-width: 120px;
+}
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.stat-unit {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+.stat-delta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  margin-top: 4px;
+}
+.stat-delta.up   { color: var(--rising); }
+.stat-delta.down { color: var(--falling); }
+
+/* ============================================================
+   6. ТАБЛИЦІ
+   ============================================================ */
+.table-wrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+}
+.kit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.kit-table thead tr {
+  border-bottom: 1px solid var(--border-mid);
+}
+.kit-table th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 500;
+}
+.kit-table td {
+  padding: 11px 16px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-dim);
+  vertical-align: middle;
+}
+.kit-table tr:last-child td { border-bottom: none; }
+.kit-table tr:hover td { background: rgba(255,255,255,0.02); }
+.kit-table .mono { font-family: var(--font-mono); color: var(--text-primary); }
+.kit-table .accent { color: var(--accent); font-family: var(--font-mono); }
+.kit-table .rising { color: var(--rising); }
+.kit-table .falling { color: var(--falling); }
+
+/* ============================================================
+   7. КОД / CODE BLOCKS
+   ============================================================ */
+.code-block {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-dim);
+  background: var(--bg-elevated);
+}
+.code-block-lang {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+.code-block-copy {
+  font-size: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  padding: 0;
+  transition: color 0.15s;
+}
+.code-block-copy:hover { color: var(--accent); }
+.code-block-body {
+  padding: 16px;
+  line-height: 1.65;
+  overflow-x: auto;
+  color: var(--text-primary);
+}
+.code-block-body .kw  { color: var(--clk); }
+.code-block-body .fn  { color: var(--accent); }
+.code-block-body .str { color: var(--warning); }
+.code-block-body .cm  { color: var(--text-muted); font-style: italic; }
+.code-block-body .num { color: var(--falling); }
+
+/* ============================================================
+   8. АКОРДЕОН (питання/відповіді)
+   ============================================================ */
+.accordion {
+  border: 1px solid var(--border-dim);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  background: var(--bg-surface);
+}
+.accordion-item { border-bottom: 1px solid var(--border-dim); }
+.accordion-item:last-child { border-bottom: none; }
+.accordion-trigger {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 18px 20px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  transition: background 0.15s;
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  font-family: var(--font-sans);
+}
+.accordion-trigger:hover { background: var(--border-dim); }
+.accordion-trigger.open { background: rgba(0,208,132,0.04); }
+.accordion-icon {
+  flex-shrink: 0;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--border-mid);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition: transform 0.25s, border-color 0.2s, color 0.2s;
+  margin-top: 2px;
+}
+.accordion-trigger.open .accordion-icon {
+  transform: rotate(45deg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.accordion-body {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s ease;
+  background: var(--accent-glow);
+}
+.accordion-body.open { max-height: 400px; }
+.accordion-content {
+  padding: 4px 20px 20px;
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+  line-height: 1.7;
+  border-top: 1px solid var(--border-dim);
+}
+.accordion-content strong { color: var(--text-primary); font-weight: 500; }
+
+/* ============================================================
+   9. ІНФОРМАЦІЙНІ БЛОКИ (callouts)
+   ============================================================ */
+.callout {
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  display: flex;
+  gap: 12px;
+  font-size: var(--text-base);
+  line-height: 1.6;
+}
+.callout-icon {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.callout-info {
+  background: rgba(74,158,255,0.07);
+  border: 1px solid rgba(74,158,255,0.18);
+  color: var(--text-secondary);
+}
+.callout-info .callout-icon { background: rgba(74,158,255,0.2); color: var(--clk); }
+.callout-warning {
+  background: rgba(245,200,66,0.07);
+  border: 1px solid rgba(245,200,66,0.18);
+  color: var(--text-secondary);
+}
+.callout-warning .callout-icon { background: rgba(245,200,66,0.2); color: var(--warning); }
+.callout-important {
+  background: rgba(0,208,132,0.05);
+  border: 1px solid rgba(0,208,132,0.15);
+  color: var(--text-secondary);
+}
+.callout-important .callout-icon { background: var(--accent-dim); color: var(--accent); }
+.callout strong { color: var(--text-primary); }
+
+/* ============================================================
+   10. НАВІГАЦІЯ СТОРІНКИ (breadcrumb + секції)
+   ============================================================ */
+.page-header {
+  border-bottom: 1px solid var(--border-dim);
+  padding-bottom: 48px;
+  margin-bottom: 56px;
+}
+.page-header-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.page-header-eyebrow::before {
+  content: '//';
+  color: var(--accent);
+  font-size: 12px;
+}
+.page-title {
+  font-size: clamp(32px, 5vw, 50px);
+  font-weight: 300;
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.page-desc {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  max-width: 540px;
+  line-height: 1.65;
+}
+
+/* Нумерований блок секції */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  opacity: 0.7;
+  min-width: 28px;
+}
+.section-name {
+  font-size: var(--text-xl);
+  font-weight: 400;
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   11. SLIDER / RANGE INPUT
+   ============================================================ */
+.slider-wrap { width: 100%; }
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.slider-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  min-width: 80px;
+}
+.slider-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  color: var(--accent);
+  min-width: 52px;
+  text-align: right;
+}
+input[type=range] {
+  -webkit-appearance: none;
+  flex: 1;
+  height: 3px;
+  background: var(--bg-overlay);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0,208,132,0.4);
+}
+input[type=range]::-moz-range-thumb {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+}
+
+/* ============================================================
+   12. АНІМОВАНИЙ WAVEFORM (SVG preview)
+   ============================================================ */
+.waveform-demo {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+}
+.waveform-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-dim);
+  background: var(--bg-elevated);
+}
+.waveform-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.waveform-body { padding: 16px; }
+.waveform-svg { display: block; width: 100%; }
+
+@keyframes dash-run {
+  to { stroke-dashoffset: -60; }
+}
+.wave-clk  { stroke-dasharray: 200; animation: dash-run 3s linear infinite; }
+.wave-data { stroke-dasharray: 200; animation: dash-run 4s linear infinite; }
+
+/* ============================================================
+   13. TIMING DIAGRAM рядок
+   ============================================================ */
+.timing-row {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  gap: 0;
+}
+.timing-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  width: 60px;
+  flex-shrink: 0;
+}
+.timing-track {
+  flex: 1;
+  height: 36px;
+  position: relative;
+}
+.timing-track svg { display: block; }
+
+/* ============================================================
+   14. PROGRESS / STATUS
+   ============================================================ */
+.progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.progress-bar-bg {
+  height: 4px;
+  background: var(--bg-overlay);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+.progress-bar-fill.warn { background: var(--warning); }
+.progress-bar-fill.err  { background: var(--falling); }
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   15. СІТКА КОМПОНОВКИ
+   ============================================================ */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+/* ============================================================
+   ДОПОМІЖНІ КЛАСИ
+   ============================================================ */
+.divider { height: 1px; background: var(--border-dim); margin: 32px 0; }
+.spacer-sm { height: 12px; }
+.spacer-md { height: 24px; }
+.text-accent { color: var(--accent); }
+.text-rising { color: var(--rising); }
+.text-falling { color: var(--falling); }
+.text-clk { color: var(--clk); }
+.text-warn { color: var(--warning); }
+.font-mono { font-family: var(--font-mono); }
+.opacity-50 { opacity: 0.5; }
 </style>
 </head>
 <body>
 
-<div id="tooltip"></div>
+<div class="kit-layout">
 
-<div class="wrapper">
+  <!-- ======= НАВІГАЦІЯ ======= -->
+  <nav class="kit-nav">
+    <div class="kit-nav-logo">
+      <div class="logo-tag">// Конспект</div>
+      <div class="logo-name">UI Kit</div>
+    </div>
 
-  <header>
-    <div class="header-label">// Конспект · Embedded Systems</div>
-    <h1>Фронт сигналу</h1>
-    <p>Наростаючий та спадаючий фронт, хто їх генерує, таймінги — інтерактивний довідник для STM32 / ESP32 розробника.</p>
-  </header>
+    <div class="kit-nav-section">Основи</div>
+    <a class="kit-nav-link" href="#tokens">Токени</a>
+    <a class="kit-nav-link" href="#colors">Кольори</a>
+    <a class="kit-nav-link" href="#typography">Типографія</a>
 
-  <!-- 01 -->
-  <div class="section">
-    <div class="section-title">01 — Визначення</div>
-    <div class="grid2">
-      <div class="card">
-        <div class="card-title rise-color">⬆ Наростаючий фронт (Rising Edge)</div>
-        <p>Перехід сигналу зі стану <strong>LOW → HIGH</strong>. Напруга зростає від 0 до Vcc.</p>
-        <div class="pills">
-          <span class="pill pill-rise">↑ 0 → Vcc</span>
-          <span class="pill pill-rise">POSEDGE</span>
+    <div class="kit-nav-section">Компоненти</div>
+    <a class="kit-nav-link" href="#buttons">Кнопки</a>
+    <a class="kit-nav-link" href="#badges">Бейджі</a>
+    <a class="kit-nav-link" href="#cards">Картки</a>
+    <a class="kit-nav-link" href="#tables">Таблиці</a>
+    <a class="kit-nav-link" href="#code">Код</a>
+    <a class="kit-nav-link" href="#accordion">Акордеон</a>
+    <a class="kit-nav-link" href="#callouts">Callouts</a>
+
+    <div class="kit-nav-section">Сигнали</div>
+    <a class="kit-nav-link" href="#waveform">Waveform</a>
+    <a class="kit-nav-link" href="#controls">Контроли</a>
+
+    <div class="kit-nav-section">Структура</div>
+    <a class="kit-nav-link" href="#page-header">Page Header</a>
+    <a class="kit-nav-link" href="#layout">Сітка</a>
+  </nav>
+
+  <!-- ======= КОНТЕНТ ======= -->
+  <main class="kit-main">
+
+    <!-- INTRO -->
+    <div class="page-header">
+      <div class="page-header-eyebrow">Embedded Systems Notes</div>
+      <h1 class="page-title">UI Kit</h1>
+      <p class="page-desc">Дизайн-система для технічних конспектів. Темна тема, монопростір, осцилографна естетика.</p>
+    </div>
+
+    <!-- ===== 1. ТОКЕНИ ===== -->
+    <section class="kit-section" id="tokens">
+      <div class="kit-section-title">01 — Основи</div>
+      <h2 class="kit-section-name">Токени</h2>
+
+      <p class="kit-label">CSS змінні — вставте в :root{}</p>
+      <div class="code-block" style="margin-bottom:24px">
+        <div class="code-block-header">
+          <span class="code-block-lang">CSS</span>
+          <button class="code-block-copy">copy</button>
+        </div>
+        <pre class="code-block-body"><span class="cm">/* Фон */</span>
+<span class="kw">--bg-base:</span>        <span class="str">#0d0f10</span>;
+<span class="kw">--bg-surface:</span>     <span class="str">#141618</span>;
+<span class="kw">--bg-elevated:</span>    <span class="str">#1a1d20</span>;
+
+<span class="cm">/* Акцент */</span>
+<span class="kw">--accent:</span>         <span class="str">#00d084</span>;
+<span class="kw">--accent-dim:</span>     <span class="str">rgba(0,208,132,0.12)</span>;
+
+<span class="cm">/* Сигнальні кольори */</span>
+<span class="kw">--rising:</span>         <span class="str">#00d084</span>;
+<span class="kw">--falling:</span>        <span class="str">#ff6b4a</span>;
+<span class="kw">--clk:</span>            <span class="str">#4a9eff</span>;
+<span class="kw">--warning:</span>        <span class="str">#f5c842</span>;
+
+<span class="cm">/* Шрифти */</span>
+<span class="kw">--font-mono:</span>      <span class="str">'JetBrains Mono', monospace</span>;
+<span class="kw">--font-sans:</span>      <span class="str">'IBM Plex Sans', system-ui</span>;</pre>
+      </div>
+    </section>
+
+    <!-- ===== 2. КОЛЬОРИ ===== -->
+    <section class="kit-section" id="colors">
+      <div class="kit-section-title">02 — Основи</div>
+      <h2 class="kit-section-name">Кольорова палітра</h2>
+
+      <p class="kit-label">Фон</p>
+      <div class="color-grid" style="margin-bottom:24px">
+        <div class="color-swatch">
+          <div class="color-swatch-block" style="background:#0d0f10"></div>
+          <div class="color-swatch-info"><div class="color-swatch-name">bg-base</div><div class="color-swatch-hex">#0d0f10</div></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch-block" style="background:#141618"></div>
+          <div class="color-swatch-info"><div class="color-swatch-name">bg-surface</div><div class="color-swatch-hex">#141618</div></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch-block" style="background:#1a1d20"></div>
+          <div class="color-swatch-info"><div class="color-swatch-name">bg-elevated</div><div class="color-swatch-hex">#1a1d20</div></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch-block" style="background:#21252a"></div>
+          <div class="color-swatch-info"><div class="color-swatch-name">bg-overlay</div><div class="color-swatch-hex">#21252a</div></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-title fall-color">⬇ Спадаючий фронт (Falling Edge)</div>
-        <p>Перехід сигналу зі стану <strong>HIGH → LOW</strong>. Напруга падає від Vcc до 0.</p>
-        <div class="pills">
-          <span class="pill pill-fall">↓ Vcc → 0</span>
-          <span class="pill pill-fall">NEGEDGE</span>
+
+      <p class="kit-label">Сигнальні кольори</p>
+      <div class="color-grid" style="margin-bottom:24px">
+        <div class="color-swatch">
+          <div class="color-swatch-block" style="background:#00d084"></div>
+          <div class="color-swatch-info"><div class="color-swatch-name">rising / accent</div><div class="color-swatch-hex">#00d084</div></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch-block" style="background:#ff6b4a"></div>
+          <div class="color-swatch-info"><div class="color-swatch-name">falling</div><div class="color-swatch-hex">#ff6b4a</div></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch-block" style="background:#4a9eff"></div>
+          <div class="color-swatch-info"><div class="color-swatch-name">clk</div><div class="color-swatch-hex">#4a9eff</div></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch-block" style="background:#f5c842"></div>
+          <div class="color-swatch-info"><div class="color-swatch-name">warning</div><div class="color-swatch-hex">#f5c842</div></div>
         </div>
       </div>
-    </div>
-    <div class="highlight">
-      <strong>Ключова ідея:</strong> реальний фронт — не миттєвий стрибок, а перехідний процес. Його крутизна (slew rate) = <strong>dV/dt [В/нс]</strong>. Занадто повільний → помилкові спрацювання; занадто швидкий → EMI та відбиття.
-    </div>
-  </div>
 
-  <!-- 02 -->
-  <div class="section">
-    <div class="section-title">02 — Інтерактивна анімація</div>
-    <div class="controls">
-      <button class="btn active" id="btnPlay">▶ Старт</button>
-      <button class="btn" id="btnPause">⏸ Пауза</button>
-      <button class="btn" id="btnReset">↺ Скинути</button>
-      <div class="slider-wrap">
-        <span>Slew Rate:</span>
-        <input type="range" id="slopeSlider" min="1" max="20" value="6">
-        <span id="slopeVal">6 нс</span>
+      <p class="kit-label">Текст</p>
+      <div class="color-grid">
+        <div class="color-swatch">
+          <div class="color-swatch-block" style="background:#e8e6e0"></div>
+          <div class="color-swatch-info"><div class="color-swatch-name">text-primary</div><div class="color-swatch-hex">#e8e6e0</div></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch-block" style="background:#8b897e"></div>
+          <div class="color-swatch-info"><div class="color-swatch-name">text-secondary</div><div class="color-swatch-hex">#8b897e</div></div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-swatch-block" style="background:#52504a"></div>
+          <div class="color-swatch-info"><div class="color-swatch-name">text-muted</div><div class="color-swatch-hex">#52504a</div></div>
+        </div>
       </div>
-    </div>
-    <div class="canvas-wrap">
-      <div class="canvas-label">WAVEFORM VIEWER</div>
-      <canvas id="waveCanvas" height="260"></canvas>
-    </div>
-    <div class="card">
-      <div class="card-title clk-color">📊 Легенда осцилограми</div>
-      <ul>
-        <li><span style="color:var(--clk)">CLK</span> — тактовий сигнал, генерується PLL/OSC мікроконтролера</li>
-        <li><span style="color:var(--rise)">DATA</span> — сигнал даних, змінюється відносно фронтів CLK</li>
-        <li><span style="color:var(--fall)">TRIGGER</span> — переривання/тригер, спрацьовує по фронту</li>
-      </ul>
-      <div class="highlight">
-        <strong>Підказка:</strong> наведіть курсор на хвилю — побачите рівень і час. Слайдер змінює крутизну фронту в реальному часі.
-      </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- 03 -->
-  <div class="section">
-    <div class="section-title">03 — Джерела фронтів</div>
-    <div class="card">
-      <div class="card-title clk-color">🔧 Тактовий генератор (HSE / HSI / PLL)</div>
-      <p>Головний генератор фронтів — кварцовий резонатор або RC-осцилятор всередині МК.</p>
-      <ul>
-        <li><strong>HSI</strong> — внутрішній RC, ±1% точність, ~8/16 МГц</li>
-        <li><strong>HSE</strong> — зовнішній кварц, ±20 ppm точність, до 25 МГц</li>
-        <li><strong>PLL</strong> — множник частоти: HSE 8 МГц × 9 = 72 МГц (STM32F1)</li>
-        <li><strong>ESP32</strong> — вбудований XTAL 40 МГц + PLL до 240 МГц</li>
-      </ul>
-    </div>
-    <div class="grid2">
-      <div class="card">
-        <div class="card-title rise-color">GPIO Push-Pull</div>
-        <p>Обидва напрямки активні. P-МОП тягне до Vcc (RISING), N-МОП — до GND (FALLING). Фронти круті та симетричні.</p>
-      </div>
-      <div class="card">
-        <div class="card-title fall-color">GPIO Open-Drain</div>
-        <p>Лише спадаючий фронт активний. RISING — пасивно через pull-up резистор. Повільніше, залежить від R·C.</p>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">⚡ Периферія: таймери, UART, SPI, I²C</div>
-      <ul>
-        <li><strong>Timer PWM</strong> — фронти генеруються апаратно по рахунку ARR/CCR</li>
-        <li><strong>UART TX</strong> — старт-біт це завжди спадаючий фронт (HIGH→LOW)</li>
-        <li><strong>SPI CPOL=0</strong> — CLK у спокої LOW, перший фронт — наростаючий</li>
-        <li><strong>I²C</strong> — open-drain SCL та SDA, фронти формуються pull-up 4.7 кОм</li>
-      </ul>
-    </div>
-  </div>
+    <!-- ===== 3. ТИПОГРАФІЯ ===== -->
+    <section class="kit-section" id="typography">
+      <div class="kit-section-title">03 — Основи</div>
+      <h2 class="kit-section-name">Типографія</h2>
 
-  <!-- 04 -->
-  <div class="section">
-    <div class="section-title">04 — Таймінги та параметри</div>
-    <div class="canvas-wrap">
-      <div class="canvas-label">TIMING DIAGRAM</div>
-      <canvas id="timingCanvas" height="200"></canvas>
-    </div>
-    <div class="card">
-      <table>
-        <thead>
-          <tr><th>Параметр</th><th>Позначення</th><th>Опис</th><th>Тип фронту</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>Rise Time</strong></td><td style="color:var(--rise)">tᵣ</td><td>10% → 90% Vcc</td><td><span class="tag tag-rise">RISING</span></td></tr>
-          <tr><td><strong>Fall Time</strong></td><td style="color:var(--fall)">tᶠ</td><td>90% → 10% Vcc</td><td><span class="tag tag-fall">FALLING</span></td></tr>
-          <tr><td><strong>Propagation Delay</strong></td><td style="color:var(--clk)">tₚd</td><td>Затримка від CLK до зміни виходу</td><td><span class="tag tag-both">ОБИДВА</span></td></tr>
-          <tr><td><strong>Setup Time</strong></td><td style="color:var(--accent)">tsu</td><td>Стабільність даних ДО фронту CLK</td><td><span class="tag tag-rise">RISING</span></td></tr>
-          <tr><td><strong>Hold Time</strong></td><td style="color:var(--accent)">th</td><td>Стабільність даних ПІСЛЯ фронту CLK</td><td><span class="tag tag-rise">RISING</span></td></tr>
-          <tr><td><strong>Slew Rate</strong></td><td style="color:var(--muted)">SR</td><td>dV/dt [В/нс]</td><td><span class="tag tag-both">ОБИДВА</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="highlight">
-      <strong>STM32 GPIO Speed:</strong> регістр <code>GPIOx_OSPEEDR</code> керує slew rate. LOW~2 МГц, MEDIUM~25 МГц, HIGH~50 МГц, VERY_HIGH~100 МГц.
-    </div>
-  </div>
-
-  <!-- 05 -->
-  <div class="section">
-    <div class="section-title">05 — EXTI: переривання по фронту</div>
-    <div class="grid2">
-      <div class="card">
-        <div class="card-title rise-color">STM32 — EXTI</div>
-        <ul>
-          <li>EXTI лінії 0–15 відповідають пінам GPIO</li>
-          <li><code>EXTI_RTSR</code> — Rising Trigger Select</li>
-          <li><code>EXTI_FTSR</code> — Falling Trigger Select</li>
-          <li>Можна вмикати обидва (BOTH)</li>
-          <li>HAL: <code>GPIO_MODE_IT_RISING</code></li>
-        </ul>
+      <div class="type-sample">
+        <p class="kit-label">Section eyebrow — JetBrains Mono 10px uppercase</p>
+        <div class="type-section">// Конспект · Embedded Systems</div>
       </div>
-      <div class="card">
-        <div class="card-title rise-color">ESP32 — GPIO ISR</div>
-        <ul>
-          <li><code>gpio_set_intr_type(pin, GPIO_INTR_POSEDGE)</code></li>
-          <li><code>GPIO_INTR_NEGEDGE</code> — спадаючий фронт</li>
-          <li><code>GPIO_INTR_ANYEDGE</code> — будь-який фронт</li>
-          <li>ISR: <code>gpio_isr_handler_add()</code></li>
-          <li>Дебаунс: SW фільтр або RC + компаратор</li>
-        </ul>
+
+      <div class="type-sample">
+        <p class="kit-label">H1 — IBM Plex Sans 38px weight 300</p>
+        <div class="type-h1">Фронт сигналу</div>
       </div>
-    </div>
-    <div class="highlight">
-      <strong>Важливо:</strong> при <code>ANYEDGE</code> переривання спрацьовує двічі на період. Корисно для duty cycle або квадратурного енкодера.
-    </div>
-  </div>
 
-  <!-- 06 -->
-  <div class="section">
-    <div class="section-title">06 — Питання на співбесіді</div>
-    <div class="highlight" style="margin-top:0; margin-bottom:16px">
-      <strong>Порада:</strong> натисни на питання — розгорнеться еталонна відповідь. Спочатку спробуй відповісти самостійно.
-    </div>
-    <div id="quiz-area"></div>
-  </div>
+      <div class="type-sample">
+        <p class="kit-label">H2 — IBM Plex Sans 30px weight 300</p>
+        <div class="type-h2">Наростаючий фронт</div>
+      </div>
 
-  <footer>ФРОНТ СИГНАЛУ · Embedded Systems Notes · STM32 / ESP32</footer>
+      <div class="type-sample">
+        <p class="kit-label">H3 — IBM Plex Sans 24px weight 400</p>
+        <div class="type-h3">GPIO Push-Pull</div>
+      </div>
+
+      <div class="type-sample">
+        <p class="kit-label">Body — IBM Plex Sans 15px</p>
+        <p class="type-body">Реальний фронт — не миттєвий стрибок, а перехідний процес. Його крутизна (slew rate) = dV/dt [В/нс].</p>
+      </div>
+
+      <div class="type-sample">
+        <p class="kit-label">Secondary text</p>
+        <p class="type-secondary">Занадто повільний → помилкові спрацювання; занадто швидкий → EMI та відбиття.</p>
+      </div>
+
+      <div class="type-sample">
+        <p class="kit-label">Monospace inline</p>
+        <p class="type-mono">EXTI_RTSR |= GPIO_Pin_0;</p>
+      </div>
+
+      <div class="kit-row" style="align-items:center">
+        <div>
+          <p class="kit-label">Code inline</p>
+          <code class="type-code-inline">GPIOx_OSPEEDR</code>
+        </div>
+        <div>
+          <p class="kit-label">Tag badge</p>
+          <span class="type-tag-badge">POSEDGE</span>
+        </div>
+        <div>
+          <p class="kit-label">Tag badge</p>
+          <span class="type-tag-badge" style="background:rgba(255,107,74,0.12);color:var(--falling)">NEGEDGE</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 4. КНОПКИ ===== -->
+    <section class="kit-section" id="buttons">
+      <div class="kit-section-title">04 — Компоненти</div>
+      <h2 class="kit-section-name">Кнопки</h2>
+
+      <p class="kit-label">Варіанти</p>
+      <div class="kit-row" style="margin-bottom:24px">
+        <button class="btn btn-primary">▶ Старт</button>
+        <button class="btn btn-outline">⏸ Пауза</button>
+        <button class="btn btn-ghost">↺ Скинути</button>
+        <button class="btn btn-danger">✕ Зупинити</button>
+      </div>
+
+      <p class="kit-label">З індикаторами</p>
+      <div class="kit-row" style="margin-bottom:24px">
+        <button class="btn btn-primary btn-dot" style="--dot-color:currentColor">RISING</button>
+        <button class="btn btn-outline" style="color:var(--falling);border-color:var(--falling)" class="btn-dot">FALLING</button>
+        <button class="btn btn-ghost" style="color:var(--clk)">CLK ONLY</button>
+      </div>
+
+      <p class="kit-label">Розміри</p>
+      <div class="kit-row" style="align-items:center">
+        <button class="btn btn-ghost btn-sm">Small</button>
+        <button class="btn btn-ghost">Default</button>
+        <button class="btn btn-ghost btn-lg">Large</button>
+        <button class="btn btn-icon" title="Copy">⎘</button>
+        <button class="btn btn-icon" title="Play">▶</button>
+      </div>
+    </section>
+
+    <!-- ===== 5. БЕЙДЖІ ===== -->
+    <section class="kit-section" id="badges">
+      <div class="kit-section-title">05 — Компоненти</div>
+      <h2 class="kit-section-name">Бейджі та теги</h2>
+
+      <p class="kit-label">Сигнальні стани</p>
+      <div class="kit-row">
+        <span class="badge badge-rising">RISING</span>
+        <span class="badge badge-falling">FALLING</span>
+        <span class="badge badge-clk">CLK</span>
+        <span class="badge badge-warning">WARNING</span>
+        <span class="badge badge-neutral">NEUTRAL</span>
+      </div>
+
+      <div class="spacer-md"></div>
+      <p class="kit-label">Pill варіант</p>
+      <div class="kit-row">
+        <span class="badge badge-rising badge-pill">POSEDGE</span>
+        <span class="badge badge-falling badge-pill">NEGEDGE</span>
+        <span class="badge badge-clk badge-pill">STM32</span>
+        <span class="badge badge-neutral badge-pill">ESP32</span>
+      </div>
+    </section>
+
+    <!-- ===== 6. КАРТКИ ===== -->
+    <section class="kit-section" id="cards">
+      <div class="kit-section-title">06 — Компоненти</div>
+      <h2 class="kit-section-name">Картки</h2>
+
+      <p class="kit-label">Definition cards</p>
+      <div class="grid-2" style="margin-bottom:24px">
+        <div class="card card-accent-rising">
+          <div class="card-number">01</div>
+          <div class="card-title">
+            <span>↑</span> Наростаючий фронт
+          </div>
+          <div class="card-subtitle">Rising Edge</div>
+          <div class="card-body">Перехід сигналу зі стану LOW → HIGH. Напруга зростає від 0 до Vcc.</div>
+          <div style="margin-top:12px; display:flex; gap:8px">
+            <span class="badge badge-rising badge-pill">POSEDGE</span>
+            <code class="type-code-inline">0 → Vcc</code>
+          </div>
+        </div>
+        <div class="card card-accent-falling">
+          <div class="card-number">02</div>
+          <div class="card-title">
+            <span>↓</span> Спадаючий фронт
+          </div>
+          <div class="card-subtitle">Falling Edge</div>
+          <div class="card-body">Перехід сигналу зі стану HIGH → LOW. Напруга падає від Vcc до 0.</div>
+          <div style="margin-top:12px; display:flex; gap:8px">
+            <span class="badge badge-falling badge-pill">NEGEDGE</span>
+            <code class="type-code-inline">Vcc → 0</code>
+          </div>
+        </div>
+      </div>
+
+      <p class="kit-label">Stat cards</p>
+      <div class="kit-row">
+        <div class="stat-card">
+          <div class="stat-label">Rise Time</div>
+          <div class="stat-value">6<span class="stat-unit">нс</span></div>
+          <div class="stat-delta up">↑ tᵣ</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Fall Time</div>
+          <div class="stat-value">8<span class="stat-unit">нс</span></div>
+          <div class="stat-delta down">↓ tᶠ</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Slew Rate</div>
+          <div class="stat-value">50<span class="stat-unit">В/нс</span></div>
+          <div class="stat-delta" style="color:var(--text-muted)">SR</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Frequency</div>
+          <div class="stat-value">72<span class="stat-unit">МГц</span></div>
+          <div class="stat-delta" style="color:var(--clk)">PLL</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 7. ТАБЛИЦІ ===== -->
+    <section class="kit-section" id="tables">
+      <div class="kit-section-title">07 — Компоненти</div>
+      <h2 class="kit-section-name">Таблиці</h2>
+
+      <div class="table-wrap">
+        <table class="kit-table">
+          <thead>
+            <tr>
+              <th>Параметр</th>
+              <th>Позначення</th>
+              <th>Опис</th>
+              <th>Тип фронту</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">Rise Time</td>
+              <td class="accent">tᵣ</td>
+              <td>10% → 90% Vcc</td>
+              <td><span class="badge badge-rising">RISING</span></td>
+            </tr>
+            <tr>
+              <td class="mono">Fall Time</td>
+              <td class="accent">tᶠ</td>
+              <td>90% → 10% Vcc</td>
+              <td><span class="badge badge-falling">FALLING</span></td>
+            </tr>
+            <tr>
+              <td class="mono">Setup Time</td>
+              <td class="accent">tsu</td>
+              <td>Стабільність даних до фронту CLK</td>
+              <td><span class="badge badge-rising">RISING</span></td>
+            </tr>
+            <tr>
+              <td class="mono">Slew Rate</td>
+              <td class="accent">SR</td>
+              <td>dV/dt [В/нс]</td>
+              <td><span class="badge badge-neutral">ОБИДВА</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== 8. КОД ===== -->
+    <section class="kit-section" id="code">
+      <div class="kit-section-title">08 — Компоненти</div>
+      <h2 class="kit-section-name">Блоки коду</h2>
+
+      <div class="code-block" style="margin-bottom:16px">
+        <div class="code-block-header">
+          <span class="code-block-lang">C · STM32 HAL</span>
+          <button class="code-block-copy">copy</button>
+        </div>
+        <pre class="code-block-body"><span class="cm">// Налаштування EXTI по наростаючому фронту</span>
+GPIO_InitTypeDef GPIO_InitStruct = {<span class="num">0</span>};
+GPIO_InitStruct.Pin  = GPIO_PIN_0;
+GPIO_InitStruct.Mode = <span class="fn">GPIO_MODE_IT_RISING</span>;
+GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+<span class="fn">HAL_GPIO_Init</span>(GPIOA, &GPIO_InitStruct);
+
+<span class="cm">// Увімкнути переривання</span>
+<span class="fn">HAL_NVIC_SetPriority</span>(EXTI0_IRQn, <span class="num">0</span>, <span class="num">0</span>);
+<span class="fn">HAL_NVIC_EnableIRQ</span>(EXTI0_IRQn);</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">C · ESP32 IDF</span>
+          <button class="code-block-copy">copy</button>
+        </div>
+        <pre class="code-block-body"><span class="cm">// ISR по будь-якому фронту</span>
+<span class="fn">gpio_set_intr_type</span>(GPIO_NUM_0, GPIO_INTR_ANYEDGE);
+<span class="fn">gpio_install_isr_service</span>(<span class="num">0</span>);
+<span class="fn">gpio_isr_handler_add</span>(GPIO_NUM_0, <span class="str">my_handler</span>, NULL);</pre>
+      </div>
+    </section>
+
+    <!-- ===== 9. АКОРДЕОН ===== -->
+    <section class="kit-section" id="accordion">
+      <div class="kit-section-title">09 — Компоненти</div>
+      <h2 class="kit-section-name">Акордеон (Q&A)</h2>
+
+      <div class="accordion">
+        <div class="accordion-item">
+          <button class="accordion-trigger" onclick="toggleAccordion(this)">
+            <span>Чим відрізняється Push-Pull від Open-Drain?</span>
+            <span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-body">
+            <div class="accordion-content">
+              <strong>Push-Pull</strong> — обидва напрямки активні. P-МОП тягне до Vcc (RISING), N-МОП — до GND (FALLING). Фронти круті та симетричні.<br><br>
+              <strong>Open-Drain</strong> — лише спадаючий фронт активний. RISING — пасивно через pull-up резистор. Повільніше, залежить від R·C.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-trigger" onclick="toggleAccordion(this)">
+            <span>Що таке slew rate і навіщо він обмежується?</span>
+            <span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-body">
+            <div class="accordion-content">
+              <strong>Slew rate</strong> = dV/dt [В/нс] — крутизна фронту. Занадто повільний → помилкові спрацювання через шум. Занадто швидкий → EMI та відбиття в лінії через паразитні LC. У STM32 керується регістром <code class="type-code-inline">GPIOx_OSPEEDR</code>.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-trigger" onclick="toggleAccordion(this)">
+            <span>Для чого потрібен дебаунс на кнопці?</span>
+            <span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-body">
+            <div class="accordion-content">
+              Механічні контакти при замиканні генерують серію хибних фронтів (bounce) тривалістю 1–50 мс. Дебаунс усуває це апаратно (RC + компаратор) або програмно (фільтр на таймері).
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 10. CALLOUTS ===== -->
+    <section class="kit-section" id="callouts">
+      <div class="kit-section-title">10 — Компоненти</div>
+      <h2 class="kit-section-name">Інформаційні блоки</h2>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="callout callout-important">
+          <span class="callout-icon">KEY</span>
+          <div><strong>Ключова ідея:</strong> реальний фронт — не миттєвий стрибок, а перехідний процес.</div>
+        </div>
+        <div class="callout callout-info">
+          <span class="callout-icon">INF</span>
+          <div>При <code class="type-code-inline">ANYEDGE</code> переривання спрацьовує двічі на період. Корисно для квадратурного енкодера.</div>
+        </div>
+        <div class="callout callout-warning">
+          <span class="callout-icon">WRN</span>
+          <div><strong>Підказка:</strong> наведіть курсор на хвилю — побачите рівень і час.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 11. WAVEFORM ===== -->
+    <section class="kit-section" id="waveform">
+      <div class="kit-section-title">11 — Сигнали</div>
+      <h2 class="kit-section-name">Waveform Viewer</h2>
+
+      <div class="waveform-demo">
+        <div class="waveform-header">
+          <span class="waveform-title">WAVEFORM VIEWER</span>
+          <div style="display:flex;gap:12px">
+            <span class="badge badge-rising badge-pill" style="font-size:9px">CLK</span>
+            <span class="badge badge-clk badge-pill" style="font-size:9px">DATA</span>
+            <span class="badge badge-warning badge-pill" style="font-size:9px">TRIG</span>
+          </div>
+        </div>
+        <div class="waveform-body">
+          <svg class="waveform-svg" viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg">
+            <!-- Grid -->
+            <defs>
+              <pattern id="wgrid" x="0" y="0" width="60" height="160" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="0" x2="0" y2="160" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect width="680" height="160" fill="url(#wgrid)"/>
+
+            <!-- CLK signal -->
+            <text x="8" y="30" font-family="JetBrains Mono" font-size="10" fill="#52504a">CLK</text>
+            <polyline class="wave-clk" fill="none" stroke="#00d084" stroke-width="1.5" stroke-linecap="square"
+              points="40,44 100,44 100,14 160,14 160,44 220,44 220,14 280,14 280,44 340,44 340,14 400,14 400,44 460,44 460,14 520,14 520,44 580,44 580,14 640,14 640,44 680,44"/>
+
+            <!-- DATA signal -->
+            <text x="8" y="95" font-family="JetBrains Mono" font-size="10" fill="#52504a">DATA</text>
+            <polyline class="wave-data" fill="none" stroke="#4a9eff" stroke-width="1.5" stroke-linecap="square"
+              points="40,109 130,109 130,79 250,79 250,109 370,109 370,79 490,79 490,109 640,109 640,109"/>
+
+            <!-- TRIGGER markers -->
+            <text x="8" y="148" font-family="JetBrains Mono" font-size="10" fill="#52504a">TRIG</text>
+            <line x1="100" y1="128" x2="100" y2="152" stroke="#f5c842" stroke-width="1.5"/>
+            <line x1="220" y1="128" x2="220" y2="152" stroke="#f5c842" stroke-width="1.5"/>
+            <line x1="340" y1="128" x2="340" y2="152" stroke="#f5c842" stroke-width="1.5"/>
+            <line x1="460" y1="128" x2="460" y2="152" stroke="#f5c842" stroke-width="1.5"/>
+            <line x1="580" y1="128" x2="580" y2="152" stroke="#f5c842" stroke-width="1.5"/>
+
+            <!-- Rising edge annotation -->
+            <line x1="100" y1="14" x2="100" y2="44" stroke="rgba(0,208,132,0.3)" stroke-width="0.5" stroke-dasharray="3,3"/>
+            <text x="104" y="12" font-family="JetBrains Mono" font-size="9" fill="var(--accent)" opacity="0.7">↑</text>
+            <line x1="160" y1="14" x2="160" y2="44" stroke="rgba(255,107,74,0.3)" stroke-width="0.5" stroke-dasharray="3,3"/>
+            <text x="164" y="12" font-family="JetBrains Mono" font-size="9" fill="#ff6b4a" opacity="0.7">↓</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 12. КОНТРОЛИ ===== -->
+    <section class="kit-section" id="controls">
+      <div class="kit-section-title">12 — Сигнали</div>
+      <h2 class="kit-section-name">Контроли та слайдери</h2>
+
+      <div class="card" style="max-width:480px;margin-bottom:24px">
+        <p class="kit-label" style="margin-bottom:16px">Параметри сигналу</p>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="slider-row">
+            <span class="slider-label">Slew Rate</span>
+            <input type="range" min="1" max="100" value="6" id="slew" oninput="document.getElementById('slew-v').textContent=this.value+' нс'">
+            <span class="slider-value" id="slew-v">6 нс</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">Frequency</span>
+            <input type="range" min="1" max="240" value="72" id="freq" oninput="document.getElementById('freq-v').textContent=this.value+' МГц'">
+            <span class="slider-value" id="freq-v">72 МГц</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">Duty Cycle</span>
+            <input type="range" min="0" max="100" value="50" id="duty" oninput="document.getElementById('duty-v').textContent=this.value+'%'">
+            <span class="slider-value" id="duty-v">50%</span>
+          </div>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:10px">
+          <button class="btn btn-primary btn-sm">▶ Старт</button>
+          <button class="btn btn-ghost btn-sm">⏸ Пауза</button>
+          <button class="btn btn-ghost btn-sm">↺ Скинути</button>
+        </div>
+      </div>
+
+      <p class="kit-label">Progress bars</p>
+      <div style="max-width:400px;display:flex;flex-direction:column;gap:12px">
+        <div class="progress-wrap">
+          <div class="progress-meta"><span>GPIO Speed</span><span>HIGH — 50 МГц</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:70%"></div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-meta"><span>EMI Level</span><span>Medium</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill warn" style="width:45%"></div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-meta"><span>Temp Alert</span><span>Critical</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill err" style="width:88%"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 13. PAGE HEADER ===== -->
+    <section class="kit-section" id="page-header">
+      <div class="kit-section-title">13 — Структура</div>
+      <h2 class="kit-section-name">Page Header</h2>
+
+      <div style="background:var(--bg-surface);border:1px solid var(--border-dim);border-radius:var(--r-xl);padding:40px;margin-bottom:24px">
+        <div class="page-header-eyebrow">Конспект · Embedded Systems</div>
+        <div class="page-title" style="font-size:clamp(24px,4vw,38px)">Назва теми</div>
+        <p class="page-desc" style="font-size:var(--text-base)">Короткий опис що тут буде розбиратись. Інтерактивний довідник для STM32 / ESP32 розробника.</p>
+      </div>
+
+      <p class="kit-label">Section header</p>
+      <div style="background:var(--bg-surface);border:1px solid var(--border-dim);border-radius:var(--r-lg);padding:24px">
+        <div class="section-header">
+          <span class="section-num">01 —</span>
+          <span class="section-name">Назва секції</span>
+        </div>
+        <p class="type-secondary">Вміст секції...</p>
+      </div>
+    </section>
+
+    <!-- ===== 14. СІТКА ===== -->
+    <section class="kit-section" id="layout">
+      <div class="kit-section-title">14 — Структура</div>
+      <h2 class="kit-section-name">Сітка компоновки</h2>
+
+      <p class="kit-label">2 колонки</p>
+      <div class="grid-2" style="margin-bottom:20px">
+        <div style="background:var(--bg-elevated);border:1px dashed var(--border-dim);border-radius:var(--r-md);padding:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);text-align:center">.grid-2 col 1</div>
+        <div style="background:var(--bg-elevated);border:1px dashed var(--border-dim);border-radius:var(--r-md);padding:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);text-align:center">.grid-2 col 2</div>
+      </div>
+
+      <p class="kit-label">3 колонки</p>
+      <div class="grid-3" style="margin-bottom:20px">
+        <div style="background:var(--bg-elevated);border:1px dashed var(--border-dim);border-radius:var(--r-md);padding:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);text-align:center">.grid-3 col 1</div>
+        <div style="background:var(--bg-elevated);border:1px dashed var(--border-dim);border-radius:var(--r-md);padding:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);text-align:center">.grid-3 col 2</div>
+        <div style="background:var(--bg-elevated);border:1px dashed var(--border-dim);border-radius:var(--r-md);padding:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);text-align:center">.grid-3 col 3</div>
+      </div>
+
+      <p class="kit-label">4 колонки (stat cards)</p>
+      <div class="grid-4">
+        <div class="stat-card"><div class="stat-label">Rise</div><div class="stat-value">6<span class="stat-unit">нс</span></div></div>
+        <div class="stat-card"><div class="stat-label">Fall</div><div class="stat-value">8<span class="stat-unit">нс</span></div></div>
+        <div class="stat-card"><div class="stat-label">Freq</div><div class="stat-value">72<span class="stat-unit">М</span></div></div>
+        <div class="stat-card"><div class="stat-label">SR</div><div class="stat-value">50<span class="stat-unit">В/нс</span></div></div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div style="border-top:1px solid var(--border-dim);padding-top:32px;margin-top:40px">
+      <p style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.14em">
+        // Конспект · Embedded Systems Notes · UI Kit v1.0
+      </p>
+    </div>
+
+  </main>
 </div>
 
 <script>
-window.addEventListener('DOMContentLoaded', function () {
-
-  // ─────────────────────────────────────────────
-  //  WAVEFORM CANVAS
-  // ─────────────────────────────────────────────
-  var wc   = document.getElementById('waveCanvas');
-  var wctx = wc.getContext('2d');
-  var animId = null;
-  var playing = true;
-  var t = 0;
-
-  function resizeWave() {
-    var w = Math.max(200, wc.parentElement.clientWidth - 40);
-    wc.width = w;
-    return w;
-  }
-
-  function getSlope() { return parseInt(document.getElementById('slopeSlider').value, 10); }
-
-  // Logistic sigmoid edge
-  function edge(phase, slope) {
-    var k = 20 / slope;
-    return 1 / (1 + Math.exp(-k * (phase - 0.5)));
-  }
-
-  // CLK signal: square wave with soft edges
-  function clk(x, period, slope) {
-    var p = ((x % period) + period) % period / period;
-    if (p < 0.03)        return edge(p / 0.03, slope);
-    if (p < 0.5)         return 1;
-    if (p < 0.53)        return 1 - edge((p - 0.5) / 0.03, slope);
-    return 0;
-  }
-
-  // DATA: half-frequency, shifted
-  function data(x, period, slope) {
-    var off = period * 0.3;
-    var p2  = period * 2;
-    var p   = ((x + off) % p2 + p2) % p2 / p2;
-    if (p < 0.03)        return edge(p / 0.03, slope);
-    if (p < 0.5)         return 1;
-    if (p < 0.53)        return 1 - edge((p - 0.5) / 0.03, slope);
-    return 0;
-  }
-
-  // TRIGGER: different frequency
-  function trig(x, period, slope) {
-    var p3 = period * 1.7;
-    var p  = ((x * 0.59) % p3 + p3) % p3 / p3;
-    if (p < 0.03)        return edge(p / 0.03, slope * 1.5);
-    if (p < 0.38)        return 1;
-    if (p < 0.41)        return 1 - edge((p - 0.38) / 0.03, slope * 1.5);
-    return 0;
-  }
-
-  var SIGS = [
-    { name: 'CLK',     color: '#a78bfa', fn: clk  },
-    { name: 'DATA',    color: '#00e5ff', fn: data },
-    { name: 'TRIGGER', color: '#ff4d6d', fn: trig },
-  ];
-
-  function drawWave() {
-    var W     = wc.width;
-    var H     = wc.height;
-    var slope = getSlope();
-    var per   = 120;
-    var rowH  = H / SIGS.length;
-
-    wctx.clearRect(0, 0, W, H);
-
-    // Grid
-    wctx.strokeStyle = 'rgba(30,45,69,.5)';
-    wctx.lineWidth = 1;
-    for (var gx = 0; gx < W; gx += 60) {
-      wctx.beginPath(); wctx.moveTo(gx, 0); wctx.lineTo(gx, H); wctx.stroke();
-    }
-    for (var i = 0; i <= SIGS.length; i++) {
-      wctx.beginPath(); wctx.moveTo(0, i * rowH); wctx.lineTo(W, i * rowH); wctx.stroke();
-    }
-
-    // Rising edge guides (CLK only)
-    wctx.setLineDash([3, 4]);
-    wctx.strokeStyle = 'rgba(0,229,255,.2)';
-    wctx.lineWidth = 1;
-    for (var px = 2; px < W; px++) {
-      var v0 = clk(px - 1 + t, per, slope);
-      var v1 = clk(px     + t, per, slope);
-      if (v1 - v0 > 0.1) {
-        wctx.beginPath(); wctx.moveTo(px, 0); wctx.lineTo(px, H); wctx.stroke();
-      }
-    }
-    wctx.setLineDash([]);
-
-    // Draw each signal
-    SIGS.forEach(function (sig, idx) {
-      var yBot = (idx + 1) * rowH - 8;
-      var yTop = idx * rowH + 8;
-      var amp  = yBot - yTop;
-
-      wctx.strokeStyle = sig.color;
-      wctx.lineWidth   = 2;
-      wctx.shadowColor = sig.color;
-      wctx.shadowBlur  = 5;
-      wctx.beginPath();
-      for (var px2 = 0; px2 <= W; px2++) {
-        var v = sig.fn(px2 + t, per, slope);
-        var y = yBot - v * amp;
-        px2 === 0 ? wctx.moveTo(px2, y) : wctx.lineTo(px2, y);
-      }
-      wctx.stroke();
-      wctx.shadowBlur = 0;
-
-      // Label
-      wctx.fillStyle = sig.color;
-      wctx.font = '10px JetBrains Mono';
-      wctx.fillText(sig.name, 6, yTop + 14);
-    });
-  }
-
-  function loop() {
-    if (!playing) return;
-    resizeWave();
-    drawWave();
-    t += 1.2;
-    animId = requestAnimationFrame(loop);
-  }
-
-  // Button controls
-  document.getElementById('btnPlay').addEventListener('click', function () {
-    if (!playing) { playing = true; loop(); }
-    document.getElementById('btnPlay').classList.add('active');
-    document.getElementById('btnPause').classList.remove('active');
+function toggleAccordion(btn) {
+  const body = btn.nextElementSibling;
+  const isOpen = btn.classList.contains('open');
+  document.querySelectorAll('.accordion-trigger.open').forEach(b => {
+    b.classList.remove('open');
+    b.nextElementSibling.classList.remove('open');
   });
-  document.getElementById('btnPause').addEventListener('click', function () {
-    playing = false;
-    cancelAnimationFrame(animId);
-    document.getElementById('btnPause').classList.add('active');
-    document.getElementById('btnPlay').classList.remove('active');
-  });
-  document.getElementById('btnReset').addEventListener('click', function () {
-    t = 0;
-    if (!playing) { resizeWave(); drawWave(); }
-  });
-  document.getElementById('slopeSlider').addEventListener('input', function () {
-    document.getElementById('slopeVal').textContent = this.value + ' нс';
-  });
-
-  // Tooltip
-  var tooltip = document.getElementById('tooltip');
-  wc.addEventListener('mousemove', function (e) {
-    var rect  = wc.getBoundingClientRect();
-    var scaleX = wc.width  / rect.width;
-    var scaleY = wc.height / rect.height;
-    var mx = (e.clientX - rect.left) * scaleX;
-    var my = (e.clientY - rect.top)  * scaleY;
-    var rowH = wc.height / SIGS.length;
-    var idx  = Math.max(0, Math.min(SIGS.length - 1, Math.floor(my / rowH)));
-    var sig  = SIGS[idx];
-    var v    = sig.fn(mx + t, 120, getSlope());
-    var lvl  = v > 0.5 ? 'HIGH (1)' : 'LOW (0)';
-    var tns  = Math.round(mx / wc.width * 5000);
-    tooltip.innerHTML = '<strong style="color:' + sig.color + '">' + sig.name + '</strong><br>Рівень: ' + lvl + '<br>Час: ~' + tns + ' нс';
-    tooltip.style.left    = (e.clientX + 14) + 'px';
-    tooltip.style.top     = (e.clientY - 10) + 'px';
-    tooltip.style.opacity = '1';
-  });
-  wc.addEventListener('mouseleave', function () { tooltip.style.opacity = '0'; });
-
-  // Start
-  resizeWave();
-  loop();
-
-  // ─────────────────────────────────────────────
-  //  TIMING DIAGRAM
-  // ─────────────────────────────────────────────
-  var tc   = document.getElementById('timingCanvas');
-  var tctx = tc.getContext('2d');
-
-  function drawTiming() {
-    var W = Math.max(200, tc.parentElement.clientWidth - 40);
-    tc.width = W;
-    var H   = tc.height;
-    tctx.clearRect(0, 0, W, H);
-
-    // Grid
-    tctx.strokeStyle = 'rgba(30,45,69,.4)';
-    tctx.lineWidth = 1;
-    for (var gx = 0; gx < W; gx += 40) {
-      tctx.beginPath(); tctx.moveTo(gx, 0); tctx.lineTo(gx, H); tctx.stroke();
-    }
-
-    var yH  = H * 0.08;
-    var yL  = H * 0.88;
-    var y90 = yL - (yL - yH) * 0.9;
-    var y10 = yL - (yL - yH) * 0.1;
-
-    var x0  = W * 0.10;
-    var xR1 = W * 0.22;
-    var xR2 = W * 0.38;
-    var xF1 = W * 0.58;
-    var xF2 = W * 0.74;
-    var x1  = W * 0.93;
-
-    // Waveform curve
-    tctx.strokeStyle = '#00e5ff';
-    tctx.lineWidth   = 2.5;
-    tctx.shadowColor = '#00e5ff';
-    tctx.shadowBlur  = 7;
-    tctx.beginPath();
-    tctx.moveTo(x0, yL);
-    tctx.lineTo(xR1, yL);
-    tctx.bezierCurveTo(xR1 + (xR2-xR1)*0.3, yL, xR2 - (xR2-xR1)*0.3, yH, xR2, yH);
-    tctx.lineTo(xF1, yH);
-    tctx.bezierCurveTo(xF1 + (xF2-xF1)*0.3, yH, xF2 - (xF2-xF1)*0.3, yL, xF2, yL);
-    tctx.lineTo(x1, yL);
-    tctx.stroke();
-    tctx.shadowBlur = 0;
-
-    // Dashed horizontal lines
-    function hline(y, color, lbl) {
-      tctx.setLineDash([4, 4]);
-      tctx.strokeStyle = color;
-      tctx.lineWidth = 1;
-      tctx.beginPath(); tctx.moveTo(x0, y); tctx.lineTo(x1, y); tctx.stroke();
-      tctx.setLineDash([]);
-      tctx.fillStyle = color;
-      tctx.font = '10px JetBrains Mono';
-      tctx.fillText(lbl, 4, y + 4);
-    }
-    hline(y90, 'rgba(0,229,255,.5)', '90%');
-    hline(y10, 'rgba(0,229,255,.5)', '10%');
-    hline(yH,  'rgba(100,116,139,.4)', 'HIGH');
-    hline(yL,  'rgba(100,116,139,.4)', 'LOW');
-
-    // Annotated arrows
-    function arrowH(xa, xb, y, color, lbl) {
-      tctx.strokeStyle = color;
-      tctx.fillStyle   = color;
-      tctx.lineWidth   = 1.5;
-      tctx.beginPath(); tctx.moveTo(xa, y); tctx.lineTo(xb, y); tctx.stroke();
-      // arrowheads
-      tctx.beginPath(); tctx.moveTo(xa,y); tctx.lineTo(xa+6,y-4); tctx.lineTo(xa+6,y+4); tctx.closePath(); tctx.fill();
-      tctx.beginPath(); tctx.moveTo(xb,y); tctx.lineTo(xb-6,y-4); tctx.lineTo(xb-6,y+4); tctx.closePath(); tctx.fill();
-      tctx.font = 'bold 11px JetBrains Mono';
-      tctx.fillText(lbl, (xa+xb)/2 - 7, y - 6);
-    }
-    arrowH(xR1 + (xR2-xR1)*0.12, xR1 + (xR2-xR1)*0.88, y90 - 22, '#22c55e', 'tᵣ');
-    arrowH(xF1 + (xF2-xF1)*0.12, xF1 + (xF2-xF1)*0.88, y10 - 22, '#ff4d6d', 'tᶠ');
-
-    // Voltage labels
-    tctx.fillStyle = '#64748b';
-    tctx.font = '10px JetBrains Mono';
-    tctx.fillText('3.3V', W - 38, yH + 12);
-    tctx.fillText('0V',   W - 28, yL + 12);
+  if (!isOpen) {
+    btn.classList.add('open');
+    body.classList.add('open');
   }
+}
 
-  drawTiming();
-
-  // ─────────────────────────────────────────────
-  //  QUIZ ACCORDION
-  // ─────────────────────────────────────────────
-  var QA = [
-    {
-      cat: 'Базові поняття', color: '#00e5ff', icon: '⚡',
-      q: 'Чим відрізняється наростаючий фронт від спадаючого? Як їх правильно виміряти?',
-      a: 'Наростаючий фронт (Rising Edge) — перехід LOW→HIGH, спадаючий (Falling Edge) — HIGH→LOW.<br><br>Вимірюють між рівнями <strong>10% і 90% від Vcc</strong>:<br>• <strong>tᵣ</strong> = час від 10% до 90% Vcc<br>• <strong>tᶠ</strong> = час від 90% до 10% Vcc<br><br>Чому не від 0 до 100%? Краї сигналу асимптотично наближаються до рівня — їх важко точно зафіксувати. Діапазон 10–90% є промисловим стандартом IEEE.'
-    },
-    {
-      cat: 'Push-Pull vs Open-Drain', color: '#a78bfa', icon: '🔌',
-      q: 'Чому у I²C фронти повільніші, ніж у SPI? Як це пов\'язано з типом виходу GPIO?',
-      a: 'I²C використовує <strong>open-drain</strong>: лінія може лише активно тягтися до GND (спадаючий фронт). Підйом відбувається пасивно через pull-up резистор за законом RC-заряду: τ = R·C.<br><br>Типово 4.7 кОм × 10 пФ = 47 нс. При більших ємностях шини фронти ще повільніші, звідси обмеження I²C ~3.4 МГц.<br><br>SPI — <strong>push-pull</strong>: обидва напрямки активні. Транзистори заряджають/розряджають лінію агресивно → фронти в 10–50 разів крутіші → SPI легко досягає 40+ МГц.'
-    },
-    {
-      cat: 'Реєстри STM32', color: '#f59e0b', icon: '🔧',
-      q: 'Які регістри STM32 керують швидкістю фронту GPIO? Що буде, якщо поставити VERY_HIGH на I²C?',
-      a: 'Регістр <code>GPIOx_OSPEEDR</code> задає slew rate: <code>00</code>=LOW (~2 МГц), <code>01</code>=MEDIUM (~25 МГц), <code>10</code>=HIGH (~50 МГц), <code>11</code>=VERY_HIGH (~100 МГц).<br><br><strong>На I²C нічого не зміниться</strong> — шина open-drain! Pull-up резистор все одно обмежує наростання. Натомість на SPI або GPIO VERY_HIGH збільшить EMI-шум: крутий фронт = широкий спектр гармонік.<br><br>Правило: використовуй мінімальну швидкість, яка задовольняє вимоги протоколу.'
-    },
-    {
-      cat: 'Setup & Hold Time', color: '#22c55e', icon: '⏱',
-      q: 'Що таке Setup Time і Hold Time? Що трапиться при їх порушенні?',
-      a: 'Вимоги до стабільності даних відносно активного фронту CLK у синхронних схемах:<br><br>• <strong>Setup Time (tsu)</strong> — дані мають бути стабільними мінімум за tsu <em>до</em> фронту CLK.<br>• <strong>Hold Time (th)</strong> — дані мають залишатися стабільними мінімум th <em>після</em> фронту CLK.<br><br>Порушення будь-якого з них призводить до <strong>metastability</strong> — вихід flip-flop зависає між 0 і 1 на непередбачуваний час. На практиці: рандомні збої, які майже неможливо відтворити — найнеприємніший тип багу в embedded.'
-    },
-    {
-      cat: 'Дебаунс кнопки', color: '#ff4d6d', icon: '🎯',
-      q: 'Чому при натисканні кнопки виникає багато фронтів замість одного? Як усунути дребезг?',
-      a: 'Механічні контакти при замиканні <strong>відбиваються</strong> (bouncing) — фізично розмикаються та замикаються 5–50 разів протягом 5–20 мс. MCU фіксує кожен перехід як окремий фронт.<br><br><strong>Апаратно:</strong> RC-фільтр (10 кОм + 100 нФ) + тригер Шмітта — фронти згладжуються, перехід відбувається один раз.<br><br><strong>Програмно:</strong> у ISR запустити таймер на 20 мс; якщо стан стабільний — натискання дійсне. Або <code>HAL_Delay(20)</code> після першої зміни стану.<br><br>На ESP32 + FreeRTOS: з ISR відправити подію в чергу, таск обробляє з debounce-логікою без блокування потоку.'
-    },
-    {
-      cat: 'EMI та Ringing', color: '#a78bfa', icon: '📡',
-      q: 'Чому надто крутий фронт — це проблема? Що таке ringing і як його усунути?',
-      a: 'Крутий фронт містить <strong>широкий спектр гармонік</strong> (ряд Фур\'є) → більше ЕМ-випромінювання та crosstalk між сусідніми доріжками.<br><br><strong>Ringing</strong> — загасаючі коливання після фронту, спричинені LC-резонансом між індуктивністю доріжки та паразитною ємністю. Виглядає як "хвилі" після фронту на осцилографі. Може спричинити подвійне спрацювання EXTI.<br><br><strong>Рішення:</strong> зменшити slew rate (OSPEEDR); послідовний резистор 22–100 Ом на виході GPIO (série damping) гасить коливання; коротші доріжки та суцільний ground plane.'
-    },
-    {
-      cat: 'Тактування STM32', color: '#00e5ff', icon: '🔄',
-      q: 'Поясніть шлях тактового сигналу від кварцу до GPIO на STM32F4. Де генеруються фронти?',
-      a: 'Ланцюг: <strong>HSE (кварц 8–25 МГц)</strong> → <strong>PLL</strong> (множення до 168 МГц) → <strong>SYSCLK</strong> → шини <strong>AHB → APB1/APB2</strong> → периферія.<br><br>GPIO тактується від AHB1 (до 168 МГц). Таймери на APB1 отримують половину AHB, але якщо APBx prescaler ≠ 1 — вони автоматично подвоюють свою частоту.<br><br>Основний генератор фронтів — <strong>PLL всередині МК</strong>. Кварц лише задає точну базову частоту. Без кварцу HSI (RC) має похибку ~1%, що критично для UART (допустимо < 2%).'
-    },
-    {
-      cat: 'SPI CPOL / CPHA', color: '#f59e0b', icon: '🔁',
-      q: 'Що таке CPOL і CPHA? По якому фронту відбувається захоплення даних у SPI Mode 0?',
-      a: '<strong>CPOL</strong> — рівень CLK у спокої: CPOL=0 → CLK LOW, CPOL=1 → CLK HIGH.<br><br><strong>CPHA</strong> — по якому фронту захоплюються дані: CPHA=0 → перший фронт, CPHA=1 → другий фронт.<br><br><strong>SPI Mode 0</strong> (CPOL=0, CPHA=0): CLK у спокої LOW, дані захоплюються по <em>наростаючому</em> фронту, змінюються по спадаючому. Найпоширеніший режим (BME280, MPU-6050, W25Qxx).<br><br>Типова пастка на співбесіді: "перший фронт" ≠ "наростаючий". При CPOL=1 перший фронт — спадаючий.'
-    },
-    {
-      cat: 'Debug: UART', color: '#22c55e', icon: '💡',
-      q: 'На осцилографі UART TX іноді пропускає старт-біт. Які можливі причини?',
-      a: 'Старт-біт UART — завжди <strong>спадаючий фронт</strong> (HIGH→LOW). Якщо він не розпізнається приймачем, причини:<br><br>• <strong>Baud Rate розбіжність > 2–3%</strong>: при HSI без кварцу або неправильному дільнику. Перевір: <code>USART_BRR</code> = PCLK / BaudRate.<br>• <strong>Повільний фронт</strong>: велика ємність лінії (довгий кабель) розтягує спадаючий фронт — приймач не розпізнає його як старт-біт до вибірки середини першого біт-інтервалу.<br>• <strong>Шум</strong>: спайк імітує старт-біт → фреймінг-помилка → наступний справжній старт-біт ігнорується.<br><br>Рішення: перевір тактування, додай 100 нФ між TX і GND, зменш Baud Rate або перейди на RS-485.'
-    },
-  ];
-
-  var quizArea = document.getElementById('quiz-area');
-
-  QA.forEach(function (item) {
-    var wrap = document.createElement('div');
-    wrap.className = 'quiz-item';
-
-    var hdr = document.createElement('div');
-    hdr.className = 'quiz-header';
-    hdr.innerHTML =
-      '<span style="font-size:18px;flex-shrink:0">' + item.icon + '</span>' +
-      '<div style="flex:1;min-width:0">' +
-        '<div class="quiz-cat" style="color:' + item.color + '">' + item.cat + '</div>' +
-        '<div class="quiz-q">' + item.q + '</div>' +
-      '</div>' +
-      '<span class="quiz-arrow">▾</span>';
-
-    var body = document.createElement('div');
-    body.className = 'quiz-body';
-    body.innerHTML = '<div class="quiz-inner">' + item.a + '</div>';
-
-    var open = false;
-    hdr.addEventListener('click', function () {
-      open = !open;
-      body.classList.toggle('open', open);
-      hdr.classList.toggle('open', open);
-      hdr.querySelector('.quiz-arrow').classList.toggle('open', open);
-    });
-
-    wrap.appendChild(hdr);
-    wrap.appendChild(body);
-    quizArea.appendChild(wrap);
+document.querySelectorAll('.code-block-copy').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const code = this.closest('.code-block').querySelector('.code-block-body').innerText;
+    navigator.clipboard.writeText(code).catch(() => {});
+    const orig = this.textContent;
+    this.textContent = 'copied!';
+    this.style.color = 'var(--accent)';
+    setTimeout(() => { this.textContent = orig; this.style.color = ''; }, 1500);
   });
+});
 
-  // Resize handler
-  window.addEventListener('resize', function () {
-    drawTiming();
-    if (!playing) { resizeWave(); drawWave(); }
+document.querySelectorAll('.kit-nav-link').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const id = this.getAttribute('href').slice(1);
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelectorAll('.kit-nav-link').forEach(l => l.classList.remove('active'));
+    this.classList.add('active');
   });
-
-}); // end DOMContentLoaded
+});
 </script>
 </body>
 </html>
