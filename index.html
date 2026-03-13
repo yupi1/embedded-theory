@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Фронт сигналу — Конспект</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Unbounded:wght@300;600;900&display=swap');
+
+  :root {
+    --bg:     #0a0e17;
+    --card:   #131c2e;
+    --border: #1e2d45;
+    --rise:   #00e5ff;
+    --fall:   #ff4d6d;
+    --clk:    #a78bfa;
+    --text:   #e2e8f0;
+    --muted:  #64748b;
+    --accent: #f59e0b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  header { text-align: center; margin-bottom: 60px; }
+  .header-label { font-size: 11px; letter-spacing: 4px; color: var(--rise); text-transform: uppercase; margin-bottom: 12px; }
+  header h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: clamp(28px, 5vw, 52px); font-weight: 900; line-height: 1.1;
+    background: linear-gradient(135deg, var(--rise) 0%, var(--clk) 50%, var(--fall) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+  }
+  header p { color: var(--muted); font-size: 13px; line-height: 1.7; max-width: 560px; margin: 0 auto; }
+
+  .section { margin-bottom: 48px; }
+  .section-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+  .card-title { font-family: 'Unbounded', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+  .rise-color { color: var(--rise); }
+  .fall-color { color: var(--fall); }
+  .clk-color  { color: var(--clk);  }
+  .card p { font-size: 13px; line-height: 1.8; }
+  .card ul { list-style: none; margin-top: 10px; }
+  .card ul li { font-size: 13px; line-height: 1.9; padding-left: 16px; position: relative; }
+  .card ul li::before { content: '▸'; position: absolute; left: 0; color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; padding: 10px 14px; background: rgba(255,255,255,.04); color: var(--muted); font-weight: 400; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(30,45,69,.6); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+  .tag-rise { background: rgba(0,229,255,.12);   color: var(--rise); }
+  .tag-fall { background: rgba(255,77,109,.12);  color: var(--fall); }
+  .tag-both { background: rgba(167,139,250,.12); color: var(--clk);  }
+
+  .canvas-wrap { background: #080c14; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; position: relative; }
+  .canvas-wrap canvas { display: block; width: 100%; }
+  .canvas-label { position: absolute; top: 12px; left: 16px; font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+
+  .controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+  .btn { background: transparent; border: 1px solid var(--border); color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all .2s; }
+  .btn:hover { border-color: var(--rise); color: var(--rise); }
+  .btn.active { border-color: var(--rise); background: rgba(0,229,255,.08); color: var(--rise); }
+  .slider-wrap { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
+  input[type=range] { -webkit-appearance: none; width: 120px; height: 4px; background: var(--border); border-radius: 2px; outline: none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--rise); cursor: pointer; }
+
+  .pills { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .pill { padding: 6px 14px; border-radius: 20px; font-size: 12px; border: 1px solid; }
+  .pill-rise { border-color: var(--rise); color: var(--rise); background: rgba(0,229,255,.06); }
+  .pill-fall { border-color: var(--fall); color: var(--fall); background: rgba(255,77,109,.06); }
+  .pill-clk  { border-color: var(--clk);  color: var(--clk);  background: rgba(167,139,250,.06); }
+
+  .highlight { border-left: 3px solid var(--accent); background: rgba(245,158,11,.05); padding: 14px 18px; border-radius: 0 8px 8px 0; font-size: 13px; line-height: 1.8; margin-top: 12px; }
+  .highlight strong { color: var(--accent); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:600px){ .grid2 { grid-template-columns: 1fr; } }
+
+  #tooltip { position: fixed; background: #1e2d45; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 100; max-width: 220px; line-height: 1.6; }
+
+  .quiz-item { margin-bottom: 10px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+  .quiz-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: var(--card); cursor: pointer; user-select: none; transition: background .2s; }
+  .quiz-header:hover { background: #161f33; }
+  .quiz-header.open { background: #0d1a2d; }
+  .quiz-cat { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; font-family: 'Unbounded', sans-serif; }
+  .quiz-q { font-size: 13px; line-height: 1.6; color: var(--text); }
+  .quiz-arrow { color: var(--muted); font-size: 16px; transition: transform .3s; flex-shrink: 0; margin-left: auto; }
+  .quiz-arrow.open { transform: rotate(180deg); }
+  .quiz-body { max-height: 0; overflow: hidden; transition: max-height .45s cubic-bezier(.4,0,.2,1); background: #0d1520; }
+  .quiz-body.open { max-height: 700px; }
+  .quiz-inner { padding: 20px 24px; font-size: 13px; line-height: 1.9; border-top: 1px solid var(--border); color: var(--text); }
+
+  code { background: rgba(255,255,255,.06); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--rise); }
+
+  footer { text-align: center; margin-top: 60px; font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<div id="tooltip"></div>
+
+<div class="wrapper">
+
+  <header>
+    <div class="header-label">// Конспект · Embedded Systems</div>
+    <h1>Фронт сигналу</h1>
+    <p>Наростаючий та спадаючий фронт, хто їх генерує, таймінги — інтерактивний довідник для STM32 / ESP32 розробника.</p>
+  </header>
+
+  <!-- 01 -->
+  <div class="section">
+    <div class="section-title">01 — Визначення</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title rise-color">⬆ Наростаючий фронт (Rising Edge)</div>
+        <p>Перехід сигналу зі стану <strong>LOW → HIGH</strong>. Напруга зростає від 0 до Vcc.</p>
+        <div class="pills">
+          <span class="pill pill-rise">↑ 0 → Vcc</span>
+          <span class="pill pill-rise">POSEDGE</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title fall-color">⬇ Спадаючий фронт (Falling Edge)</div>
+        <p>Перехід сигналу зі стану <strong>HIGH → LOW</strong>. Напруга падає від Vcc до 0.</p>
+        <div class="pills">
+          <span class="pill pill-fall">↓ Vcc → 0</span>
+          <span class="pill pill-fall">NEGEDGE</span>
+        </div>
+      </div>
+    </div>
+    <div class="highlight">
+      <strong>Ключова ідея:</strong> реальний фронт — не миттєвий стрибок, а перехідний процес. Його крутизна (slew rate) = <strong>dV/dt [В/нс]</strong>. Занадто повільний → помилкові спрацювання; занадто швидкий → EMI та відбиття.
+    </div>
+  </div>
+
+  <!-- 02 -->
+  <div class="section">
+    <div class="section-title">02 — Інтерактивна анімація</div>
+    <div class="controls">
+      <button class="btn active" id="btnPlay">▶ Старт</button>
+      <button class="btn" id="btnPause">⏸ Пауза</button>
+      <button class="btn" id="btnReset">↺ Скинути</button>
+      <div class="slider-wrap">
+        <span>Slew Rate:</span>
+        <input type="range" id="slopeSlider" min="1" max="20" value="6">
+        <span id="slopeVal">6 нс</span>
+      </div>
+    </div>
+    <div class="canvas-wrap">
+      <div class="canvas-label">WAVEFORM VIEWER</div>
+      <canvas id="waveCanvas" height="260"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title clk-color">📊 Легенда осцилограми</div>
+      <ul>
+        <li><span style="color:var(--clk)">CLK</span> — тактовий сигнал, генерується PLL/OSC мікроконтролера</li>
+        <li><span style="color:var(--rise)">DATA</span> — сигнал даних, змінюється відносно фронтів CLK</li>
+        <li><span style="color:var(--fall)">TRIGGER</span> — переривання/тригер, спрацьовує по фронту</li>
+      </ul>
+      <div class="highlight">
+        <strong>Підказка:</strong> наведіть курсор на хвилю — побачите рівень і час. Слайдер змінює крутизну фронту в реальному часі.
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 -->
+  <div class="section">
+    <div class="section-title">03 — Джерела фронтів</div>
+    <div class="card">
+      <div class="card-title clk-color">🔧 Тактовий генератор (HSE / HSI / PLL)</div>
+      <p>Головний генератор фронтів — кварцовий резонатор або RC-осцилятор всередині МК.</p>
+      <ul>
+        <li><strong>HSI</strong> — внутрішній RC, ±1% точність, ~8/16 МГц</li>
+        <li><strong>HSE</strong> — зовнішній кварц, ±20 ppm точність, до 25 МГц</li>
+        <li><strong>PLL</strong> — множник частоти: HSE 8 МГц × 9 = 72 МГц (STM32F1)</li>
+        <li><strong>ESP32</strong> — вбудований XTAL 40 МГц + PLL до 240 МГц</li>
+      </ul>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title rise-color">GPIO Push-Pull</div>
+        <p>Обидва напрямки активні. P-МОП тягне до Vcc (RISING), N-МОП — до GND (FALLING). Фронти круті та симетричні.</p>
+      </div>
+      <div class="card">
+        <div class="card-title fall-color">GPIO Open-Drain</div>
+        <p>Лише спадаючий фронт активний. RISING — пасивно через pull-up резистор. Повільніше, залежить від R·C.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚡ Периферія: таймери, UART, SPI, I²C</div>
+      <ul>
+        <li><strong>Timer PWM</strong> — фронти генеруються апаратно по рахунку ARR/CCR</li>
+        <li><strong>UART TX</strong> — старт-біт це завжди спадаючий фронт (HIGH→LOW)</li>
+        <li><strong>SPI CPOL=0</strong> — CLK у спокої LOW, перший фронт — наростаючий</li>
+        <li><strong>I²C</strong> — open-drain SCL та SDA, фронти формуються pull-up 4.7 кОм</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 04 -->
+  <div class="section">
+    <div class="section-title">04 — Таймінги та параметри</div>
+    <div class="canvas-wrap">
+      <div class="canvas-label">TIMING DIAGRAM</div>
+      <canvas id="timingCanvas" height="200"></canvas>
+    </div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Параметр</th><th>Позначення</th><th>Опис</th><th>Тип фронту</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Rise Time</strong></td><td style="color:var(--rise)">tᵣ</td><td>10% → 90% Vcc</td><td><span class="tag tag-rise">RISING</span></td></tr>
+          <tr><td><strong>Fall Time</strong></td><td style="color:var(--fall)">tᶠ</td><td>90% → 10% Vcc</td><td><span class="tag tag-fall">FALLING</span></td></tr>
+          <tr><td><strong>Propagation Delay</strong></td><td style="color:var(--clk)">tₚd</td><td>Затримка від CLK до зміни виходу</td><td><span class="tag tag-both">ОБИДВА</span></td></tr>
+          <tr><td><strong>Setup Time</strong></td><td style="color:var(--accent)">tsu</td><td>Стабільність даних ДО фронту CLK</td><td><span class="tag tag-rise">RISING</span></td></tr>
+          <tr><td><strong>Hold Time</strong></td><td style="color:var(--accent)">th</td><td>Стабільність даних ПІСЛЯ фронту CLK</td><td><span class="tag tag-rise">RISING</span></td></tr>
+          <tr><td><strong>Slew Rate</strong></td><td style="color:var(--muted)">SR</td><td>dV/dt [В/нс]</td><td><span class="tag tag-both">ОБИДВА</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="highlight">
+      <strong>STM32 GPIO Speed:</strong> регістр <code>GPIOx_OSPEEDR</code> керує slew rate. LOW~2 МГц, MEDIUM~25 МГц, HIGH~50 МГц, VERY_HIGH~100 МГц.
+    </div>
+  </div>
+
+  <!-- 05 -->
+  <div class="section">
+    <div class="section-title">05 — EXTI: переривання по фронту</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title rise-color">STM32 — EXTI</div>
+        <ul>
+          <li>EXTI лінії 0–15 відповідають пінам GPIO</li>
+          <li><code>EXTI_RTSR</code> — Rising Trigger Select</li>
+          <li><code>EXTI_FTSR</code> — Falling Trigger Select</li>
+          <li>Можна вмикати обидва (BOTH)</li>
+          <li>HAL: <code>GPIO_MODE_IT_RISING</code></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title rise-color">ESP32 — GPIO ISR</div>
+        <ul>
+          <li><code>gpio_set_intr_type(pin, GPIO_INTR_POSEDGE)</code></li>
+          <li><code>GPIO_INTR_NEGEDGE</code> — спадаючий фронт</li>
+          <li><code>GPIO_INTR_ANYEDGE</code> — будь-який фронт</li>
+          <li>ISR: <code>gpio_isr_handler_add()</code></li>
+          <li>Дебаунс: SW фільтр або RC + компаратор</li>
+        </ul>
+      </div>
+    </div>
+    <div class="highlight">
+      <strong>Важливо:</strong> при <code>ANYEDGE</code> переривання спрацьовує двічі на період. Корисно для duty cycle або квадратурного енкодера.
+    </div>
+  </div>
+
+  <!-- 06 -->
+  <div class="section">
+    <div class="section-title">06 — Питання на співбесіді</div>
+    <div class="highlight" style="margin-top:0; margin-bottom:16px">
+      <strong>Порада:</strong> натисни на питання — розгорнеться еталонна відповідь. Спочатку спробуй відповісти самостійно.
+    </div>
+    <div id="quiz-area"></div>
+  </div>
+
+  <footer>ФРОНТ СИГНАЛУ · Embedded Systems Notes · STM32 / ESP32</footer>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+
+  // ─────────────────────────────────────────────
+  //  WAVEFORM CANVAS
+  // ─────────────────────────────────────────────
+  var wc   = document.getElementById('waveCanvas');
+  var wctx = wc.getContext('2d');
+  var animId = null;
+  var playing = true;
+  var t = 0;
+
+  function resizeWave() {
+    var w = Math.max(200, wc.parentElement.clientWidth - 40);
+    wc.width = w;
+    return w;
+  }
+
+  function getSlope() { return parseInt(document.getElementById('slopeSlider').value, 10); }
+
+  // Logistic sigmoid edge
+  function edge(phase, slope) {
+    var k = 20 / slope;
+    return 1 / (1 + Math.exp(-k * (phase - 0.5)));
+  }
+
+  // CLK signal: square wave with soft edges
+  function clk(x, period, slope) {
+    var p = ((x % period) + period) % period / period;
+    if (p < 0.03)        return edge(p / 0.03, slope);
+    if (p < 0.5)         return 1;
+    if (p < 0.53)        return 1 - edge((p - 0.5) / 0.03, slope);
+    return 0;
+  }
+
+  // DATA: half-frequency, shifted
+  function data(x, period, slope) {
+    var off = period * 0.3;
+    var p2  = period * 2;
+    var p   = ((x + off) % p2 + p2) % p2 / p2;
+    if (p < 0.03)        return edge(p / 0.03, slope);
+    if (p < 0.5)         return 1;
+    if (p < 0.53)        return 1 - edge((p - 0.5) / 0.03, slope);
+    return 0;
+  }
+
+  // TRIGGER: different frequency
+  function trig(x, period, slope) {
+    var p3 = period * 1.7;
+    var p  = ((x * 0.59) % p3 + p3) % p3 / p3;
+    if (p < 0.03)        return edge(p / 0.03, slope * 1.5);
+    if (p < 0.38)        return 1;
+    if (p < 0.41)        return 1 - edge((p - 0.38) / 0.03, slope * 1.5);
+    return 0;
+  }
+
+  var SIGS = [
+    { name: 'CLK',     color: '#a78bfa', fn: clk  },
+    { name: 'DATA',    color: '#00e5ff', fn: data },
+    { name: 'TRIGGER', color: '#ff4d6d', fn: trig },
+  ];
+
+  function drawWave() {
+    var W     = wc.width;
+    var H     = wc.height;
+    var slope = getSlope();
+    var per   = 120;
+    var rowH  = H / SIGS.length;
+
+    wctx.clearRect(0, 0, W, H);
+
+    // Grid
+    wctx.strokeStyle = 'rgba(30,45,69,.5)';
+    wctx.lineWidth = 1;
+    for (var gx = 0; gx < W; gx += 60) {
+      wctx.beginPath(); wctx.moveTo(gx, 0); wctx.lineTo(gx, H); wctx.stroke();
+    }
+    for (var i = 0; i <= SIGS.length; i++) {
+      wctx.beginPath(); wctx.moveTo(0, i * rowH); wctx.lineTo(W, i * rowH); wctx.stroke();
+    }
+
+    // Rising edge guides (CLK only)
+    wctx.setLineDash([3, 4]);
+    wctx.strokeStyle = 'rgba(0,229,255,.2)';
+    wctx.lineWidth = 1;
+    for (var px = 2; px < W; px++) {
+      var v0 = clk(px - 1 + t, per, slope);
+      var v1 = clk(px     + t, per, slope);
+      if (v1 - v0 > 0.1) {
+        wctx.beginPath(); wctx.moveTo(px, 0); wctx.lineTo(px, H); wctx.stroke();
+      }
+    }
+    wctx.setLineDash([]);
+
+    // Draw each signal
+    SIGS.forEach(function (sig, idx) {
+      var yBot = (idx + 1) * rowH - 8;
+      var yTop = idx * rowH + 8;
+      var amp  = yBot - yTop;
+
+      wctx.strokeStyle = sig.color;
+      wctx.lineWidth   = 2;
+      wctx.shadowColor = sig.color;
+      wctx.shadowBlur  = 5;
+      wctx.beginPath();
+      for (var px2 = 0; px2 <= W; px2++) {
+        var v = sig.fn(px2 + t, per, slope);
+        var y = yBot - v * amp;
+        px2 === 0 ? wctx.moveTo(px2, y) : wctx.lineTo(px2, y);
+      }
+      wctx.stroke();
+      wctx.shadowBlur = 0;
+
+      // Label
+      wctx.fillStyle = sig.color;
+      wctx.font = '10px JetBrains Mono';
+      wctx.fillText(sig.name, 6, yTop + 14);
+    });
+  }
+
+  function loop() {
+    if (!playing) return;
+    resizeWave();
+    drawWave();
+    t += 1.2;
+    animId = requestAnimationFrame(loop);
+  }
+
+  // Button controls
+  document.getElementById('btnPlay').addEventListener('click', function () {
+    if (!playing) { playing = true; loop(); }
+    document.getElementById('btnPlay').classList.add('active');
+    document.getElementById('btnPause').classList.remove('active');
+  });
+  document.getElementById('btnPause').addEventListener('click', function () {
+    playing = false;
+    cancelAnimationFrame(animId);
+    document.getElementById('btnPause').classList.add('active');
+    document.getElementById('btnPlay').classList.remove('active');
+  });
+  document.getElementById('btnReset').addEventListener('click', function () {
+    t = 0;
+    if (!playing) { resizeWave(); drawWave(); }
+  });
+  document.getElementById('slopeSlider').addEventListener('input', function () {
+    document.getElementById('slopeVal').textContent = this.value + ' нс';
+  });
+
+  // Tooltip
+  var tooltip = document.getElementById('tooltip');
+  wc.addEventListener('mousemove', function (e) {
+    var rect  = wc.getBoundingClientRect();
+    var scaleX = wc.width  / rect.width;
+    var scaleY = wc.height / rect.height;
+    var mx = (e.clientX - rect.left) * scaleX;
+    var my = (e.clientY - rect.top)  * scaleY;
+    var rowH = wc.height / SIGS.length;
+    var idx  = Math.max(0, Math.min(SIGS.length - 1, Math.floor(my / rowH)));
+    var sig  = SIGS[idx];
+    var v    = sig.fn(mx + t, 120, getSlope());
+    var lvl  = v > 0.5 ? 'HIGH (1)' : 'LOW (0)';
+    var tns  = Math.round(mx / wc.width * 5000);
+    tooltip.innerHTML = '<strong style="color:' + sig.color + '">' + sig.name + '</strong><br>Рівень: ' + lvl + '<br>Час: ~' + tns + ' нс';
+    tooltip.style.left    = (e.clientX + 14) + 'px';
+    tooltip.style.top     = (e.clientY - 10) + 'px';
+    tooltip.style.opacity = '1';
+  });
+  wc.addEventListener('mouseleave', function () { tooltip.style.opacity = '0'; });
+
+  // Start
+  resizeWave();
+  loop();
+
+  // ─────────────────────────────────────────────
+  //  TIMING DIAGRAM
+  // ─────────────────────────────────────────────
+  var tc   = document.getElementById('timingCanvas');
+  var tctx = tc.getContext('2d');
+
+  function drawTiming() {
+    var W = Math.max(200, tc.parentElement.clientWidth - 40);
+    tc.width = W;
+    var H   = tc.height;
+    tctx.clearRect(0, 0, W, H);
+
+    // Grid
+    tctx.strokeStyle = 'rgba(30,45,69,.4)';
+    tctx.lineWidth = 1;
+    for (var gx = 0; gx < W; gx += 40) {
+      tctx.beginPath(); tctx.moveTo(gx, 0); tctx.lineTo(gx, H); tctx.stroke();
+    }
+
+    var yH  = H * 0.08;
+    var yL  = H * 0.88;
+    var y90 = yL - (yL - yH) * 0.9;
+    var y10 = yL - (yL - yH) * 0.1;
+
+    var x0  = W * 0.10;
+    var xR1 = W * 0.22;
+    var xR2 = W * 0.38;
+    var xF1 = W * 0.58;
+    var xF2 = W * 0.74;
+    var x1  = W * 0.93;
+
+    // Waveform curve
+    tctx.strokeStyle = '#00e5ff';
+    tctx.lineWidth   = 2.5;
+    tctx.shadowColor = '#00e5ff';
+    tctx.shadowBlur  = 7;
+    tctx.beginPath();
+    tctx.moveTo(x0, yL);
+    tctx.lineTo(xR1, yL);
+    tctx.bezierCurveTo(xR1 + (xR2-xR1)*0.3, yL, xR2 - (xR2-xR1)*0.3, yH, xR2, yH);
+    tctx.lineTo(xF1, yH);
+    tctx.bezierCurveTo(xF1 + (xF2-xF1)*0.3, yH, xF2 - (xF2-xF1)*0.3, yL, xF2, yL);
+    tctx.lineTo(x1, yL);
+    tctx.stroke();
+    tctx.shadowBlur = 0;
+
+    // Dashed horizontal lines
+    function hline(y, color, lbl) {
+      tctx.setLineDash([4, 4]);
+      tctx.strokeStyle = color;
+      tctx.lineWidth = 1;
+      tctx.beginPath(); tctx.moveTo(x0, y); tctx.lineTo(x1, y); tctx.stroke();
+      tctx.setLineDash([]);
+      tctx.fillStyle = color;
+      tctx.font = '10px JetBrains Mono';
+      tctx.fillText(lbl, 4, y + 4);
+    }
+    hline(y90, 'rgba(0,229,255,.5)', '90%');
+    hline(y10, 'rgba(0,229,255,.5)', '10%');
+    hline(yH,  'rgba(100,116,139,.4)', 'HIGH');
+    hline(yL,  'rgba(100,116,139,.4)', 'LOW');
+
+    // Annotated arrows
+    function arrowH(xa, xb, y, color, lbl) {
+      tctx.strokeStyle = color;
+      tctx.fillStyle   = color;
+      tctx.lineWidth   = 1.5;
+      tctx.beginPath(); tctx.moveTo(xa, y); tctx.lineTo(xb, y); tctx.stroke();
+      // arrowheads
+      tctx.beginPath(); tctx.moveTo(xa,y); tctx.lineTo(xa+6,y-4); tctx.lineTo(xa+6,y+4); tctx.closePath(); tctx.fill();
+      tctx.beginPath(); tctx.moveTo(xb,y); tctx.lineTo(xb-6,y-4); tctx.lineTo(xb-6,y+4); tctx.closePath(); tctx.fill();
+      tctx.font = 'bold 11px JetBrains Mono';
+      tctx.fillText(lbl, (xa+xb)/2 - 7, y - 6);
+    }
+    arrowH(xR1 + (xR2-xR1)*0.12, xR1 + (xR2-xR1)*0.88, y90 - 22, '#22c55e', 'tᵣ');
+    arrowH(xF1 + (xF2-xF1)*0.12, xF1 + (xF2-xF1)*0.88, y10 - 22, '#ff4d6d', 'tᶠ');
+
+    // Voltage labels
+    tctx.fillStyle = '#64748b';
+    tctx.font = '10px JetBrains Mono';
+    tctx.fillText('3.3V', W - 38, yH + 12);
+    tctx.fillText('0V',   W - 28, yL + 12);
+  }
+
+  drawTiming();
+
+  // ─────────────────────────────────────────────
+  //  QUIZ ACCORDION
+  // ─────────────────────────────────────────────
+  var QA = [
+    {
+      cat: 'Базові поняття', color: '#00e5ff', icon: '⚡',
+      q: 'Чим відрізняється наростаючий фронт від спадаючого? Як їх правильно виміряти?',
+      a: 'Наростаючий фронт (Rising Edge) — перехід LOW→HIGH, спадаючий (Falling Edge) — HIGH→LOW.<br><br>Вимірюють між рівнями <strong>10% і 90% від Vcc</strong>:<br>• <strong>tᵣ</strong> = час від 10% до 90% Vcc<br>• <strong>tᶠ</strong> = час від 90% до 10% Vcc<br><br>Чому не від 0 до 100%? Краї сигналу асимптотично наближаються до рівня — їх важко точно зафіксувати. Діапазон 10–90% є промисловим стандартом IEEE.'
+    },
+    {
+      cat: 'Push-Pull vs Open-Drain', color: '#a78bfa', icon: '🔌',
+      q: 'Чому у I²C фронти повільніші, ніж у SPI? Як це пов\'язано з типом виходу GPIO?',
+      a: 'I²C використовує <strong>open-drain</strong>: лінія може лише активно тягтися до GND (спадаючий фронт). Підйом відбувається пасивно через pull-up резистор за законом RC-заряду: τ = R·C.<br><br>Типово 4.7 кОм × 10 пФ = 47 нс. При більших ємностях шини фронти ще повільніші, звідси обмеження I²C ~3.4 МГц.<br><br>SPI — <strong>push-pull</strong>: обидва напрямки активні. Транзистори заряджають/розряджають лінію агресивно → фронти в 10–50 разів крутіші → SPI легко досягає 40+ МГц.'
+    },
+    {
+      cat: 'Реєстри STM32', color: '#f59e0b', icon: '🔧',
+      q: 'Які регістри STM32 керують швидкістю фронту GPIO? Що буде, якщо поставити VERY_HIGH на I²C?',
+      a: 'Регістр <code>GPIOx_OSPEEDR</code> задає slew rate: <code>00</code>=LOW (~2 МГц), <code>01</code>=MEDIUM (~25 МГц), <code>10</code>=HIGH (~50 МГц), <code>11</code>=VERY_HIGH (~100 МГц).<br><br><strong>На I²C нічого не зміниться</strong> — шина open-drain! Pull-up резистор все одно обмежує наростання. Натомість на SPI або GPIO VERY_HIGH збільшить EMI-шум: крутий фронт = широкий спектр гармонік.<br><br>Правило: використовуй мінімальну швидкість, яка задовольняє вимоги протоколу.'
+    },
+    {
+      cat: 'Setup & Hold Time', color: '#22c55e', icon: '⏱',
+      q: 'Що таке Setup Time і Hold Time? Що трапиться при їх порушенні?',
+      a: 'Вимоги до стабільності даних відносно активного фронту CLK у синхронних схемах:<br><br>• <strong>Setup Time (tsu)</strong> — дані мають бути стабільними мінімум за tsu <em>до</em> фронту CLK.<br>• <strong>Hold Time (th)</strong> — дані мають залишатися стабільними мінімум th <em>після</em> фронту CLK.<br><br>Порушення будь-якого з них призводить до <strong>metastability</strong> — вихід flip-flop зависає між 0 і 1 на непередбачуваний час. На практиці: рандомні збої, які майже неможливо відтворити — найнеприємніший тип багу в embedded.'
+    },
+    {
+      cat: 'Дебаунс кнопки', color: '#ff4d6d', icon: '🎯',
+      q: 'Чому при натисканні кнопки виникає багато фронтів замість одного? Як усунути дребезг?',
+      a: 'Механічні контакти при замиканні <strong>відбиваються</strong> (bouncing) — фізично розмикаються та замикаються 5–50 разів протягом 5–20 мс. MCU фіксує кожен перехід як окремий фронт.<br><br><strong>Апаратно:</strong> RC-фільтр (10 кОм + 100 нФ) + тригер Шмітта — фронти згладжуються, перехід відбувається один раз.<br><br><strong>Програмно:</strong> у ISR запустити таймер на 20 мс; якщо стан стабільний — натискання дійсне. Або <code>HAL_Delay(20)</code> після першої зміни стану.<br><br>На ESP32 + FreeRTOS: з ISR відправити подію в чергу, таск обробляє з debounce-логікою без блокування потоку.'
+    },
+    {
+      cat: 'EMI та Ringing', color: '#a78bfa', icon: '📡',
+      q: 'Чому надто крутий фронт — це проблема? Що таке ringing і як його усунути?',
+      a: 'Крутий фронт містить <strong>широкий спектр гармонік</strong> (ряд Фур\'є) → більше ЕМ-випромінювання та crosstalk між сусідніми доріжками.<br><br><strong>Ringing</strong> — загасаючі коливання після фронту, спричинені LC-резонансом між індуктивністю доріжки та паразитною ємністю. Виглядає як "хвилі" після фронту на осцилографі. Може спричинити подвійне спрацювання EXTI.<br><br><strong>Рішення:</strong> зменшити slew rate (OSPEEDR); послідовний резистор 22–100 Ом на виході GPIO (série damping) гасить коливання; коротші доріжки та суцільний ground plane.'
+    },
+    {
+      cat: 'Тактування STM32', color: '#00e5ff', icon: '🔄',
+      q: 'Поясніть шлях тактового сигналу від кварцу до GPIO на STM32F4. Де генеруються фронти?',
+      a: 'Ланцюг: <strong>HSE (кварц 8–25 МГц)</strong> → <strong>PLL</strong> (множення до 168 МГц) → <strong>SYSCLK</strong> → шини <strong>AHB → APB1/APB2</strong> → периферія.<br><br>GPIO тактується від AHB1 (до 168 МГц). Таймери на APB1 отримують половину AHB, але якщо APBx prescaler ≠ 1 — вони автоматично подвоюють свою частоту.<br><br>Основний генератор фронтів — <strong>PLL всередині МК</strong>. Кварц лише задає точну базову частоту. Без кварцу HSI (RC) має похибку ~1%, що критично для UART (допустимо < 2%).'
+    },
+    {
+      cat: 'SPI CPOL / CPHA', color: '#f59e0b', icon: '🔁',
+      q: 'Що таке CPOL і CPHA? По якому фронту відбувається захоплення даних у SPI Mode 0?',
+      a: '<strong>CPOL</strong> — рівень CLK у спокої: CPOL=0 → CLK LOW, CPOL=1 → CLK HIGH.<br><br><strong>CPHA</strong> — по якому фронту захоплюються дані: CPHA=0 → перший фронт, CPHA=1 → другий фронт.<br><br><strong>SPI Mode 0</strong> (CPOL=0, CPHA=0): CLK у спокої LOW, дані захоплюються по <em>наростаючому</em> фронту, змінюються по спадаючому. Найпоширеніший режим (BME280, MPU-6050, W25Qxx).<br><br>Типова пастка на співбесіді: "перший фронт" ≠ "наростаючий". При CPOL=1 перший фронт — спадаючий.'
+    },
+    {
+      cat: 'Debug: UART', color: '#22c55e', icon: '💡',
+      q: 'На осцилографі UART TX іноді пропускає старт-біт. Які можливі причини?',
+      a: 'Старт-біт UART — завжди <strong>спадаючий фронт</strong> (HIGH→LOW). Якщо він не розпізнається приймачем, причини:<br><br>• <strong>Baud Rate розбіжність > 2–3%</strong>: при HSI без кварцу або неправильному дільнику. Перевір: <code>USART_BRR</code> = PCLK / BaudRate.<br>• <strong>Повільний фронт</strong>: велика ємність лінії (довгий кабель) розтягує спадаючий фронт — приймач не розпізнає його як старт-біт до вибірки середини першого біт-інтервалу.<br>• <strong>Шум</strong>: спайк імітує старт-біт → фреймінг-помилка → наступний справжній старт-біт ігнорується.<br><br>Рішення: перевір тактування, додай 100 нФ між TX і GND, зменш Baud Rate або перейди на RS-485.'
+    },
+  ];
+
+  var quizArea = document.getElementById('quiz-area');
+
+  QA.forEach(function (item) {
+    var wrap = document.createElement('div');
+    wrap.className = 'quiz-item';
+
+    var hdr = document.createElement('div');
+    hdr.className = 'quiz-header';
+    hdr.innerHTML =
+      '<span style="font-size:18px;flex-shrink:0">' + item.icon + '</span>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="quiz-cat" style="color:' + item.color + '">' + item.cat + '</div>' +
+        '<div class="quiz-q">' + item.q + '</div>' +
+      '</div>' +
+      '<span class="quiz-arrow">▾</span>';
+
+    var body = document.createElement('div');
+    body.className = 'quiz-body';
+    body.innerHTML = '<div class="quiz-inner">' + item.a + '</div>';
+
+    var open = false;
+    hdr.addEventListener('click', function () {
+      open = !open;
+      body.classList.toggle('open', open);
+      hdr.classList.toggle('open', open);
+      hdr.querySelector('.quiz-arrow').classList.toggle('open', open);
+    });
+
+    wrap.appendChild(hdr);
+    wrap.appendChild(body);
+    quizArea.appendChild(wrap);
+  });
+
+  // Resize handler
+  window.addEventListener('resize', function () {
+    drawTiming();
+    if (!playing) { resizeWave(); drawWave(); }
+  });
+
+}); // end DOMContentLoaded
+</script>
+</body>
+</html>
