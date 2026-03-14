@@ -1,611 +1,677 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Embedded Notes</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Embedded Notes — Anton Bodnia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <style>
-    /* ── Variables ── */
     :root {
-      --bg:        #0b0e13;
-      --surface:   #111520;
-      --border:    #1e2535;
-      --accent:    #3bffa0;
-      --accent2:   #3b9dff;
-      --accent3:   #ffa53b;
-      --accent4:   #ff5b8d;
-      --accent5:   #c77dff;
-      --text:      #d4dae8;
-      --muted:     #586078;
-      --mono:      'Space Mono', monospace;
-      --sans:      'Syne', sans-serif;
+      --bg-base:      #0d0f10;
+      --bg-surface:   #141618;
+      --bg-elevated:  #1a1d20;
+      --bg-overlay:   #21252a;
+      --border-dim:   rgba(255,255,255,0.06);
+      --border-mid:   rgba(255,255,255,0.12);
+      --text-primary:   #e8e6e0;
+      --text-secondary: #8b897e;
+      --text-muted:     #52504a;
+      --accent:      #00d084;
+      --accent-dim:  rgba(0,208,132,0.12);
+      --rising:  #00d084;
+      --falling: #ff6b4a;
+      --clk:     #4a9eff;
+      --warning: #f5c842;
+      --danger:  #ff4a4a;
+      --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+      --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+      --r-sm: 4px; --r-md: 6px; --r-lg: 10px; --r-xl: 14px;
+      --text-xs: 11px; --text-sm: 12px; --text-base: 14px;
+      --text-md: 15px; --text-lg: 17px; --text-xl: 20px;
+      --text-2xl: 24px; --text-3xl: 30px;
     }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { scroll-behavior: smooth; }
-
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: var(--text-base);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
       min-height: 100vh;
-      overflow-x: hidden;
     }
 
-    /* ── Noise texture overlay ── */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── Grid lines background ── */
+    /* ── subtle grid overlay ── */
     body::after {
       content: '';
       position: fixed; inset: 0;
       background-image:
-        linear-gradient(rgba(59,255,160,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(59,255,160,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
+        linear-gradient(rgba(0,208,132,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,208,132,0.018) 1px, transparent 1px);
+      background-size: 48px 48px;
       pointer-events: none;
       z-index: 0;
     }
 
-    /* ── Header ── */
-    header {
-      position: relative; z-index: 10;
-      padding: 3rem 2rem 2rem;
-      max-width: 1100px;
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 8px; border-radius: 3px;
+      font-family: var(--font-mono); font-size: 10px;
+      font-weight: 500; text-transform: uppercase; letter-spacing: .1em;
+      white-space: nowrap;
+    }
+    .badge::before { content:''; display:block; width:5px; height:5px; border-radius:50%; background:currentColor; }
+    .badge-pill { border-radius: 100px; }
+    .badge-rising  { background: rgba(0,208,132,.12);  color: var(--rising);  border: 1px solid rgba(0,208,132,.25); }
+    .badge-falling { background: rgba(255,107,74,.12); color: var(--falling); border: 1px solid rgba(255,107,74,.25); }
+    .badge-clk     { background: rgba(74,158,255,.12); color: var(--clk);     border: 1px solid rgba(74,158,255,.25); }
+    .badge-warning { background: rgba(245,200,66,.12); color: var(--warning); border: 1px solid rgba(245,200,66,.25); }
+    .badge-neutral { background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border-dim); }
+
+    /* ── SITE LAYOUT ── */
+    .site-wrap {
+      position: relative; z-index: 1;
+      max-width: 960px;
       margin: 0 auto;
-      border-bottom: 1px solid var(--border);
+      padding: 64px 40px 120px;
     }
 
-    .header-tag {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      color: var(--accent);
-      letter-spacing: 0.15em;
+    /* ── HEADER ── */
+    .site-header {
+      margin-bottom: 64px;
+      padding-bottom: 48px;
+      border-bottom: 1px solid var(--border-dim);
+    }
+    .site-header-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
       text-transform: uppercase;
-      margin-bottom: 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      letter-spacing: .18em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .site-header-eyebrow::before { content: '//'; color: var(--accent); font-size: 12px; }
+    .site-title {
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 300;
+      color: var(--text-primary);
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .site-title-accent { color: var(--accent); }
+    .site-desc {
+      font-size: var(--text-lg);
+      color: var(--text-secondary);
+      max-width: 520px;
+      line-height: 1.65;
+      margin-bottom: 28px;
+    }
+    .site-stats {
+      display: flex; gap: 32px; flex-wrap: wrap;
+    }
+    .site-stat {
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .site-stat-value {
+      font-family: var(--font-mono);
+      font-size: var(--text-2xl);
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .site-stat-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--text-muted);
     }
 
-    .header-tag::before {
-      content: '';
-      display: inline-block;
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.7); }
-    }
-
-    h1 {
-      font-family: var(--sans);
-      font-weight: 800;
-      font-size: clamp(2.4rem, 6vw, 4.5rem);
-      line-height: 1.05;
-      letter-spacing: -0.02em;
-      color: #fff;
-    }
-
-    h1 span {
-      color: var(--accent);
-    }
-
-    .subtitle {
-      margin-top: 1rem;
-      font-family: var(--mono);
-      font-size: 0.82rem;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .subtitle b { color: var(--text); }
-
-    /* ── Search bar ── */
+    /* ── SEARCH ── */
     .search-wrap {
-      position: relative; z-index: 10;
-      max-width: 1100px;
-      margin: 2rem auto 0;
-      padding: 0 2rem;
-    }
-
-    .search-inner {
+      margin-bottom: 48px;
       position: relative;
     }
-
-    .search-inner input {
+    .search-input {
       width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.75rem 1rem 0.75rem 3rem;
-      font-family: var(--mono);
-      font-size: 0.85rem;
-      color: var(--text);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--r-lg);
+      padding: 12px 16px 12px 44px;
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      color: var(--text-primary);
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color .2s;
     }
-
-    .search-inner input::placeholder { color: var(--muted); }
-    .search-inner input:focus { border-color: var(--accent); }
-
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--text-muted); }
     .search-icon {
-      position: absolute;
-      left: 1rem; top: 50%;
+      position: absolute; left: 16px; top: 50%;
       transform: translateY(-50%);
-      color: var(--muted);
-      font-family: var(--mono);
-      font-size: 0.85rem;
-      pointer-events: none;
+      font-family: var(--font-mono); font-size: 14px;
+      color: var(--text-muted); pointer-events: none;
     }
 
-    /* ── Main grid ── */
-    main {
-      position: relative; z-index: 10;
-      max-width: 1100px;
-      margin: 3rem auto 5rem;
-      padding: 0 2rem;
-      display: grid;
-      gap: 2.5rem;
+    /* ── CATEGORY SECTION ── */
+    .category-section {
+      margin-bottom: 56px;
     }
-
-    /* ── Category section ── */
-    .category {
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeUp 0.5s ease forwards;
-    }
-
-    @keyframes fadeUp {
-      to { opacity: 1; transform: translateY(0); }
-    }
-
     .category-header {
-      display: flex;
-      align-items: baseline;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      padding-bottom: 0.6rem;
-      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 16px;
     }
-
-    .category-title {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.2em;
+    .category-line {
+      flex: 1; height: 1px;
+      background: var(--border-dim);
+    }
+    .category-label {
+      display: flex; align-items: center; gap: 10px;
+      flex-shrink: 0;
+    }
+    .category-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .category-name {
+      font-family: var(--font-mono);
+      font-size: 10px;
       text-transform: uppercase;
-      font-weight: 700;
+      letter-spacing: .16em;
+      color: var(--text-muted);
     }
-
+    .category-path {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      opacity: .5;
+    }
     .category-count {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-dim);
+      border-radius: 100px;
+      padding: 1px 8px;
     }
 
-    .cards {
+    /* ── TOPIC CARDS GRID ── */
+    .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
+      gap: 10px;
     }
 
-    /* ── Card ── */
-    .card {
+    /* ── TOPIC CARD ── */
+    .topic-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--r-xl);
+      padding: 18px 20px;
+      text-decoration: none;
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
-      background: var(--surface);
-      padding: 1.1rem 1.2rem;
-      text-decoration: none;
-      color: var(--text);
-      transition: background 0.15s, transform 0.15s;
+      gap: 10px;
+      transition: border-color .2s, background .2s, transform .15s;
       position: relative;
       overflow: hidden;
     }
-
-    .card::after {
+    .topic-card::before {
       content: '';
       position: absolute;
-      bottom: 0; left: 0; right: 0;
+      top: 0; left: 0; right: 0;
       height: 2px;
       background: var(--card-color, var(--accent));
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.25s ease;
+      opacity: 0;
+      transition: opacity .2s;
     }
-
-    .card:hover { background: #141a28; }
-    .card:hover::after { transform: scaleX(1); }
-
-    .card-icon {
-      font-size: 1.2rem;
-      margin-bottom: 0.2rem;
+    .topic-card:hover {
+      border-color: var(--border-mid);
+      background: var(--bg-elevated);
+      transform: translateY(-1px);
     }
+    .topic-card:hover::before { opacity: 1; }
 
-    .card-name {
-      font-size: 0.92rem;
-      font-weight: 600;
-      line-height: 1.3;
-      color: #fff;
-    }
-
-    .card-sub {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      color: var(--muted);
-    }
-
-    .card-badge {
-      display: inline-block;
-      margin-top: auto;
-      font-family: var(--mono);
-      font-size: 0.6rem;
-      letter-spacing: 0.08em;
-      padding: 0.15rem 0.5rem;
-      border-radius: 3px;
-      background: color-mix(in srgb, var(--card-color, var(--accent)) 15%, transparent);
-      color: var(--card-color, var(--accent));
-      width: fit-content;
-    }
-
-    /* "Soon" placeholder cards */
-    .card.soon {
-      opacity: 0.4;
+    /* soon = not written yet */
+    .topic-card.soon {
+      opacity: .35;
       pointer-events: none;
-      cursor: default;
     }
 
-    .card.soon .card-badge {
-      background: rgba(88,96,120,0.2);
-      color: var(--muted);
+    .card-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+    }
+    .card-num {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: .08em;
+    }
+    .card-status { flex-shrink: 0; }
+
+    .card-title {
+      font-size: var(--text-md);
+      font-weight: 400;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+    .card-title-accent {
+      color: var(--card-color, var(--accent));
     }
 
-    /* ── Add card ── */
-    .card-add {
-      border: 1px dashed var(--border);
-      background: transparent;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      color: var(--muted);
-      cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
-      text-decoration: none;
-      padding: 1.1rem 1.2rem;
+    .card-path {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-top: auto;
     }
 
-    .card-add:hover { border-color: var(--accent); color: var(--accent); }
-
-    /* ── Progress bar in header ── */
-    .stats-row {
-      display: flex;
-      gap: 2rem;
-      margin-top: 1.5rem;
-      flex-wrap: wrap;
-    }
-
-    .stat {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      color: var(--muted);
-    }
-
-    .stat b {
-      color: var(--accent);
-      font-size: 1.1rem;
-    }
-
-    /* ── Footer ── */
-    footer {
-      position: relative; z-index: 10;
+    /* ── EMPTY STATE (search no results) ── */
+    .empty-state {
+      display: none;
+      padding: 48px 0;
       text-align: center;
-      padding: 2rem;
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      color: var(--muted);
-      border-top: 1px solid var(--border);
+    }
+    .empty-state.visible { display: block; }
+    .empty-state p {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      color: var(--text-muted);
     }
 
-    /* ── Hidden by search ── */
-    .card.hidden { display: none; }
-    .cards:empty::after {
-      content: 'нічого не знайдено';
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      color: var(--muted);
-      padding: 1.5rem;
-      display: block;
+    /* ── FOOTER ── */
+    .site-footer {
+      position: relative; z-index: 1;
+      margin-top: 80px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-dim);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
     }
-
-    /* ── Responsive ── */
-    @media (max-width: 600px) {
-      .cards { grid-template-columns: 1fr 1fr; }
-      h1 { font-size: 2.2rem; }
+    .footer-links {
+      display: flex; gap: 20px; flex-wrap: wrap;
+    }
+    .footer-link {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color .15s;
+    }
+    .footer-link:hover { color: var(--accent); }
+    .footer-copy {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .12em;
     }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="header-tag">Embedded Notes</div>
-  <h1>Anton's<br/><span>Interview Prep</span></h1>
-  <p class="subtitle">
-    Конспекти з вбудованих систем — <b>STM32 / ESP32 / ARM Cortex-M</b><br/>
-    Протоколи · Мікроконтролери · Електроніка · Пам'ять · Архітектура · RTOS
-  </p>
-  <div class="stats-row">
-    <div class="stat"><b id="total-count">0</b><br/>тем всього</div>
-    <div class="stat"><b id="ready-count">0</b><br/>готово</div>
-    <div class="stat"><b>6</b><br/>розділів</div>
+<div class="site-wrap">
+
+  <!-- ══ HEADER ══ -->
+  <header class="site-header">
+    <div class="site-header-eyebrow">Embedded Systems · Interview Prep</div>
+    <h1 class="site-title">
+      Embedded<br/><span class="site-title-accent">Notes</span>
+    </h1>
+    <p class="site-desc">
+      Конспекти з вбудованих систем для підготовки до технічного інтерв'ю. STM32, ESP32, ARM Cortex-M, FreeRTOS.
+    </p>
+    <div class="site-stats">
+      <div class="site-stat">
+        <div class="site-stat-value" id="stat-ready">0</div>
+        <div class="site-stat-label">готових тем</div>
+      </div>
+      <div class="site-stat">
+        <div class="site-stat-value" id="stat-total">0</div>
+        <div class="site-stat-label">всього тем</div>
+      </div>
+      <div class="site-stat">
+        <div class="site-stat-value" id="stat-cats">6</div>
+        <div class="site-stat-label">категорій</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ SEARCH ══ -->
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input
+      class="search-input"
+      type="text"
+      placeholder="Пошук теми... (наприклад: UART, переривання, DMA)"
+      id="search"
+      autocomplete="off"
+    />
   </div>
-</header>
 
-<div class="search-wrap">
-  <div class="search-inner">
-    <span class="search-icon">&gt;_</span>
-    <input type="text" id="search" placeholder="пошук по темах..." autocomplete="off" />
+  <!-- ══ CATEGORIES (rendered by JS) ══ -->
+  <div id="categories-container"></div>
+
+  <div class="empty-state" id="empty-state">
+    <p>// нічого не знайдено</p>
   </div>
-</div>
 
-<main id="main">
+</div><!-- /site-wrap -->
 
-  <!-- ── ELECTRONICS ── -->
-  <section class="category" style="animation-delay: 0.05s">
-    <div class="category-header">
-      <span class="category-title" style="color: #3bffa0">Електроніка</span>
-      <span class="category-count">electronics/</span>
-    </div>
-    <div class="cards">
-      <a href="electronics/pn-junction.html" class="card" style="--card-color:#3bffa0">
-        <div class="card-icon">⚡</div>
-        <div class="card-name">p/n перехід</div>
-        <div class="card-sub">pn-junction.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="electronics/ohm-law.html" class="card" style="--card-color:#3bffa0">
-        <div class="card-icon">🔋</div>
-        <div class="card-name">Закон Ома, Джоуля–Ленца</div>
-        <div class="card-sub">ohm-law.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="electronics/covalent-bond.html" class="card" style="--card-color:#3bffa0">
-        <div class="card-icon">🔗</div>
-        <div class="card-name">Ковалентний зв'язок</div>
-        <div class="card-sub">covalent-bond.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="electronics/basic-electricity.html" class="card" style="--card-color:#3bffa0">
-        <div class="card-icon">💡</div>
-        <div class="card-name">Basic electricity</div>
-        <div class="card-sub">basic-electricity.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="electronics/energy-zones.html" class="card" style="--card-color:#3bffa0">
-        <div class="card-icon">📊</div>
-        <div class="card-name">Енергетичні зони</div>
-        <div class="card-sub">energy-zones.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="electronics/electromagnetic.html" class="card" style="--card-color:#3bffa0">
-        <div class="card-icon">🌊</div>
-        <div class="card-name">Електромагнітні явища</div>
-        <div class="card-sub">electromagnetic.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-    </div>
-  </section>
-
-  <!-- ── PROTOCOLS ── -->
-  <section class="category" style="animation-delay: 0.12s">
-    <div class="category-header">
-      <span class="category-title" style="color: #3b9dff">Протоколи</span>
-      <span class="category-count">protocols/</span>
-    </div>
-    <div class="cards">
-      <a href="protocols/i2c.html" class="card" style="--card-color:#3b9dff">
-        <div class="card-icon">📡</div>
-        <div class="card-name">I2C</div>
-        <div class="card-sub">i2c.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="protocols/uart.html" class="card soon" style="--card-color:#3b9dff">
-        <div class="card-icon">🔌</div>
-        <div class="card-name">UART</div>
-        <div class="card-sub">uart.html</div>
-        <div class="card-badge">незабаром</div>
-      </a>
-      <a href="protocols/spi.html" class="card soon" style="--card-color:#3b9dff">
-        <div class="card-icon">⚙️</div>
-        <div class="card-name">SPI</div>
-        <div class="card-sub">spi.html</div>
-        <div class="card-badge">незабаром</div>
-      </a>
-      <a href="protocols/adc.html" class="card" style="--card-color:#3b9dff">
-        <div class="card-icon">📈</div>
-        <div class="card-name">ADC</div>
-        <div class="card-sub">adc.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="protocols/bus.html" class="card" style="--card-color:#3b9dff">
-        <div class="card-icon">🚌</div>
-        <div class="card-name">Bus</div>
-        <div class="card-sub">bus.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="protocols/dma.html" class="card" style="--card-color:#3b9dff">
-        <div class="card-icon">💾</div>
-        <div class="card-name">DMA</div>
-        <div class="card-sub">dma.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="protocols/hardware-flow-control.html" class="card" style="--card-color:#3b9dff">
-        <div class="card-icon">🔄</div>
-        <div class="card-name">Hardware Flow Control</div>
-        <div class="card-sub">hardware-flow-control.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="protocols/pwm.html" class="card" style="--card-color:#3b9dff">
-        <div class="card-icon">🌀</div>
-        <div class="card-name">PWM</div>
-        <div class="card-sub">pwm.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-    </div>
-  </section>
-
-  <!-- ── MICROCONTROLLERS ── -->
-  <section class="category" style="animation-delay: 0.19s">
-    <div class="category-header">
-      <span class="category-title" style="color: #ffa53b">Мікроконтролер</span>
-      <span class="category-count">microcontrollers/</span>
-    </div>
-    <div class="cards">
-      <a href="microcontrollers/interrupts.html" class="card" style="--card-color:#ffa53b">
-        <div class="card-icon">⚡</div>
-        <div class="card-name">Interrupt</div>
-        <div class="card-sub">interrupts.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="microcontrollers/prescaler.html" class="card" style="--card-color:#ffa53b">
-        <div class="card-icon">⏱️</div>
-        <div class="card-name">Prescaler</div>
-        <div class="card-sub">prescaler.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="microcontrollers/pwm-mcu.html" class="card soon" style="--card-color:#ffa53b">
-        <div class="card-icon">🌀</div>
-        <div class="card-name">PWM (MCU side)</div>
-        <div class="card-sub">pwm-mcu.html</div>
-        <div class="card-badge">незабаром</div>
-      </a>
-    </div>
-  </section>
-
-  <!-- ── MEMORY ── -->
-  <section class="category" style="animation-delay: 0.26s">
-    <div class="category-header">
-      <span class="category-title" style="color: #ff5b8d">Пам'ять</span>
-      <span class="category-count">memory/</span>
-    </div>
-    <div class="cards">
-      <a href="memory/buffer.html" class="card" style="--card-color:#ff5b8d">
-        <div class="card-icon">📦</div>
-        <div class="card-name">Buffer</div>
-        <div class="card-sub">buffer.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="memory/eeprom.html" class="card" style="--card-color:#ff5b8d">
-        <div class="card-icon">🗄️</div>
-        <div class="card-name">EEPROM</div>
-        <div class="card-sub">eeprom.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="memory/shift-register.html" class="card" style="--card-color:#ff5b8d">
-        <div class="card-icon">🔢</div>
-        <div class="card-name">Shift Register</div>
-        <div class="card-sub">shift-register.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-    </div>
-  </section>
-
-  <!-- ── ARCHITECTURE ── -->
-  <section class="category" style="animation-delay: 0.33s">
-    <div class="category-header">
-      <span class="category-title" style="color: #c77dff">Архітектура</span>
-      <span class="category-count">architecture/</span>
-    </div>
-    <div class="cards">
-      <a href="architecture/cpu.html" class="card" style="--card-color:#c77dff">
-        <div class="card-icon">🧠</div>
-        <div class="card-name">CPU</div>
-        <div class="card-sub">cpu.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="architecture/dma-arch.html" class="card soon" style="--card-color:#c77dff">
-        <div class="card-icon">⚡</div>
-        <div class="card-name">DMA (Arch)</div>
-        <div class="card-sub">dma-arch.html</div>
-        <div class="card-badge">незабаром</div>
-      </a>
-    </div>
-  </section>
-
-  <!-- ── RTOS ── -->
-  <section class="category" style="animation-delay: 0.4s">
-    <div class="category-header">
-      <span class="category-title" style="color: #ff8c42">RTOS</span>
-      <span class="category-count">rtos/</span>
-    </div>
-    <div class="cards">
-      <a href="rtos/basics.html" class="card" style="--card-color:#ff8c42">
-        <div class="card-icon">⏰</div>
-        <div class="card-name">Основи RTOS</div>
-        <div class="card-sub">basics.html</div>
-        <div class="card-badge">learnt</div>
-      </a>
-      <a href="rtos/freertos.html" class="card soon" style="--card-color:#ff8c42">
-        <div class="card-icon">🔧</div>
-        <div class="card-name">FreeRTOS Tasks</div>
-        <div class="card-sub">freertos.html</div>
-        <div class="card-badge">незабаром</div>
-      </a>
-      <a href="rtos/semaphores.html" class="card soon" style="--card-color:#ff8c42">
-        <div class="card-icon">🚦</div>
-        <div class="card-name">Semaphores & Mutexes</div>
-        <div class="card-sub">semaphores.html</div>
-        <div class="card-badge">незабаром</div>
-      </a>
-    </div>
-  </section>
-
-</main>
-
-<footer>
-  embedded-notes / index.html &nbsp;·&nbsp; Anton Bodnia &nbsp;·&nbsp; STM32 · ESP32 · ARM Cortex-M
+<!-- ══ FOOTER ══ -->
+<footer class="site-footer" style="position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 40px 40px">
+  <div class="footer-links">
+    <a class="footer-link" href="ui-kit.html">UI Kit</a>
+    <a class="footer-link" href="TEMPLATE.html">Template</a>
+    <a class="footer-link" href="https://github.com" target="_blank">GitHub →</a>
+  </div>
+  <div class="footer-copy">// Embedded Notes · Anton Bodnia</div>
 </footer>
 
 <script>
-  // ── Count cards ──
-  const allCards = document.querySelectorAll('.card:not(.soon):not(.card-add)');
-  const totalCards = document.querySelectorAll('.card:not(.card-add)');
-  document.getElementById('ready-count').textContent = allCards.length;
-  document.getElementById('total-count').textContent = totalCards.length;
+/* ════════════════════════════════════════════════════════
+   DATA — всі теми сайту
+   Щоб додати нову тему: скопіювати об'єкт у правильну категорію.
+   status: 'done' | 'soon'
+   ════════════════════════════════════════════════════════ */
+const TOPICS = [
+  /* ── Електроніка ── */
+  {
+    category:  'electronics',
+    catLabel:  'Електроніка',
+    catColor:  '#00d084',       /* --rising */
+    catBadge:  'badge-rising',
+    path:      'electronics/pn-junction.html',
+    title:     'PN-перехід',
+    accent:    'PN-junction',
+    status:    'soon',
+  },
+  {
+    category: 'electronics', catLabel: 'Електроніка', catColor: '#00d084', catBadge: 'badge-rising',
+    path:  'electronics/ohm-law.html',
+    title: 'Закон Ома',
+    accent: 'Ohm\'s Law',
+    status: 'soon',
+  },
+  {
+    category: 'electronics', catLabel: 'Електроніка', catColor: '#00d084', catBadge: 'badge-rising',
+    path:  'electronics/covalent-bond.html',
+    title: 'Ковалентний зв\'язок',
+    accent: 'Covalent Bond',
+    status: 'soon',
+  },
+  {
+    category: 'electronics', catLabel: 'Електроніка', catColor: '#00d084', catBadge: 'badge-rising',
+    path:  'electronics/basic-electricity.html',
+    title: 'Основи електрики',
+    accent: 'Basic Electricity',
+    status: 'soon',
+  },
+  {
+    category: 'electronics', catLabel: 'Електроніка', catColor: '#00d084', catBadge: 'badge-rising',
+    path:  'electronics/energy-zones.html',
+    title: 'Зонна теорія',
+    accent: 'Energy Zones',
+    status: 'soon',
+  },
+  {
+    category: 'electronics', catLabel: 'Електроніка', catColor: '#00d084', catBadge: 'badge-rising',
+    path:  'electronics/electromagnetic.html',
+    title: 'ЕМ-поле',
+    accent: 'Electromagnetic',
+    status: 'soon',
+  },
 
-  // ── Search ──
-  const searchInput = document.getElementById('search');
-  searchInput.addEventListener('input', () => {
-    const q = searchInput.value.toLowerCase().trim();
-    document.querySelectorAll('.card').forEach(card => {
-      const text = card.textContent.toLowerCase();
-      card.classList.toggle('hidden', q.length > 0 && !text.includes(q));
-    });
-    // hide empty categories
-    document.querySelectorAll('.category').forEach(section => {
-      const visible = [...section.querySelectorAll('.card')].some(c => !c.classList.contains('hidden'));
-      section.style.display = visible ? '' : 'none';
-    });
+  /* ── Протоколи ── */
+  {
+    category:  'protocols',
+    catLabel:  'Протоколи',
+    catColor:  '#4a9eff',       /* --clk */
+    catBadge:  'badge-clk',
+    path:      'protocols/uart.html',
+    title:     'UART',
+    accent:    'Universal Async',
+    status:    'done',
+  },
+  {
+    category: 'protocols', catLabel: 'Протоколи', catColor: '#4a9eff', catBadge: 'badge-clk',
+    path:  'protocols/i2c.html',
+    title: 'I²C',
+    accent: 'Inter-Integrated Circuit',
+    status: 'soon',
+  },
+  {
+    category: 'protocols', catLabel: 'Протоколи', catColor: '#4a9eff', catBadge: 'badge-clk',
+    path:  'protocols/spi.html',
+    title: 'SPI',
+    accent: 'Serial Peripheral Interface',
+    status: 'soon',
+  },
+  {
+    category: 'protocols', catLabel: 'Протоколи', catColor: '#4a9eff', catBadge: 'badge-clk',
+    path:  'protocols/adc.html',
+    title: 'ADC',
+    accent: 'Analog-to-Digital',
+    status: 'soon',
+  },
+  {
+    category: 'protocols', catLabel: 'Протоколи', catColor: '#4a9eff', catBadge: 'badge-clk',
+    path:  'protocols/dma.html',
+    title: 'DMA',
+    accent: 'Direct Memory Access',
+    status: 'soon',
+  },
+  {
+    category: 'protocols', catLabel: 'Протоколи', catColor: '#4a9eff', catBadge: 'badge-clk',
+    path:  'protocols/hardware-flow-control.html',
+    title: 'Flow Control',
+    accent: 'HW Flow Control',
+    status: 'soon',
+  },
+  {
+    category: 'protocols', catLabel: 'Протоколи', catColor: '#4a9eff', catBadge: 'badge-clk',
+    path:  'protocols/pwm.html',
+    title: 'PWM',
+    accent: 'Pulse-Width Mod.',
+    status: 'soon',
+  },
+
+  /* ── Мікроконтролер ── */
+  {
+    category:  'microcontrollers',
+    catLabel:  'Мікроконтролер',
+    catColor:  '#ff6b4a',       /* --falling */
+    catBadge:  'badge-falling',
+    path:      'microcontrollers/interrupts.html',
+    title:     'Переривання',
+    accent:    'Interrupts',
+    status:    'done',
+  },
+  {
+    category: 'microcontrollers', catLabel: 'Мікроконтролер', catColor: '#ff6b4a', catBadge: 'badge-falling',
+    path:  'microcontrollers/prescaler.html',
+    title: 'Прескейлер',
+    accent: 'Prescaler',
+    status: 'soon',
+  },
+  {
+    category: 'microcontrollers', catLabel: 'Мікроконтролер', catColor: '#ff6b4a', catBadge: 'badge-falling',
+    path:  'microcontrollers/pwm-mcu.html',
+    title: 'ШІМ на MCU',
+    accent: 'PWM on MCU',
+    status: 'soon',
+  },
+
+  /* ── Пам'ять ── */
+  {
+    category:  'memory',
+    catLabel:  'Пам\'ять',
+    catColor:  '#f5c842',       /* --warning */
+    catBadge:  'badge-warning',
+    path:      'memory/buffer.html',
+    title:     'Буфер',
+    accent:    'Buffer',
+    status:    'soon',
+  },
+  {
+    category: 'memory', catLabel: 'Пам\'ять', catColor: '#f5c842', catBadge: 'badge-warning',
+    path:  'memory/eeprom.html',
+    title: 'EEPROM',
+    accent: 'Electrically Erasable',
+    status: 'soon',
+  },
+  {
+    category: 'memory', catLabel: 'Пам\'ять', catColor: '#f5c842', catBadge: 'badge-warning',
+    path:  'memory/shift-register.html',
+    title: 'Зсувний регістр',
+    accent: 'Shift Register',
+    status: 'soon',
+  },
+
+  /* ── Архітектура ── */
+  {
+    category:  'architecture',
+    catLabel:  'Архітектура',
+    catColor:  '#4a9eff',
+    catBadge:  'badge-clk',
+    path:      'architecture/cpu.html',
+    title:     'CPU',
+    accent:    'Central Proc. Unit',
+    status:    'soon',
+  },
+  {
+    category: 'architecture', catLabel: 'Архітектура', catColor: '#4a9eff', catBadge: 'badge-clk',
+    path:  'architecture/dma-arch.html',
+    title: 'DMA архітектура',
+    accent: 'DMA Architecture',
+    status: 'soon',
+  },
+
+  /* ── RTOS ── */
+  {
+    category:  'rtos',
+    catLabel:  'RTOS',
+    catColor:  '#f5c842',
+    catBadge:  'badge-warning',
+    path:      'rtos/basics.html',
+    title:     'Основи RTOS',
+    accent:    'RTOS Basics',
+    status:    'soon',
+  },
+  {
+    category: 'rtos', catLabel: 'RTOS', catColor: '#f5c842', catBadge: 'badge-warning',
+    path:  'rtos/freertos.html',
+    title: 'FreeRTOS',
+    accent: 'Free Real-Time OS',
+    status: 'soon',
+  },
+  {
+    category: 'rtos', catLabel: 'RTOS', catColor: '#f5c842', catBadge: 'badge-warning',
+    path:  'rtos/semaphores.html',
+    title: 'Семафори',
+    accent: 'Semaphores',
+    status: 'soon',
+  },
+];
+
+/* ════════════════════════════════════════════════════════
+   RENDER
+   ════════════════════════════════════════════════════════ */
+const container = document.getElementById('categories-container');
+const emptyState = document.getElementById('empty-state');
+
+function groupByCategory(topics) {
+  const map = new Map();
+  topics.forEach(t => {
+    if (!map.has(t.category)) map.set(t.category, []);
+    map.get(t.category).push(t);
   });
+  return map;
+}
+
+function statusBadge(status) {
+  if (status === 'done') return '<span class="badge badge-rising badge-pill">learnt</span>';
+  return '<span class="badge badge-neutral badge-pill">soon</span>';
+}
+
+function renderTopicCard(t, idx) {
+  const soonClass = t.status === 'soon' ? ' soon' : '';
+  return `
+    <a href="${t.path}" class="topic-card${soonClass}" style="--card-color:${t.catColor}">
+      <div class="card-top">
+        <span class="card-num">${String(idx + 1).padStart(2,'0')}</span>
+        <span class="card-status">${statusBadge(t.status)}</span>
+      </div>
+      <div class="card-title">
+        ${t.title}<br/>
+        <span class="card-title-accent" style="font-size:12px;opacity:.7">${t.accent}</span>
+      </div>
+      <div class="card-path">${t.path}</div>
+    </a>`;
+}
+
+function renderCategory(catKey, topics) {
+  if (topics.length === 0) return '';
+  const first = topics[0];
+  const doneCount = topics.filter(t => t.status === 'done').length;
+  const cards = topics.map((t, i) => renderTopicCard(t, i)).join('');
+  return `
+    <section class="category-section" data-category="${catKey}">
+      <div class="category-header">
+        <div class="category-label">
+          <span class="category-dot" style="background:${first.catColor}"></span>
+          <span class="category-name">${first.catLabel}</span>
+          <span class="category-path">${catKey}/</span>
+        </div>
+        <span class="category-count">${doneCount}/${topics.length}</span>
+        <div class="category-line"></div>
+      </div>
+      <div class="cards-grid">${cards}</div>
+    </section>`;
+}
+
+function render(filter = '') {
+  const q = filter.toLowerCase().trim();
+  const filtered = q
+    ? TOPICS.filter(t =>
+        t.title.toLowerCase().includes(q) ||
+        t.accent.toLowerCase().includes(q) ||
+        t.catLabel.toLowerCase().includes(q) ||
+        t.category.toLowerCase().includes(q) ||
+        t.path.toLowerCase().includes(q)
+      )
+    : TOPICS;
+
+  const grouped = groupByCategory(filtered);
+  const html = [...grouped.entries()].map(([k, v]) => renderCategory(k, v)).join('');
+  container.innerHTML = html;
+
+  const hasResults = filtered.length > 0;
+  emptyState.classList.toggle('visible', !hasResults);
+
+  // Update stats
+  const ready = TOPICS.filter(t => t.status === 'done').length;
+  const total = TOPICS.length;
+  document.getElementById('stat-ready').textContent = ready;
+  document.getElementById('stat-total').textContent = total;
+}
+
+// Initial render
+render();
+
+// Search
+document.getElementById('search').addEventListener('input', e => {
+  render(e.target.value);
+});
 </script>
 </body>
 </html>
