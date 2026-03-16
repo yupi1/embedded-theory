@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Основи сигналів · Конспект · Embedded Systems</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-base:      #0d0f10;
+      --bg-surface:   #141618;
+      --bg-elevated:  #1a1d20;
+      --bg-overlay:   #21252a;
+
+      --border-dim:    rgba(255,255,255,0.06);
+      --border-mid:    rgba(255,255,255,0.12);
+      --border-bright: rgba(255,255,255,0.22);
+
+      --text-primary:   #e8e6e0;
+      --text-secondary: #8b897e;
+      --text-muted:     #52504a;
+      --text-inverse:   #0d0f10;
+
+      --accent:      #00d084;
+      --accent-dim:  rgba(0,208,132,0.12);
+      --accent-mid:  rgba(0,208,132,0.25);
+      --accent-glow: rgba(0,208,132,0.06);
+
+      --rising:  #00d084;
+      --falling: #ff6b4a;
+      --clk:     #4a9eff;
+      --warning: #f5c842;
+      --danger:  #ff4a4a;
+
+      --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+      --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+
+      --r-sm: 4px;  --r-md: 6px;  --r-lg: 10px;  --r-xl: 14px;
+
+      --text-xs:  11px;  --text-sm:  12px;  --text-base: 14px;
+      --text-md:  15px;  --text-lg:  17px;  --text-xl:   20px;
+      --text-2xl: 24px;  --text-3xl: 30px;  --text-4xl:  38px;
+
+      --glow-accent: 0 0 20px rgba(0,208,132,0.15);
+
+      --topic-color: var(--rising);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: var(--text-base);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .ic {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-dim);
+      padding: 2px 6px;
+      border-radius: var(--r-sm);
+      color: var(--accent);
+    }
+
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 3px; font-family: var(--font-mono); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; }
+    .badge::before { content: ''; display: block; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .badge-pill    { border-radius: 100px; }
+    .badge-rising  { background: rgba(0,208,132,0.12);  color: var(--rising);  border: 1px solid rgba(0,208,132,0.25); }
+    .badge-falling { background: rgba(255,107,74,0.12); color: var(--falling); border: 1px solid rgba(255,107,74,0.25); }
+    .badge-clk     { background: rgba(74,158,255,0.12); color: var(--clk);     border: 1px solid rgba(74,158,255,0.25); }
+    .badge-warning { background: rgba(245,200,66,0.12); color: var(--warning); border: 1px solid rgba(245,200,66,0.25); }
+    .badge-neutral { background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border-dim); }
+
+    .callout { border-radius: var(--r-lg); padding: 14px 16px; display: flex; gap: 12px; font-size: var(--text-base); line-height: 1.6; }
+    .callout-icon { font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 3px 6px; border-radius: 3px; flex-shrink: 0; margin-top: 1px; }
+    .callout-info      { background: rgba(74,158,255,0.07);  border: 1px solid rgba(74,158,255,0.18);  color: var(--text-secondary); }
+    .callout-info      .callout-icon { background: rgba(74,158,255,0.2); color: var(--clk); }
+    .callout-warning   { background: rgba(245,200,66,0.07);  border: 1px solid rgba(245,200,66,0.18);  color: var(--text-secondary); }
+    .callout-warning   .callout-icon { background: rgba(245,200,66,0.2); color: var(--warning); }
+    .callout-important { background: rgba(0,208,132,0.05);   border: 1px solid rgba(0,208,132,0.15);   color: var(--text-secondary); }
+    .callout-important .callout-icon { background: var(--accent-dim); color: var(--accent); }
+    .callout strong { color: var(--text-primary); }
+
+    .code-block { background: var(--bg-surface); border: 1px solid var(--border-dim); border-radius: var(--r-lg); overflow: hidden; font-family: var(--font-mono); font-size: var(--text-sm); }
+    .code-block-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border-dim); background: var(--bg-elevated); }
+    .code-block-lang   { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+    .code-block-copy   { font-size: 10px; color: var(--text-muted); cursor: pointer; background: none; border: none; font-family: var(--font-mono); padding: 0; transition: color 0.15s; }
+    .code-block-copy:hover { color: var(--accent); }
+    .code-block-body   { padding: 16px; line-height: 1.65; overflow-x: auto; color: var(--text-primary); }
+    .code-block-body .kw  { color: var(--clk); }
+    .code-block-body .fn  { color: var(--accent); }
+    .code-block-body .str { color: var(--warning); }
+    .code-block-body .cm  { color: var(--text-muted); font-style: italic; }
+    .code-block-body .num { color: var(--falling); }
+    .code-block-body .reg { color: var(--warning); }
+
+    .table-wrap { background: var(--bg-surface); border: 1px solid var(--border-dim); border-radius: var(--r-xl); overflow: hidden; }
+    .kit-table  { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+    .kit-table thead tr { border-bottom: 1px solid var(--border-mid); }
+    .kit-table th  { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); padding: 12px 16px; text-align: left; font-weight: 500; }
+    .kit-table td  { padding: 11px 16px; color: var(--text-secondary); border-bottom: 1px solid var(--border-dim); vertical-align: middle; }
+    .kit-table tr:last-child td { border-bottom: none; }
+    .kit-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .kit-table .mono   { font-family: var(--font-mono); color: var(--text-primary); }
+    .kit-table .accent { color: var(--accent); font-family: var(--font-mono); }
+
+    .stat-card  { background: var(--bg-elevated); border: 1px solid var(--border-dim); border-radius: var(--r-lg); padding: 18px 20px; }
+    .stat-label { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+    .stat-value { font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: 500; color: var(--text-primary); }
+    .stat-unit  { font-size: var(--text-sm); color: var(--text-muted); margin-left: 4px; }
+    .stat-sub   { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); margin-top: 4px; }
+
+    .accordion { border: 1px solid var(--border-dim); border-radius: var(--r-xl); overflow: hidden; background: var(--bg-surface); }
+    .accordion-item { border-bottom: 1px solid var(--border-dim); }
+    .accordion-item:last-child { border-bottom: none; }
+    .accordion-trigger { width: 100%; background: none; border: none; padding: 18px 20px; text-align: left; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; transition: background 0.15s; color: var(--text-primary); font-size: var(--text-base); font-family: var(--font-sans); }
+    .accordion-trigger:hover { background: var(--border-dim); }
+    .accordion-trigger.open  { background: var(--accent-glow); }
+    .accordion-icon { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--border-mid); display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text-secondary); transition: transform 0.25s, border-color 0.2s, color 0.2s; margin-top: 2px; }
+    .accordion-trigger.open .accordion-icon { transform: rotate(45deg); border-color: var(--accent); color: var(--accent); }
+    .accordion-body { overflow: hidden; max-height: 0; transition: max-height 0.35s ease; background: var(--accent-glow); }
+    .accordion-body.open { max-height: 800px; }
+    .accordion-content { padding: 4px 20px 20px; color: var(--text-secondary); font-size: var(--text-base); line-height: 1.7; border-top: 1px solid var(--border-dim); }
+    .accordion-content strong { color: var(--text-primary); font-weight: 500; }
+
+    .waveform-demo   { background: var(--bg-surface); border: 1px solid var(--border-dim); border-radius: var(--r-xl); overflow: hidden; }
+    .waveform-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border-dim); background: var(--bg-elevated); }
+    .waveform-title  { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    .waveform-body   { padding: 16px; }
+    .waveform-svg    { display: block; width: 100%; }
+
+    .page-top-line {
+      height: 2px;
+      background: linear-gradient(90deg, var(--topic-color) 0%, transparent 60%);
+    }
+    .page-wrap {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 56px 40px 120px;
+    }
+    .page-header {
+      border-bottom: 1px solid var(--border-dim);
+      padding-bottom: 48px;
+      margin-bottom: 56px;
+    }
+    .page-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .page-eyebrow::before { content: '//'; color: var(--topic-color); font-size: 12px; }
+    .page-title {
+      font-size: clamp(32px, 5vw, 50px);
+      font-weight: 300;
+      color: var(--text-primary);
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .page-title-accent { color: var(--topic-color); }
+    .page-desc {
+      font-size: var(--text-lg);
+      color: var(--text-secondary);
+      max-width: 560px;
+      line-height: 1.65;
+      margin-bottom: 20px;
+    }
+    .page-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 20px;
+      margin-top: 56px;
+    }
+    .section-num  { font-family: var(--font-mono); font-size: 11px; color: var(--topic-color); opacity: 0.7; min-width: 28px; }
+    .section-name { font-size: var(--text-xl); font-weight: 400; color: var(--text-primary); }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+    .grid-2    { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono); font-size: var(--text-xs);
+      color: var(--text-muted); text-decoration: none; transition: color 0.15s;
+      margin-bottom: 32px;
+    }
+    .back-link:hover { color: var(--accent); }
+    .page-footer {
+      margin-top: 80px; padding-top: 24px;
+      border-top: 1px solid var(--border-dim);
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.14em;
+    }
+    .mt-4  { margin-top: 16px; }
+    .mt-8  { margin-top: 32px; }
+    .stack { display: flex; flex-direction: column; gap: 12px; }
+    .divider { height: 1px; background: var(--border-dim); margin: 40px 0; }
+
+    /* ══ TOPIC-LIST / STEPS-LIST ══ */
+    .topic-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .topic-list li { display: flex; gap: 10px; color: var(--text-secondary); font-size: var(--text-base); }
+    .topic-list li::before { content: '—'; color: var(--topic-color); font-family: var(--font-mono); flex-shrink: 0; }
+    .steps-list { list-style: none; counter-reset: steps; display: flex; flex-direction: column; gap: 10px; }
+    .steps-list li { counter-increment: steps; display: flex; gap: 12px; color: var(--text-secondary); font-size: var(--text-base); }
+    .steps-list li::before { content: counter(steps); font-family: var(--font-mono); font-size: 10px; color: var(--topic-color); background: var(--accent-dim); border: 1px solid rgba(0,208,132,0.2); border-radius: 3px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+
+    /* ══ DEF-CARDS ══ */
+    .def-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .def-card { background: var(--bg-elevated); border: 1px solid var(--border-dim); border-radius: var(--r-lg); padding: 16px; }
+    .def-card-label { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .def-card-value { font-size: var(--text-base); color: var(--text-secondary); line-height: 1.6; }
+    .def-card-value strong { color: var(--text-primary); }
+
+    @media (max-width: 600px) {
+      .page-wrap { padding: 32px 20px 80px; }
+      .def-cards { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    /* ══ INTERACTIVE ANIMATIONS ══ */
+
+    /* Canvas container */
+    .anim-wrap {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+    }
+    .anim-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; border-bottom: 1px solid var(--border-dim);
+      background: var(--bg-elevated);
+    }
+    .anim-title {
+      font-family: var(--font-mono); font-size: var(--text-xs);
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;
+    }
+    .anim-controls { display: flex; gap: 8px; align-items: center; }
+    .anim-btn {
+      font-family: var(--font-mono); font-size: 10px; padding: 3px 10px;
+      border-radius: 3px; border: 1px solid var(--border-mid);
+      background: var(--bg-overlay); color: var(--text-secondary);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .anim-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .anim-btn.active { background: var(--accent-dim); border-color: rgba(0,208,132,0.3); color: var(--accent); }
+    .anim-body { padding: 16px; }
+    canvas { display: block; width: 100%; border-radius: var(--r-md); }
+
+    /* Slider controls */
+    .slider-row {
+      display: flex; align-items: center; gap: 12px;
+      margin-top: 12px; flex-wrap: wrap;
+    }
+    .slider-label {
+      font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.08em; min-width: 90px;
+    }
+    .slider-val {
+      font-family: var(--font-mono); font-size: var(--text-sm);
+      color: var(--topic-color); min-width: 60px;
+    }
+    input[type=range] {
+      -webkit-appearance: none; flex: 1; height: 3px;
+      background: var(--border-mid); border-radius: 2px; outline: none;
+      min-width: 100px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+      background: var(--accent); cursor: pointer;
+      box-shadow: 0 0 8px rgba(0,208,132,0.5);
+    }
+
+    /* Signal type selector */
+    .wave-selector { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+    .wave-btn {
+      font-family: var(--font-mono); font-size: 10px; padding: 4px 12px;
+      border-radius: 3px; border: 1px solid var(--border-dim);
+      background: var(--bg-elevated); color: var(--text-muted);
+      cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .wave-btn:hover { color: var(--text-secondary); border-color: var(--border-mid); }
+    .wave-btn.active { background: var(--accent-dim); border-color: rgba(0,208,132,0.3); color: var(--accent); }
+
+    /* Logic level indicator */
+    .logic-indicator {
+      display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;
+    }
+    .logic-dot {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 11px;
+      padding: 6px 14px; border-radius: var(--r-md);
+      border: 1px solid var(--border-dim); background: var(--bg-elevated);
+      transition: all 0.2s;
+    }
+    .logic-dot-circle {
+      width: 10px; height: 10px; border-radius: 50%;
+      transition: all 0.2s;
+    }
+    .logic-dot.high .logic-dot-circle { background: var(--rising); box-shadow: 0 0 8px rgba(0,208,132,0.6); }
+    .logic-dot.low  .logic-dot-circle { background: var(--text-muted); }
+    .logic-dot.high { border-color: rgba(0,208,132,0.3); color: var(--rising); }
+    .logic-dot.low  { color: var(--text-muted); }
+
+    /* Analog vs Digital visual */
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+    @media (max-width: 520px) { .compare-grid { grid-template-columns: 1fr; } }
+    .compare-card {
+      background: var(--bg-elevated); border: 1px solid var(--border-dim);
+      border-radius: var(--r-lg); overflow: hidden;
+    }
+    .compare-card-title {
+      font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.1em; padding: 8px 12px; border-bottom: 1px solid var(--border-dim);
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-top-line"></div>
+
+  <div class="page-wrap">
+
+    <a class="back-link" href="../index.html">← повернутись до конспекту</a>
+
+    <header class="page-header">
+      <div class="page-eyebrow">Конспект · Electronics · Signal Fundamentals</div>
+      <h1 class="page-title">
+        Основи <span class="page-title-accent">сигналів</span>
+      </h1>
+      <p class="page-desc">
+        Сигнал — фундамент будь-якої електронної системи. Без розуміння типів, параметрів і форм сигналів
+        неможливо аналізувати фронти, шуми та поведінку мікроконтролера на рівні залізa.
+      </p>
+      <div class="page-tags">
+        <span class="badge badge-rising badge-pill">learnt</span>
+        <span class="badge badge-neutral badge-pill">STM32</span>
+        <span class="badge badge-neutral badge-pill">ESP32</span>
+        <span class="badge badge-neutral badge-pill">Electronics</span>
+        <span class="badge badge-neutral badge-pill">Fundamentals</span>
+      </div>
+    </header>
+
+
+    <!-- ══════════════════════════════════════════════
+         01 — ЩО ТАКЕ СИГНАЛ
+    ══════════════════════════════════════════════ -->
+    <div class="section-header">
+      <span class="section-num">01 —</span>
+      <span class="section-name">Що таке сигнал</span>
+    </div>
+
+    <p style="font-size:var(--text-md); color:var(--text-primary); line-height:1.75;">
+      <strong>Сигнал</strong> — це фізична величина (напруга, струм), яка змінюється в часі і несе інформацію.
+      В електроніці сигнал — це передусім <strong>напруга</strong>: ми вимірюємо її в точці схеми відносно <code class="ic">GND</code>.
+      Коли мікроконтролер "читає кнопку" або "передає байт по SPI" — він працює з напругою на своїх піднах.
+    </p>
+
+    <div class="mt-8">
+      <div class="callout callout-important">
+        <span class="callout-icon">KEY</span>
+        <div><strong>Ключова ідея:</strong> Сигнал = зміна напруги в часі. Все інше — параметри цієї зміни: як швидко, як високо, як часто.</div>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <div class="callout callout-info">
+        <span class="callout-icon">INF</span>
+        <div>
+          <strong>Аналогія:</strong> Уяви воду в трубі. Тиск — це напруга, потік — це струм. Сигнал — це коли ти регулюєш кран:
+          відкриваєш і закриваєш. Мікроконтролер — це кран, який відкривається і закривається мільйони разів на секунду.
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         02 — ТИПИ СИГНАЛІВ (анімація аналог vs цифра)
+    ══════════════════════════════════════════════ -->
+    <div class="section-header">
+      <span class="section-num">02 —</span>
+      <span class="section-name">Типи сигналів</span>
+    </div>
+
+    <p style="color:var(--text-secondary); font-size:var(--text-base); margin-bottom:16px;">
+      Два фундаментальні типи. Вся різниця — в тому, <em>які значення може приймати напруга</em>.
+    </p>
+
+    <!-- Animated analog vs digital comparison -->
+    <div class="anim-wrap">
+      <div class="anim-header">
+        <span class="anim-title">Аналоговий vs Цифровий сигнал</span>
+        <div class="anim-controls">
+          <span class="badge badge-rising badge-pill" style="font-size:9px">аналоговий</span>
+          <span class="badge badge-clk badge-pill" style="font-size:9px">цифровий</span>
+        </div>
+      </div>
+      <div class="anim-body">
+        <div class="compare-grid">
+          <div class="compare-card">
+            <div class="compare-card-title" style="color:var(--rising)">◈ Аналоговий</div>
+            <canvas id="analogCanvas" height="100"></canvas>
+          </div>
+          <div class="compare-card">
+            <div class="compare-card-title" style="color:var(--clk)">◈ Цифровий</div>
+            <canvas id="digitalCanvas" height="100"></canvas>
+          </div>
+        </div>
+        <p style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-top:10px;">
+          Аналоговий — будь-яке значення між 0В і 3.3В. Цифровий — лише HIGH (3.3В) або LOW (0В).
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <div class="def-cards">
+        <div class="def-card">
+          <div class="def-card-label" style="color:var(--rising)">Аналоговий</div>
+          <div class="def-card-value">Напруга приймає <strong>будь-яке неперервне значення</strong> в діапазоні. Приклад: мікрофон, термістор, <code class="ic">ADC</code> вхід STM32.</div>
+        </div>
+        <div class="def-card">
+          <div class="def-card-label" style="color:var(--clk)">Цифровий</div>
+          <div class="def-card-value">Напруга приймає лише <strong>два рівні</strong>: HIGH або LOW. Приклад: GPIO, UART TX, SPI CLK.</div>
+        </div>
+        <div class="def-card">
+          <div class="def-card-label" style="color:var(--warning)">В мікроконтролері</div>
+          <div class="def-card-value">GPIO — цифровий. <code class="ic">ADC</code> перетворює аналог у число. <code class="ic">DAC</code> — навпаки. PWM — цифровий сигнал, що <strong>імітує аналоговий</strong>.</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         03 — ПАРАМЕТРИ СИГНАЛУ (інтерактивна анімація)
+    ══════════════════════════════════════════════ -->
+    <div class="section-header">
+      <span class="section-num">03 —</span>
+      <span class="section-name">Параметри сигналу</span>
+    </div>
+
+    <p style="color:var(--text-secondary); font-size:var(--text-base); margin-bottom:16px;">
+      Змінюй параметри нижче — і дивись як це впливає на форму сигналу в реальному часі.
+    </p>
+
+    <!-- Interactive signal parameters -->
+    <div class="anim-wrap">
+      <div class="anim-header">
+        <span class="anim-title">Інтерактивний генератор сигналу</span>
+        <div class="anim-controls">
+          <span id="paramStatus" class="badge badge-rising badge-pill" style="font-size:9px">▶ LIVE</span>
+        </div>
+      </div>
+      <div class="anim-body">
+        <canvas id="paramCanvas" height="160"></canvas>
+
+        <div class="wave-selector">
+          <button class="wave-btn active" onclick="setWave('square')">Square</button>
+          <button class="wave-btn" onclick="setWave('sine')">Sine</button>
+          <button class="wave-btn" onclick="setWave('triangle')">Triangle</button>
+          <button class="wave-btn" onclick="setWave('pulse')">Pulse</button>
+        </div>
+
+        <div class="slider-row">
+          <span class="slider-label">Амплітуда</span>
+          <input type="range" id="ampSlider" min="10" max="100" value="65" oninput="updateParam('amp', this.value)">
+          <span class="slider-val" id="ampVal">3.3<span style="font-size:10px;color:var(--text-muted)"> В</span></span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Частота</span>
+          <input type="range" id="freqSlider" min="1" max="10" value="3" oninput="updateParam('freq', this.value)">
+          <span class="slider-val" id="freqVal">3<span style="font-size:10px;color:var(--text-muted)"> Гц</span></span>
+        </div>
+        <div class="slider-row" id="dutyRow">
+          <span class="slider-label">Duty Cycle</span>
+          <input type="range" id="dutySlider" min="5" max="95" value="50" oninput="updateParam('duty', this.value)">
+          <span class="slider-val" id="dutyVal">50<span style="font-size:10px;color:var(--text-muted)"> %</span></span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Фаза</span>
+          <input type="range" id="phaseSlider" min="0" max="360" value="0" oninput="updateParam('phase', this.value)">
+          <span class="slider-val" id="phaseVal">0<span style="font-size:10px;color:var(--text-muted)"> °</span></span>
+        </div>
+
+        <!-- Live readouts -->
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+          <div class="stat-card" style="padding:10px 14px; flex:1; min-width:120px;">
+            <div class="stat-label">Амплітуда</div>
+            <div class="stat-value" style="font-size:18px;" id="readAmp">3.3</div>
+            <div class="stat-sub">Вольт</div>
+          </div>
+          <div class="stat-card" style="padding:10px 14px; flex:1; min-width:120px;">
+            <div class="stat-label">Частота</div>
+            <div class="stat-value" style="font-size:18px;" id="readFreq">3</div>
+            <div class="stat-sub">Герц</div>
+          </div>
+          <div class="stat-card" style="padding:10px 14px; flex:1; min-width:120px;">
+            <div class="stat-label">Період</div>
+            <div class="stat-value" style="font-size:18px;" id="readPeriod">333</div>
+            <div class="stat-sub">мс</div>
+          </div>
+          <div class="stat-card" style="padding:10px 14px; flex:1; min-width:120px;" id="dutyCard">
+            <div class="stat-label">Duty Cycle</div>
+            <div class="stat-value" style="font-size:18px;" id="readDuty">50</div>
+            <div class="stat-sub">%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <div class="table-wrap">
+        <table class="kit-table">
+          <thead>
+            <tr>
+              <th>Параметр</th>
+              <th>Визначення</th>
+              <th>Формула / STM32</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono accent">Amplitude</td>
+              <td>Максимальне відхилення напруги від нуля. "Висота" сигналу.</td>
+              <td><code class="ic">3.3В</code> для STM32, <code class="ic">3.3В / 5В</code> для ESP32</td>
+            </tr>
+            <tr>
+              <td class="mono accent">Voltage Level</td>
+              <td>Поточне значення напруги в конкретний момент часу.</td>
+              <td><code class="ic">ADC_GetValue()</code></td>
+            </tr>
+            <tr>
+              <td class="mono accent">Frequency</td>
+              <td>Кількість повних циклів за секунду. Одиниця — Гц.</td>
+              <td><code class="ic">f = 1 / T</code></td>
+            </tr>
+            <tr>
+              <td class="mono accent">Period</td>
+              <td>Час одного повного циклу. Зворотна до частоти величина.</td>
+              <td><code class="ic">T = (ARR + 1) / f_timer</code></td>
+            </tr>
+            <tr>
+              <td class="mono accent">Duty Cycle</td>
+              <td>Відношення часу HIGH до повного періоду, у відсотках. Ключовий параметр PWM.</td>
+              <td><code class="ic">DC = CCR / (ARR + 1) × 100%</code></td>
+            </tr>
+            <tr>
+              <td class="mono accent">Phase</td>
+              <td>Зсув сигналу відносно опорного у часі або градусах (0°–360°).</td>
+              <td>I²C: дані захоплюються по <code class="ic">rising edge</code> CLK</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         04 — ФОРМИ СИГНАЛІВ (анімований вибір)
+    ══════════════════════════════════════════════ -->
+    <div class="section-header">
+      <span class="section-num">04 —</span>
+      <span class="section-name">Форми сигналів</span>
+    </div>
+
+    <p style="color:var(--text-secondary); font-size:var(--text-base); margin-bottom:16px;">
+      Кожна форма — своя "математика" і своє застосування в embedded.
+    </p>
+
+    <div class="anim-wrap">
+      <div class="anim-header">
+        <span class="anim-title">Форми сигналів</span>
+        <div class="anim-controls">
+          <span class="anim-title" id="waveShapeLabel" style="color:var(--rising)">SQUARE WAVE</span>
+        </div>
+      </div>
+      <div class="anim-body">
+        <canvas id="shapesCanvas" height="200"></canvas>
+        <div class="wave-selector" style="margin-top:12px;">
+          <button class="wave-btn active" onclick="selectShape('square', this)">Square Wave</button>
+          <button class="wave-btn" onclick="selectShape('sine', this)">Sine Wave</button>
+          <button class="wave-btn" onclick="selectShape('triangle', this)">Triangle Wave</button>
+          <button class="wave-btn" onclick="selectShape('pulse', this)">Pulse</button>
+        </div>
+        <p id="waveShapeDesc" style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-top:10px;line-height:1.6;">
+          Прямокутний сигнал. Два рівні: HIGH і LOW. Ідеальний цифровий сигнал. Застосування: GPIO, UART, SPI, I²C, тактовий сигнал CLK.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <div class="table-wrap">
+        <table class="kit-table">
+          <thead>
+            <tr><th>Форма</th><th>Опис</th><th>Де зустрічається в embedded</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono accent">Square Wave</td>
+              <td>Симетричний прямокутний сигнал, duty cycle = 50%.</td>
+              <td>GPIO, тактовий CLK, цифрові шини</td>
+            </tr>
+            <tr>
+              <td class="mono accent">Sine Wave</td>
+              <td>Плавна синусоїда. Натуральна форма AC-сигналу.</td>
+              <td>Виходи <code class="ic">DAC</code>, аудіо, AC живлення, осцилятори</td>
+            </tr>
+            <tr>
+              <td class="mono accent">Triangle Wave</td>
+              <td>Лінійний підйом і спад. Проміжне між sin та square.</td>
+              <td>ШІМ (основа), VCO, sweep-генератори</td>
+            </tr>
+            <tr>
+              <td class="mono accent">Pulse</td>
+              <td>Короткий імпульс HIGH на фоні тривалого LOW. Duty cycle «lt;50%.</td>
+              <td>IR-пульти, тригери, watchdog reset, <code class="ic">TIM</code> one-pulse mode</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         05 — ЛОГІЧНІ РІВНІ (інтерактивна демонстрація)
+    ══════════════════════════════════════════════ -->
+    <div class="section-header">
+      <span class="section-num">05 —</span>
+      <span class="section-name">Логічні рівні</span>
+    </div>
+
+    <p style="color:var(--text-secondary); font-size:var(--text-base); margin-bottom:16px;">
+      Цифрова схема "не знає" точної напруги — вона знає лише HIGH або LOW.
+      Але реальна напруга варіюється, тому існують <strong>пороги та noise margin</strong>.
+    </p>
+
+    <!-- Interactive threshold demo -->
+    <div class="anim-wrap">
+      <div class="anim-header">
+        <span class="anim-title">Логічні рівні · 3.3В CMOS (STM32)</span>
+        <div class="anim-controls">
+          <div class="logic-indicator">
+            <div class="logic-dot" id="logicState">
+              <div class="logic-dot-circle"></div>
+              <span id="logicLabel">HIGH</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="anim-body">
+        <canvas id="logicCanvas" height="220"></canvas>
+
+        <div class="slider-row">
+          <span class="slider-label">Напруга</span>
+          <input type="range" id="voltSlider" min="0" max="330" value="250" oninput="updateVoltage(this.value)">
+          <span class="slider-val" id="voltVal">2.5<span style="font-size:10px;color:var(--text-muted)"> В</span></span>
+        </div>
+        <p style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-top:8px;" id="logicZoneDesc">
+          ▲ Зона HIGH: напруга вище 2.0В — мікроконтролер читає логічну "1"
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <div class="table-wrap">
+        <table class="kit-table">
+          <thead>
+            <tr><th>Параметр</th><th>Значення (3.3В CMOS)</th><th>Пояснення</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono accent">V_IH (min)</td>
+              <td>2.0В</td>
+              <td>Мінімальна напруга, яку схема читає як <strong>HIGH</strong></td>
+            </tr>
+            <tr>
+              <td class="mono accent">V_IL (max)</td>
+              <td>0.8В</td>
+              <td>Максимальна напруга, яку схема читає як <strong>LOW</strong></td>
+            </tr>
+            <tr>
+              <td class="mono accent">Forbidden Zone</td>
+              <td>0.8В – 2.0В</td>
+              <td>Невизначена зона — не HIGH і не LOW. Призводить до <code class="ic">metastability</code></td>
+            </tr>
+            <tr>
+              <td class="mono accent">Noise Margin HIGH</td>
+              <td>3.3В − 2.0В = 1.3В</td>
+              <td>Допустимий шум при рівні HIGH до помилки</td>
+            </tr>
+            <tr>
+              <td class="mono accent">Noise Margin LOW</td>
+              <td>0.8В − 0В = 0.8В</td>
+              <td>Допустимий шум при рівні LOW до помилки</td>
+            </tr>
+            <tr>
+              <td class="mono accent">Threshold Voltage</td>
+              <td>~1.4В (VDD/2)</td>
+              <td>Теоретична межа перемикання. На практиці — V_IH/V_IL</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <div class="callout callout-warning">
+        <span class="callout-icon">WRN</span>
+        <div>
+          <strong>5В пристрій на 3.3В вхід!</strong> Якщо підключити 5В GPIO до STM32 (3.3В), HIGH = 5В,
+          але <code class="ic">V_IH max</code> для STM32 = <code class="ic">VDD + 0.3В = 3.6В</code>.
+          Результат — пошкодження порту. Завжди перевіряй сумісність рівнів або використовуй level shifter.
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         06 — ДЖЕРЕЛА СИГНАЛУ
+    ══════════════════════════════════════════════ -->
+    <div class="section-header">
+      <span class="section-num">06 —</span>
+      <span class="section-name">Джерела сигналу</span>
+    </div>
+
+    <p style="color:var(--text-secondary); font-size:var(--text-base); margin-bottom:16px;">
+      В реальній схемі сигнал завжди десь <em>генерується</em>. Джерело визначає характеристики сигналу.
+    </p>
+
+    <!-- Animated source demo -->
+    <div class="anim-wrap">
+      <div class="anim-header">
+        <span class="anim-title">Джерела сигналу · живий приклад</span>
+      </div>
+      <div class="anim-body">
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:10px;">
+          <div class="stat-card" style="padding:12px 14px; cursor:pointer; transition:border-color 0.2s;"
+               onclick="showSource('mcu')" id="src-mcu">
+            <div class="stat-label" style="color:var(--rising)">Мікроконтролер</div>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);margin-top:4px;">GPIO, TIM, UART, SPI…</div>
+          </div>
+          <div class="stat-card" style="padding:12px 14px; cursor:pointer; transition:border-color 0.2s;"
+               onclick="showSource('sensor')" id="src-sensor">
+            <div class="stat-label">Датчик</div>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);margin-top:4px;">Аналоговий вихід</div>
+          </div>
+          <div class="stat-card" style="padding:12px 14px; cursor:pointer; transition:border-color 0.2s;"
+               onclick="showSource('gen')" id="src-gen">
+            <div class="stat-label">Генератор</div>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);margin-top:4px;">Кварц, RC, PLL</div>
+          </div>
+          <div class="stat-card" style="padding:12px 14px; cursor:pointer; transition:border-color 0.2s;"
+               onclick="showSource('button')" id="src-button">
+            <div class="stat-label">Кнопка</div>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);margin-top:4px;">Брудний сигнал, bounce</div>
+          </div>
+        </div>
+        <canvas id="sourceCanvas" height="120" style="margin-top:12px;"></canvas>
+        <p id="sourceDesc" style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-top:8px;line-height:1.6;">
+          ← Обери джерело сигналу щоб побачити типову форму
+        </p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         07 — КОД
+    ══════════════════════════════════════════════ -->
+    <div class="section-header">
+      <span class="section-num">07 —</span>
+      <span class="section-name">Код</span>
+    </div>
+
+    <p style="color:var(--text-secondary);font-size:var(--text-base);margin-bottom:16px">
+      Читання логічного рівня GPIO і генерація PWM-сигналу з заданим duty cycle на STM32 HAL.
+    </p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">C · STM32 HAL · GPIO + PWM</span>
+        <button class="code-block-copy">copy</button>
+      </div>
+      <pre class="code-block-body"><span class="cm">/* ── Читання цифрового сигналу (GPIO) ─────────────────────── */</span>
+<span class="kw">GPIO_PinState</span> state = <span class="fn">HAL_GPIO_ReadPin</span>(<span class="reg">GPIOA</span>, <span class="reg">GPIO_PIN_0</span>);
+
+<span class="kw">if</span> (state == <span class="reg">GPIO_PIN_SET</span>) {
+    <span class="cm">// Логічний HIGH — напруга вище V_IH (~2.0В для 3.3В CMOS)</span>
+} <span class="kw">else</span> {
+    <span class="cm">// Логічний LOW — напруга нижче V_IL (~0.8В)</span>
+}
+
+<span class="cm">/* ── Генерація PWM (duty cycle через CCR) ──────────────────── */</span>
+<span class="cm">// Period: ARR = 999, PSC = 79 → f_pwm = 80MHz / (80 × 1000) = 1 кГц</span>
+<span class="fn">HAL_TIM_PWM_Start</span>(&htim2, <span class="reg">TIM_CHANNEL_1</span>);
+
+<span class="cm">// Duty cycle 50%: CCR = (ARR+1) * 0.5 = 500</span>
+<span class="fn">__HAL_TIM_SET_COMPARE</span>(&htim2, <span class="reg">TIM_CHANNEL_1</span>, <span class="num">500</span>);
+
+<span class="cm">// Duty cycle 25%</span>
+<span class="fn">__HAL_TIM_SET_COMPARE</span>(&htim2, <span class="reg">TIM_CHANNEL_1</span>, <span class="num">250</span>);
+
+<span class="cm">/* ── Читання аналогового сигналу (ADC) ─────────────────────── */</span>
+<span class="cm">// Значення 0-4095 → напруга = (val / 4095) * 3.3В</span>
+<span class="fn">HAL_ADC_Start</span>(&hadc1);
+<span class="fn">HAL_ADC_PollForConversion</span>(&hadc1, <span class="num">100</span>);
+<span class="kw">uint32_t</span> raw = <span class="fn">HAL_ADC_GetValue</span>(&hadc1);
+<span class="kw">float</span> voltage = (raw / <span class="num">4095.0f</span>) * <span class="num">3.3f</span>;  <span class="cm">// реальна напруга у вольтах</span></pre>
+    </div>
+
+    <div class="mt-8">
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">C · ESP32 ESP-IDF v5.x · GPIO + ADC</span>
+          <button class="code-block-copy">copy</button>
+        </div>
+        <pre class="code-block-body"><span class="cm">/* ── GPIO читання на ESP32 ──────────────────────────────────── */</span>
+<span class="fn">gpio_set_direction</span>(<span class="reg">GPIO_NUM_4</span>, <span class="reg">GPIO_MODE_INPUT</span>);
+<span class="kw">int</span> level = <span class="fn">gpio_get_level</span>(<span class="reg">GPIO_NUM_4</span>);
+<span class="cm">// 0 = LOW, 1 = HIGH</span>
+
+<span class="cm">/* ── ADC (аналоговий сигнал) на ESP32 ──────────────────────── */</span>
+<span class="kw">adc_oneshot_unit_handle_t</span> adc_handle;
+<span class="kw">adc_oneshot_unit_init_cfg_t</span> init_config = {
+    .unit_id = <span class="reg">ADC_UNIT_1</span>,
+};
+<span class="fn">adc_oneshot_new_unit</span>(&init_config, &adc_handle);
+
+<span class="kw">adc_oneshot_chan_cfg_t</span> chan_config = {
+    .atten    = <span class="reg">ADC_ATTEN_DB_12</span>,  <span class="cm">// діапазон 0-3.3В</span>
+    .bitwidth = <span class="reg">ADC_BITWIDTH_12</span>,  <span class="cm">// 12 біт = 0-4095</span>
+};
+<span class="fn">adc_oneshot_config_channel</span>(adc_handle, <span class="reg">ADC_CHANNEL_0</span>, &chan_config);
+
+<span class="kw">int</span> raw_value;
+<span class="fn">adc_oneshot_read</span>(adc_handle, <span class="reg">ADC_CHANNEL_0</span>, &raw_value);
+<span class="cm">// raw_value → 0..4095 відповідає 0..3.3В</span></pre>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         Q&A
+    ══════════════════════════════════════════════ -->
+    <div class="section-header">
+      <span class="section-num">Q&A —</span>
+      <span class="section-name">Питання на співбесіді</span>
+    </div>
+
+    <div class="accordion">
+
+      <div class="accordion-item">
+        <button class="accordion-trigger" onclick="toggleAccordion(this)">
+          <span>Що таке сигнал і чим відрізняється аналоговий від цифрового?</span>
+          <span class="accordion-icon">+</span>
+        </button>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <strong>Сигнал</strong> — це фізична величина (зазвичай напруга), що змінюється в часі і несе інформацію.<br/><br/>
+            <strong>Аналоговий:</strong> напруга приймає будь-яке неперервне значення в діапазоні (наприклад, 0–3.3В). Приклад: вихід термістора — 1.24В при 25°C, 0.91В при 50°C.<br/><br/>
+            <strong>Цифровий:</strong> напруга приймає лише два рівні — HIGH (~VDD) або LOW (~0В). Будь-яке проміжне значення — це або шум, або помилка схеми (невизначена зона).
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger" onclick="toggleAccordion(this)">
+          <span>Що таке duty cycle і де він використовується на STM32?</span>
+          <span class="accordion-icon">+</span>
+        </button>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <strong>Duty Cycle</strong> — відношення часу HIGH до повного періоду, виражене у відсотках.<br/><br/>
+            Формула: <code class="ic">DC = t_HIGH / T × 100%</code><br/><br/>
+            На STM32 duty cycle задається через регістр <code class="ic">CCR</code> таймера:
+            <code class="ic">DC = CCR / (ARR + 1) × 100%</code>.<br/><br/>
+            Використовується для: управління яскравістю LED, швидкістю мотора (H-bridge), сервоприводами (50Гц, 1–2мс HIGH), імітації аналогового сигналу через RC-фільтр.
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger" onclick="toggleAccordion(this)">
+          <span>Що таке noise margin і навіщо він потрібен?</span>
+          <span class="accordion-icon">+</span>
+        </button>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <strong>Noise Margin</strong> — це "запас міцності" між реальним рівнем сигналу і порогом перемикання.
+            Він показує, наскільки великий шум може накластись на сигнал перед тим, як схема зробить помилку.<br/><br/>
+            Для 3.3В CMOS (STM32):<br/>
+            — <strong>NM_HIGH</strong> = V_OH(min) − V_IH(min) = 3.3В − 2.0В = <strong>1.3В</strong><br/>
+            — <strong>NM_LOW</strong> = V_IL(max) − V_OL(max) = 0.8В − 0.1В = <strong>0.7В</strong><br/><br/>
+            Чим більший noise margin — тим стабільніша схема в умовах електромагнітних перешкод.
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger" onclick="toggleAccordion(this)">
+          <span>Що таке forbidden zone і що відбувається якщо сигнал потрапляє туди?</span>
+          <span class="accordion-icon">+</span>
+        </button>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <strong>Forbidden Zone</strong> (невизначена зона) — діапазон напруги між <code class="ic">V_IL_max</code> та <code class="ic">V_IH_min</code>.
+            Для 3.3В CMOS це приблизно 0.8В–2.0В.<br/><br/>
+            Якщо сигнал потрапляє туди:<br/>
+            — Транзистор в буфері знаходиться між насиченням і відсіченням<br/>
+            — Вихід стає непередбачуваним: може бути і HIGH, і LOW<br/>
+            — Виникає <strong>metastability</strong> — схема "завмирає" у невизначеному стані<br/>
+            — Зростає споживання струму (CMOS споживає струм лише під час перемикання)<br/><br/>
+            Рішення: підтягуючі резистори (pull-up/pull-down), драйвери з гістерезисом (Schmitt trigger).
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger" onclick="toggleAccordion(this)">
+          <span>Чим відрізняється частота від duty cycle? Чи можна змінювати їх незалежно?</span>
+          <span class="accordion-icon">+</span>
+        </button>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <strong>Частота</strong> — визначає як ЧАСТО сигнал перемикається. Регулюється через <code class="ic">ARR</code> і <code class="ic">PSC</code>.<br/><br/>
+            <strong>Duty cycle</strong> — визначає яку ЧАСТИНУ кожного циклу сигнал знаходиться в HIGH. Регулюється через <code class="ic">CCR</code>.<br/><br/>
+            Так, вони незалежні. Приклади:<br/>
+            — 1кГц, 50% — рівний меандр<br/>
+            — 1кГц, 10% — вузький імпульс при тій же частоті<br/>
+            — 50Гц, 5% — сервопривод (1мс HIGH з 20мс периоду)<br/><br/>
+            На STM32: <code class="ic">ARR</code> визначає частоту, <code class="ic">CCR</code> — duty cycle. Змінюєш <code class="ic">CCR</code> → частота не змінюється.
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger" onclick="toggleAccordion(this)">
+          <span>Що таке фаза сигналу і де це важливо в embedded?</span>
+          <span class="accordion-icon">+</span>
+        </button>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <strong>Фаза</strong> — зсув сигналу відносно опорної точки у часі, виражений у градусах (0°–360°) або радіанах.<br/><br/>
+            В embedded фаза критична у:<br/>
+            — <strong>SPI/I²C:</strong> дані мають бути стабільними на момент відповідного фронту CLK (CPOL/CPHA визначають фазу CLK відносно даних)<br/>
+            — <strong>PWM complementary:</strong> dead time між двома каналами — це фазовий зсув для захисту H-bridge від наскрізного струму<br/>
+            — <strong>I²S (аудіо):</strong> фаза між BCLK і LRCK визначає формат даних (I²S, Left-Justified, Right-Justified)<br/><br/>
+            Неправильна фаза = схема читає дані в момент перехідного процесу → помилки.
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /accordion -->
+
+
+    <div class="page-footer">
+      // Конспект · Embedded Systems Notes · Signal Fundamentals · Anton Bodnia
+    </div>
+
+  </div><!-- /page-wrap -->
+
+
+  <script>
+    /* ══════════════════════════════════════════════════════
+       ACCORDION
+    ══════════════════════════════════════════════════════ */
+    function toggleAccordion(btn) {
+      const body = btn.nextElementSibling;
+      const isOpen = btn.classList.contains('open');
+      document.querySelectorAll('.accordion-trigger.open').forEach(b => {
+        b.classList.remove('open');
+        b.nextElementSibling.classList.remove('open');
+      });
+      if (!isOpen) { btn.classList.add('open'); body.classList.add('open'); }
+    }
+
+    document.querySelectorAll('.code-block-copy').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const code = this.closest('.code-block').querySelector('.code-block-body').innerText;
+        navigator.clipboard.writeText(code).catch(() => {});
+        const orig = this.textContent;
+        this.textContent = 'copied!';
+        this.style.color = 'var(--accent)';
+        setTimeout(() => { this.textContent = orig; this.style.color = ''; }, 1500);
+      });
+    });
+
+    /* ══════════════════════════════════════════════════════
+       HELPERS
+    ══════════════════════════════════════════════════════ */
+    const C = {
+      bg:       '#141618',
+      bgEl:     '#1a1d20',
+      rising:   '#00d084',
+      falling:  '#ff6b4a',
+      clk:      '#4a9eff',
+      warning:  '#f5c842',
+      muted:    '#52504a',
+      secondary:'#8b897e',
+      primary:  '#e8e6e0',
+      dim:      'rgba(255,255,255,0.06)',
+      mid:      'rgba(255,255,255,0.12)',
+    };
+
+    function getCtx(id) {
+      const canvas = document.getElementById(id);
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width  = rect.width  * dpr || canvas.offsetWidth  * dpr;
+      canvas.height = canvas.height * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      canvas._cssW = canvas.offsetWidth;
+      canvas._cssH = canvas.height / dpr;
+      return ctx;
+    }
+
+    function drawGrid(ctx, w, h) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 60) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (let y = 0; y < h; y += 40) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+    }
+
+    /* ══════════════════════════════════════════════════════
+       ANALOG vs DIGITAL CANVASES
+    ══════════════════════════════════════════════════════ */
+    let analogT = 0, digitalT = 0;
+
+    function drawAnalog() {
+      const canvas = document.getElementById('analogCanvas');
+      const w = canvas.offsetWidth, h = 100;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.fillStyle = C.bgEl; ctx.fillRect(0,0,w,h);
+      drawGrid(ctx, w, h);
+
+      const pts = 200;
+      ctx.beginPath();
+      ctx.strokeStyle = C.rising; ctx.lineWidth = 2;
+      for (let i = 0; i <= pts; i++) {
+        const x = (i / pts) * w;
+        const t = (i / pts) * 4 * Math.PI + analogT;
+        const y = h/2 - (Math.sin(t) * 0.6 + Math.sin(t*2.1)*0.2 + Math.sin(t*0.7)*0.15) * h * 0.38;
+        i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+      analogT += 0.04;
+    }
+
+    function drawDigital() {
+      const canvas = document.getElementById('digitalCanvas');
+      const w = canvas.offsetWidth, h = 100;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.fillStyle = C.bgEl; ctx.fillRect(0,0,w,h);
+      drawGrid(ctx, w, h);
+
+      const margin = 14;
+      const high = margin, low = h - margin;
+      ctx.beginPath();
+      ctx.strokeStyle = C.clk; ctx.lineWidth = 2;
+      const steps = 8;
+      let lastHigh = false;
+      for (let i = 0; i <= steps; i++) {
+        const x = (i / steps) * w;
+        const phase = (i / steps * 4 * Math.PI + digitalT);
+        const isHigh = Math.sin(phase) > 0;
+        if (i === 0) { ctx.moveTo(0, isHigh ? high : low); lastHigh = isHigh; }
+        else {
+          if (isHigh !== lastHigh) {
+            ctx.lineTo(x, lastHigh ? high : low);
+            ctx.lineTo(x, isHigh ? high : low);
+            lastHigh = isHigh;
+          }
+          ctx.lineTo(x, isHigh ? high : low);
+        }
+      }
+      ctx.stroke();
+
+      // Labels
+      ctx.font = '9px JetBrains Mono';
+      ctx.fillStyle = C.clk;
+      ctx.fillText('HIGH', 4, high + 10);
+      ctx.fillStyle = C.muted;
+      ctx.fillText('LOW', 4, low - 4);
+      digitalT += 0.04;
+    }
+
+    function animateCompare() {
+      drawAnalog(); drawDigital();
+      requestAnimationFrame(animateCompare);
+    }
+    animateCompare();
+
+
+    /* ══════════════════════════════════════════════════════
+       INTERACTIVE SIGNAL PARAMETERS
+    ══════════════════════════════════════════════════════ */
+    let paramState = { amp: 65, freq: 3, duty: 50, phase: 0, wave: 'square' };
+    let paramT = 0;
+
+    function setWave(type) {
+      paramState.wave = type;
+      document.querySelectorAll('.wave-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      const dutyRow = document.getElementById('dutyRow');
+      const dutyCard = document.getElementById('dutyCard');
+      const show = (type === 'square' || type === 'pulse');
+      dutyRow.style.opacity = show ? '1' : '0.3';
+      dutyCard.style.opacity = show ? '1' : '0.3';
+    }
+
+    function updateParam(param, val) {
+      paramState[param] = parseFloat(val);
+      const v = parseFloat(val);
+      if (param === 'amp') {
+        document.getElementById('ampVal').innerHTML = (v/100*3.3).toFixed(2) + '<span style="font-size:10px;color:var(--text-muted)"> В</span>';
+        document.getElementById('readAmp').textContent = (v/100*3.3).toFixed(2);
+      }
+      if (param === 'freq') {
+        document.getElementById('freqVal').innerHTML = v + '<span style="font-size:10px;color:var(--text-muted)"> Гц</span>';
+        document.getElementById('readFreq').textContent = v;
+        document.getElementById('readPeriod').textContent = Math.round(1000/v);
+      }
+      if (param === 'duty') {
+        document.getElementById('dutyVal').innerHTML = v + '<span style="font-size:10px;color:var(--text-muted)"> %</span>';
+        document.getElementById('readDuty').textContent = v;
+      }
+      if (param === 'phase') {
+        document.getElementById('phaseVal').innerHTML = v + '<span style="font-size:10px;color:var(--text-muted)"> °</span>';
+      }
+    }
+
+    function getWaveY(t, state, h) {
+      const { amp, freq, duty, phase, wave } = state;
+      const margin = 16;
+      const maxA = (h/2 - margin);
+      const a = (amp / 100) * maxA;
+      const phRad = (phase / 360) * Math.PI * 2;
+      const th = t * freq * Math.PI * 2 + phRad;
+
+      let v = 0;
+      if (wave === 'sine') {
+        v = Math.sin(th);
+      } else if (wave === 'square') {
+        const normalized = ((th / (2*Math.PI)) % 1 + 1) % 1;
+        v = normalized < (duty/100) ? 1 : -1;
+      } else if (wave === 'triangle') {
+        const normalized = ((th / (2*Math.PI)) % 1 + 1) % 1;
+        v = normalized < 0.5 ? (4*normalized - 1) : (3 - 4*normalized);
+      } else if (wave === 'pulse') {
+        const normalized = ((th / (2*Math.PI)) % 1 + 1) % 1;
+        v = normalized < 0.15 ? 1 : -1;
+      }
+      return h/2 - v * a;
+    }
+
+    function drawParamCanvas() {
+      const canvas = document.getElementById('paramCanvas');
+      const w = canvas.offsetWidth, h = 160;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      ctx.fillStyle = C.bg; ctx.fillRect(0,0,w,h);
+      drawGrid(ctx, w, h);
+
+      // Draw signal
+      ctx.beginPath();
+      ctx.strokeStyle = C.rising; ctx.lineWidth = 2.5;
+      const pts = w * 2;
+      for (let i = 0; i <= pts; i++) {
+        const x = (i / pts) * w;
+        const t = (i / pts) * 2 + paramT;
+        const y = getWaveY(t, paramState, h);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Amplitude label
+      const a = (paramState.amp / 100) * (h/2 - 16);
+      ctx.strokeStyle = 'rgba(0,208,132,0.15)'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.moveTo(0, h/2 - a); ctx.lineTo(w, h/2 - a); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, h/2 + a); ctx.lineTo(w, h/2 + a); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font = '9px JetBrains Mono'; ctx.fillStyle = 'rgba(0,208,132,0.5)';
+      ctx.fillText((paramState.amp/100*3.3).toFixed(2)+'В', 4, h/2 - a - 3);
+
+      // Period marker
+      if (paramState.freq > 0) {
+        const periodW = (1 / paramState.freq) / 2 * w;
+        ctx.strokeStyle = 'rgba(74,158,255,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
+        ctx.beginPath(); ctx.moveTo(periodW, 0); ctx.lineTo(periodW, h); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(74,158,255,0.5)'; ctx.font = '9px JetBrains Mono';
+        ctx.fillText('T/2', periodW + 3, 12);
+      }
+
+      // Zero line
+      ctx.strokeStyle = C.dim; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
+
+      paramT += 0.008;
+    }
+
+    function animateParam() {
+      drawParamCanvas();
+      requestAnimationFrame(animateParam);
+    }
+    animateParam();
+
+
+    /* ══════════════════════════════════════════════════════
+       WAVE SHAPES SELECTOR
+    ══════════════════════════════════════════════════════ */
+    const shapeDescs = {
+      square:   'Прямокутний сигнал. Два рівні: HIGH і LOW. Ідеальний цифровий сигнал. Застосування: GPIO, UART, SPI, I²C, тактовий сигнал CLK.',
+      sine:     'Синусоїда. Плавна, неперервна форма. Натуральна форма AC-сигналу і звуку. В embedded: вихід DAC, аудіо, генератор сигналів.',
+      triangle: 'Трикутний сигнал. Лінійний підйом і спад. Основа для генерації PWM у аналогових компараторах. Використовується у VCO.',
+      pulse:    'Короткий вузький імпульс. Duty cycle значно менше 50%. IR-пульти (38кГц несуча), тригери, one-pulse mode таймера STM32.',
+    };
+    const shapeColors = { square: C.rising, sine: C.clk, triangle: C.warning, pulse: C.falling };
+    let currentShape = 'square';
+    let shapesT = 0;
+
+    function selectShape(type, btn) {
+      currentShape = type;
+      document.querySelectorAll('#shapesCanvas').forEach(()=>{});
+      document.querySelectorAll('.wave-selector .wave-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      document.getElementById('waveShapeLabel').textContent = type.toUpperCase() + ' WAVE';
+      document.getElementById('waveShapeLabel').style.color = shapeColors[type];
+      document.getElementById('waveShapeDesc').textContent = shapeDescs[type];
+    }
+
+    function drawShapes() {
+      const canvas = document.getElementById('shapesCanvas');
+      const w = canvas.offsetWidth, h = 200;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.fillStyle = C.bg; ctx.fillRect(0,0,w,h);
+      drawGrid(ctx, w, h);
+
+      const types = ['square','sine','triangle','pulse'];
+      const rowH = h / types.length;
+
+      types.forEach((type, idx) => {
+        const baseY = idx * rowH + rowH/2;
+        const amp = rowH * 0.35;
+        const col = shapeColors[type];
+        const alpha = type === currentShape ? 1 : 0.2;
+
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = col;
+        ctx.lineWidth = type === currentShape ? 2.5 : 1.5;
+
+        // Label
+        ctx.font = '9px JetBrains Mono';
+        ctx.fillStyle = col;
+        ctx.fillText(type.toUpperCase(), 4, baseY - amp - 2);
+
+        ctx.beginPath();
+        const pts = w * 2;
+        for (let i = 0; i <= pts; i++) {
+          const x = (i / pts) * w;
+          const t = (i / pts) * 3 + shapesT;
+          const th = t * Math.PI * 2;
+          let v = 0;
+          if (type === 'sine') v = Math.sin(th);
+          else if (type === 'square') {
+            const n = ((th / (2*Math.PI)) % 1 + 1) % 1;
+            v = n < 0.5 ? 1 : -1;
+          } else if (type === 'triangle') {
+            const n = ((th / (2*Math.PI)) % 1 + 1) % 1;
+            v = n < 0.5 ? (4*n - 1) : (3 - 4*n);
+          } else if (type === 'pulse') {
+            const n = ((th / (2*Math.PI)) % 1 + 1) % 1;
+            v = n < 0.12 ? 1 : -1;
+          }
+          const y = baseY - v * amp;
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Divider
+        if (idx < types.length - 1) {
+          ctx.globalAlpha = 0.08;
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(0, (idx+1)*rowH);
+          ctx.lineTo(w, (idx+1)*rowH);
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+      });
+
+      shapesT += 0.008;
+    }
+
+    function animateShapes() {
+      drawShapes();
+      requestAnimationFrame(animateShapes);
+    }
+    animateShapes();
+
+
+    /* ══════════════════════════════════════════════════════
+       LOGIC LEVELS INTERACTIVE
+    ══════════════════════════════════════════════════════ */
+    let currentVolt = 2.5;
+
+    const V_IH  = 2.0;
+    const V_IL  = 0.8;
+    const VDD   = 3.3;
+    const zoneDescs = {
+      high:    '▲ Зона HIGH: напруга вище 2.0В — мікроконтролер читає логічну "1"',
+      low:     '▼ Зона LOW: напруга нижче 0.8В — мікроконтролер читає логічний "0"',
+      forbidden: '⚠ Заборонена зона: 0.8В–2.0В — невизначений стан, ризик metastability!'
+    };
+
+    function updateVoltage(val) {
+      currentVolt = val / 100;
+      document.getElementById('voltVal').innerHTML =
+        currentVolt.toFixed(2) + '<span style="font-size:10px;color:var(--text-muted)"> В</span>';
+
+      const logicState = document.getElementById('logicState');
+      const logicLabel = document.getElementById('logicLabel');
+      const desc = document.getElementById('logicZoneDesc');
+
+      if (currentVolt >= V_IH) {
+        logicState.className = 'logic-dot high';
+        logicLabel.textContent = 'HIGH';
+        desc.textContent = zoneDescs.high;
+        desc.style.color = 'var(--rising)';
+      } else if (currentVolt <= V_IL) {
+        logicState.className = 'logic-dot low';
+        logicLabel.textContent = 'LOW';
+        desc.textContent = zoneDescs.low;
+        desc.style.color = 'var(--text-muted)';
+      } else {
+        logicState.className = 'logic-dot';
+        logicLabel.textContent = '???';
+        logicState.querySelector('.logic-dot-circle').style.background = 'var(--warning)';
+        logicState.querySelector('.logic-dot-circle').style.boxShadow = '0 0 8px rgba(245,200,66,0.6)';
+        logicState.style.borderColor = 'rgba(245,200,66,0.3)';
+        logicState.style.color = 'var(--warning)';
+        desc.textContent = zoneDescs.forbidden;
+        desc.style.color = 'var(--warning)';
+      }
+    }
+
+    function drawLogicCanvas() {
+      const canvas = document.getElementById('logicCanvas');
+      const w = canvas.offsetWidth, h = 220;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      ctx.fillStyle = C.bg; ctx.fillRect(0,0,w,h);
+
+      const pad = { top: 20, bot: 20 };
+      const plotH = h - pad.top - pad.bot;
+      const voltToY = v => pad.top + plotH * (1 - v / VDD);
+
+      const yHigh = voltToY(V_IH);
+      const yLow  = voltToY(V_IL);
+      const yVDD  = voltToY(VDD);
+      const yGND  = voltToY(0);
+
+      // Zone fills
+      // HIGH zone
+      ctx.fillStyle = 'rgba(0,208,132,0.06)';
+      ctx.fillRect(60, yVDD, w-60, yHigh - yVDD);
+      // Forbidden zone
+      ctx.fillStyle = 'rgba(245,200,66,0.06)';
+      ctx.fillRect(60, yHigh, w-60, yLow - yHigh);
+      // LOW zone
+      ctx.fillStyle = 'rgba(74,158,255,0.04)';
+      ctx.fillRect(60, yLow, w-60, yGND - yLow);
+
+      // Grid
+      drawGrid(ctx, w, h);
+
+      // Threshold lines
+      function dashed(y, col, label, val) {
+        ctx.strokeStyle = col; ctx.lineWidth = 1;
+        ctx.setLineDash([6,4]);
+        ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(w, y); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.font = '9px JetBrains Mono'; ctx.fillStyle = col;
+        ctx.fillText(label, 62, y - 3);
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.fillText(val, w - 36, y - 3);
+      }
+
+      dashed(yVDD, 'rgba(0,208,132,0.5)', 'VDD', '3.3В');
+      dashed(yHigh, 'rgba(0,208,132,0.6)', 'V_IH', '2.0В');
+      dashed(yLow, 'rgba(74,158,255,0.5)', 'V_IL', '0.8В');
+      dashed(yGND, 'rgba(255,255,255,0.2)', 'GND', '0В');
+
+      // Zone labels on left
+      ctx.font = '9px JetBrains Mono';
+      ctx.fillStyle = 'rgba(0,208,132,0.7)';
+      ctx.fillText('HIGH', 4, (yVDD + yHigh)/2 + 3);
+      ctx.fillStyle = 'rgba(245,200,66,0.7)';
+      ctx.fillText('???', 4, (yHigh + yLow)/2 + 3);
+      ctx.fillStyle = 'rgba(74,158,255,0.7)';
+      ctx.fillText('LOW', 4, (yLow + yGND)/2 + 3);
+
+      // Current voltage marker
+      const yCurr = voltToY(currentVolt);
+      let markerCol = C.rising;
+      if (currentVolt < V_IH && currentVolt > V_IL) markerCol = C.warning;
+      else if (currentVolt <= V_IL) markerCol = C.clk;
+
+      // Horizontal line for current V
+      ctx.strokeStyle = markerCol; ctx.lineWidth = 2; ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(60, yCurr); ctx.lineTo(w - 10, yCurr); ctx.stroke();
+
+      // Arrow/marker
+      ctx.fillStyle = markerCol;
+      ctx.beginPath(); ctx.arc(w - 10, yCurr, 5, 0, Math.PI*2); ctx.fill();
+      ctx.font = 'bold 10px JetBrains Mono';
+      ctx.fillText(currentVolt.toFixed(2)+'В', w - 54, yCurr - 7);
+
+      // Y-axis ticks
+      for (let v = 0; v <= 3.3; v += 0.5) {
+        const y = voltToY(v);
+        ctx.fillStyle = C.muted; ctx.font = '8px JetBrains Mono';
+        ctx.fillText(v.toFixed(1), 42, y + 3);
+      }
+    }
+
+    function animateLogic() {
+      drawLogicCanvas();
+      requestAnimationFrame(animateLogic);
+    }
+    animateLogic();
+    updateVoltage(250);
+
+
+    /* ══════════════════════════════════════════════════════
+       SOURCE SELECTOR
+    ══════════════════════════════════════════════════════ */
+    let sourceType = null;
+    let sourceT = 0;
+    const sourceDescs = {
+      mcu:    'Мікроконтролер (STM32 GPIO): чистий цифровий сигнал. Фронти швидкі, рівні стабільні. Duty cycle і частота — програмно.',
+      sensor: 'Датчик (термістор, мікрофон): аналоговий, повільний, залежить від фізичної величини. Потрібен ADC для зчитування.',
+      gen:    'Кварцовий генератор: ідеальна синусоїда або меандр. Дуже стабільна частота. Базис для PLL і системного тактування.',
+      button: 'Кнопка: "брудний" сигнал. При натисканні виникає bounce — десятки переходів за кілька мілісекунд. Потрібна дебаунс-логіка.',
+    };
+
+    function showSource(type) {
+      sourceType = type;
+      document.querySelectorAll('[id^="src-"]').forEach(el => {
+        el.style.borderColor = el.id === 'src-'+type ? 'rgba(0,208,132,0.4)' : 'var(--border-dim)';
+      });
+      document.getElementById('sourceDesc').textContent = sourceDescs[type];
+      document.getElementById('sourceDesc').style.color = type === 'button' ? 'var(--warning)' : 'var(--text-muted)';
+    }
+
+    function drawSource() {
+      const canvas = document.getElementById('sourceCanvas');
+      const w = canvas.offsetWidth, h = 120;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.fillStyle = C.bg; ctx.fillRect(0,0,w,h);
+      drawGrid(ctx, w, h);
+
+      if (!sourceType) {
+        ctx.font = '11px JetBrains Mono';
+        ctx.fillStyle = C.muted;
+        ctx.textAlign = 'center';
+        ctx.fillText('← Обери джерело', w/2, h/2 + 4);
+        ctx.textAlign = 'left';
+        return;
+      }
+
+      const margin = 16;
+      const amp = h/2 - margin;
+      ctx.strokeStyle = C.rising; ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      const pts = w * 2;
+      for (let i = 0; i <= pts; i++) {
+        const x = (i / pts) * w;
+        const t = (i / pts) * 3 + sourceT;
+
+        let y = h/2;
+        if (sourceType === 'mcu') {
+          const n = ((t % 1) + 1) % 1;
+          const v = n < 0.5 ? 1 : -1;
+          y = h/2 - v * amp * 0.85;
+          ctx.strokeStyle = C.rising;
+        } else if (sourceType === 'sensor') {
+          const v = Math.sin(t * 0.8) * 0.5 + Math.sin(t * 1.3) * 0.3 + Math.sin(t*0.4)*0.2;
+          y = h/2 - v * amp * 0.75;
+          ctx.strokeStyle = C.warning;
+        } else if (sourceType === 'gen') {
+          y = h/2 - Math.sin(t * Math.PI * 2) * amp * 0.75;
+          ctx.strokeStyle = C.clk;
+        } else if (sourceType === 'button') {
+          // Clean press + bounce
+          const cycle = (t / 2) % 1;
+          let v;
+          if (cycle < 0.3) {
+            v = -1; // LOW (not pressed)
+          } else if (cycle < 0.38) {
+            // Bounce region
+            const btc = ((cycle - 0.3) / 0.08);
+            v = (Math.sin(btc * Math.PI * 12) > 0) ? 0.85 : -0.85;
+            // Random-ish bounce
+            v = Math.sin(btc * 47) > 0.2 ? 0.85 : -0.85;
+          } else if (cycle < 0.7) {
+            v = 1;
+          } else if (cycle < 0.78) {
+            // Release bounce
+            const btc = (cycle - 0.7) / 0.08;
+            v = Math.sin(btc * 43) > 0.2 ? 0.85 : -0.85;
+          } else {
+            v = -1;
+          }
+          y = h/2 - v * amp * 0.8;
+          ctx.strokeStyle = C.falling;
+        }
+
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      if (sourceType === 'button') {
+        ctx.font = '9px JetBrains Mono'; ctx.fillStyle = C.warning;
+        ctx.fillText('↑ BOUNCE', w * 0.32, margin + 8);
+      }
+      sourceT += 0.012;
+    }
+
+    function animateSource() {
+      drawSource();
+      requestAnimationFrame(animateSource);
+    }
+    animateSource();
+  </script>
+
+</body>
+</html>
