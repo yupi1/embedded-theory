@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Latch · Конспект · Embedded Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0d0f12;
+  --bg2:      #13161b;
+  --bg3:      #1a1e25;
+  --border:   #232830;
+  --border2:  #2e3540;
+  --text:     #c9d1dc;
+  --text-dim: #6b7685;
+  --text-br:  #e8edf5;
+  --blue:     #3b8cf7;
+  --green:    #56d09a;
+  --orange:   #f7a23b;
+  --red:      #e05a6a;
+  --mono: 'JetBrains Mono', monospace;
+  --serif: 'Spectral', Georgia, serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--mono); font-size: 14px; line-height: 1.75;
+  min-height: 100vh; padding: 0 0 100px;
+}
+
+/* ─── PAGE LAYOUT ─── */
+.page { max-width: 780px; margin: 0 auto; padding: 0 32px; }
+
+/* ─── TOPBAR ─── */
+.topbar {
+  border-bottom: 1px solid var(--border);
+  padding: 13px 32px; font-size: 12px; color: var(--text-dim);
+  display: flex; align-items: center; gap: 8px;
+  max-width: 100%;
+}
+.topbar a { color: var(--blue); text-decoration: none; }
+.topbar a:hover { text-decoration: underline; }
+
+/* ─── HEADER ─── */
+.doc-header { padding: 48px 0 36px; border-bottom: 1px solid var(--border); margin-bottom: 0; }
+.doc-meta {
+  font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text-dim); margin-bottom: 18px;
+}
+.doc-title {
+  font-family: var(--serif); font-size: 44px; font-weight: 600;
+  color: var(--text-br); line-height: 1.1; margin-bottom: 14px;
+}
+.doc-subtitle { font-size: 15px; color: var(--text-dim); max-width: 560px; line-height: 1.6; }
+.tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+.tag {
+  background: #111a28; color: #5b9cf6; border: 1px solid #1a2e4a;
+  border-radius: 4px; font-size: 11px; padding: 3px 10px; letter-spacing: .04em;
+}
+.tag.g { background:#0d1c10; color:var(--green); border-color:#1a3020; }
+.tag.o { background:#1c1508; color:var(--orange); border-color:#342810; }
+
+/* ─── TOC ─── */
+.toc {
+  margin: 32px 0 0;
+  padding: 20px 24px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.toc-label { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 4px; }
+.toc a {
+  color: var(--text-dim); text-decoration: none; font-size: 13px;
+  display: flex; align-items: baseline; gap: 8px; transition: color .15s;
+}
+.toc a:hover { color: var(--blue); }
+.toc-num { color: var(--border2); font-size: 11px; min-width: 24px; }
+
+/* ─── SECTIONS ─── */
+.section { padding: 52px 0 0; }
+.section-num {
+  font-size: 11px; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--text-dim); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-num::after { content:''; flex:1; height:1px; background:var(--border); }
+.section-title {
+  font-family: var(--serif); font-size: 28px; font-weight: 600;
+  color: var(--text-br); margin-bottom: 18px;
+}
+
+/* ─── PROSE ─── */
+.prose { font-size: 14px; color: var(--text); line-height: 1.78; margin-bottom: 14px; }
+.prose strong { color: var(--text-br); font-weight: 600; }
+.prose code {
+  background: var(--bg3); color: var(--green); border: 1px solid var(--border);
+  border-radius: 3px; padding: 1px 6px; font-size: 13px;
+}
+.prose em { color: var(--text-dim); font-style: italic; }
+
+/* ─── SUBSECTION ─── */
+.sub-title {
+  font-size: 13px; font-weight: 700; color: var(--text-br);
+  letter-spacing: .04em; margin: 28px 0 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.sub-title::before { content:''; width:3px; height:14px; background:var(--blue); border-radius:2px; flex-shrink:0; }
+
+/* ─── PRINCIPLE LIST ─── */
+.principle-list { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 18px; }
+.principle-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 10px 14px; border-radius: 7px;
+  background: var(--bg2); border: 1px solid var(--border);
+  font-size: 13px; line-height: 1.6;
+}
+.pi-signal {
+  font-weight: 700; min-width: 72px; flex-shrink: 0; font-size: 13px;
+}
+.pi-signal.s1  { color: var(--green); }
+.pi-signal.r1  { color: var(--red); }
+.pi-signal.sr0 { color: var(--orange); }
+.pi-signal.en1 { color: var(--blue); }
+.pi-signal.en0 { color: var(--text-dim); }
+.pi-text { color: var(--text-dim); }
+.pi-text strong { color: var(--text); font-weight: 600; }
+
+/* ─── CALLOUT BOXES ─── */
+.box {
+  border-radius: 7px; padding: 13px 17px; margin: 14px 0;
+  font-size: 13px; line-height: 1.65; display: flex; gap: 11px; align-items: flex-start;
+}
+.box-key { background:#0c1828; border:1px solid #183050; color:#7ab8f5; }
+.box-wrn { background:#1c0e0a; border:1px solid #3a1810; color:var(--red); }
+.box-inf { background:#0c1c10; border:1px solid #183820; color:var(--green); }
+.box-lbl { font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:700; opacity:.7; white-space:nowrap; margin-top:1px; }
+
+/* ─── TRUTH TABLE ─── */
+.tbl-wrap { overflow-x:auto; margin: 14px 0; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th {
+  text-align:left; padding:9px 14px; border-bottom:1px solid var(--border2);
+  color:var(--text-dim); font-weight:600; font-size:11px;
+  letter-spacing:.06em; text-transform:uppercase;
+}
+td { padding:9px 14px; border-bottom:1px solid var(--border); }
+tr:last-child td { border-bottom:none; }
+.td-hi   { color:var(--blue); font-weight:700; }
+.td-warn { color:var(--red); font-weight:700; }
+tr.tr-warn td { color:var(--red); }
+
+/* ─── TYPE GRID ─── */
+.type-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+@media(max-width:480px){ .type-grid{grid-template-columns:1fr;} }
+.type-card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:8px;
+  padding:14px 16px;
+}
+.type-card-name { font-size:13px; font-weight:700; color:var(--text-br); margin-bottom:4px; }
+.type-card-desc { font-size:12px; color:var(--text-dim); line-height:1.55; }
+.type-card.main { border-color:var(--border2); }
+.type-card.main .type-card-name { color:var(--blue); }
+
+/* ─── USE GRID ─── */
+.use-list { display:flex; flex-direction:column; gap:6px; margin:10px 0; }
+.use-item {
+  display:flex; gap:10px; align-items:flex-start;
+  background:var(--bg2); border:1px solid var(--border); border-radius:6px;
+  padding:10px 14px; font-size:13px;
+}
+.use-num { color:var(--border2); font-size:11px; min-width:20px; flex-shrink:0; margin-top:2px; }
+.use-text { color:var(--text-dim); line-height:1.55; }
+.use-text strong { color:var(--text-br); }
+
+/* ─── WIDGET SHELL ─── */
+.widget-wrap {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; margin: 20px 0;
+}
+.widget-head {
+  padding: 11px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-dim);
+}
+.widget-title { color: var(--text-br); font-weight: 600; font-size: 13px; }
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 8px var(--green);
+  animation: blink 1.6s ease-in-out infinite; margin-left: auto;
+}
+.live-label { font-size: 11px; color: var(--green); letter-spacing: .08em; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ─── SVG ─── */
+.wire { stroke: #28323f; stroke-width: 2; fill: none; transition: stroke .22s; }
+.wire.hi-blue   { stroke: var(--blue); }
+.wire.hi-green  { stroke: var(--green); }
+.wire.hi-red    { stroke: var(--red); }
+.wire.hi-orange { stroke: var(--orange); }
+.wire.oscillate { stroke: var(--orange); stroke-dasharray: 6 4; animation: dash .6s linear infinite; }
+@keyframes dash { to { stroke-dashoffset: -20; } }
+
+.gate-body { fill: var(--bg2); stroke: #38444f; stroke-width: 1.5; }
+.gate-lbl  { fill: #4a5668; font-family: var(--mono); font-size: 11px; }
+.pin-lbl   { fill: var(--text-dim); font-family: var(--mono); font-size: 13px; font-weight: 700; }
+
+.node { fill: #1c2530; stroke: #38444f; stroke-width: 1.5; transition: all .22s; }
+.node.hi-blue   { fill: var(--blue);   stroke: var(--blue); }
+.node.hi-red    { fill: var(--red);    stroke: var(--red); }
+.node.hi-green  { fill: var(--green);  stroke: var(--green); }
+.node.hi-orange { fill: var(--orange); stroke: var(--orange); }
+
+.sig { font-family: var(--mono); font-size: 12px; font-weight: 700; transition: fill .22s; }
+.sig.v0        { fill: #32404f; }
+.sig.v1-blue   { fill: var(--blue); }
+.sig.v1-green  { fill: var(--green); }
+.sig.v1-red    { fill: var(--red); }
+.sig.vX-orange { fill: var(--orange); animation: flick .5s ease-in-out infinite alternate; }
+@keyframes flick { from{opacity:.4} to{opacity:1} }
+
+/* ─── CONTROLS ─── */
+.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
+@media(max-width:480px){ .controls { grid-template-columns: 1fr; } }
+.pin-group { display: flex; flex-direction: column; gap: 7px; }
+.pin-name  { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--text-dim); }
+.btn-row   { display: flex; gap: 7px; }
+
+.pin-btn {
+  flex: 1; padding: 11px 0; border-radius: 7px;
+  border: 1px solid var(--border2); background: var(--bg3);
+  color: var(--text-dim); font-family: var(--mono);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all .16s; outline: none; user-select: none;
+}
+.pin-btn:hover { color: var(--text-br); }
+.act-s0 { background:#0d1f14; border-color:#2a6040; color:var(--green); }
+.act-s1 { background:#122416; border-color:var(--green); color:var(--green); box-shadow:0 0 12px rgba(86,208,154,.25); }
+.act-r0 { background:#0d1828; border-color:#1e3d6a; color:var(--blue); }
+.act-r1 { background:#22100f; border-color:var(--red); color:var(--red); box-shadow:0 0 12px rgba(224,90,106,.25); }
+.act-a0 { background:#0d1828; border-color:#1e3d6a; color:var(--blue); }
+.act-a1 { background:#22100f; border-color:var(--red); color:var(--red); box-shadow:0 0 12px rgba(224,90,106,.25); }
+
+/* ─── EXPLANATION ROWS ─── */
+.explain-wrap { border-top: 1px solid var(--border); padding: 20px; display:flex; flex-direction:column; gap:8px; }
+.sig-rows { display: flex; flex-direction: column; gap: 4px; }
+.sig-row {
+  display: flex; align-items: baseline; gap: 6px; font-size: 12.5px;
+  padding: 8px 12px; border-radius: 6px;
+  background: var(--bg3); border: 1px solid var(--border); transition: border-color .22s;
+}
+.sig-row.hi-border-blue   { border-color: #1a3060; }
+.sig-row.hi-border-green  { border-color: #1a3824; }
+.sig-row.hi-border-red    { border-color: #381420; }
+.sig-row.hi-border-orange { border-color: #382810; }
+.sr-name { font-weight:700; min-width:68px; font-size:13px; flex-shrink:0; }
+.c-blue{color:var(--blue)} .c-green{color:var(--green)} .c-red{color:var(--red)}
+.c-orange{color:var(--orange)} .c-dim{color:var(--text-dim)} .c-br{color:var(--text-br)}
+.sr-eq  { color:var(--border2); flex-shrink:0; margin:0 2px; }
+.sr-val { font-weight:700; min-width:20px; flex-shrink:0; }
+.sr-arr { color:var(--border2); flex-shrink:0; margin:0 6px; }
+.sr-why { color:var(--text-dim); line-height:1.5; flex:1; }
+
+/* ─── OSC BOX ─── */
+.osc-box {
+  padding:12px 16px; border-radius:7px; border:1px solid #38280c;
+  background:#1a1308; color:var(--orange); font-size:13px; line-height:1.6;
+  display:flex; gap:10px; align-items:flex-start;
+}
+.osc-box-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="#">← повернутись до конспекту</a>
+  <span style="color:var(--border2)">·</span>
+  <span>Конспект · Electronics · Digital Logic</span>
+</div>
+
+<div class="page">
+
+<!-- ══════════ HEADER ══════════ -->
+<div class="doc-header">
+  <div class="doc-meta">Sequential Logic · Fundamentals</div>
+  <div class="doc-title">Latch</div>
+  <div class="doc-subtitle">
+    Базовий елемент послідовнісної логіки. Зберігає 1 біт через зворотний зв'язок —
+    без тактового сигналу, реагуючи на рівень, а не на фронт.
+  </div>
+  <div class="tags">
+    <span class="tag">STM32</span>
+    <span class="tag">ESP32</span>
+    <span class="tag g">Electronics</span>
+    <span class="tag o">Sequential Logic</span>
+    <span class="tag">Fundamentals</span>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-label">Зміст</div>
+  <a href="#s01"><span class="toc-num">01</span>Поняття</a>
+  <a href="#s02"><span class="toc-num">02</span>Типи</a>
+  <a href="#s03"><span class="toc-num">03</span>Будова</a>
+  <a href="#s04"><span class="toc-num">04</span>Базовий елемент: NOR + зворотній зв'язок</a>
+  <a href="#s05"><span class="toc-num">05</span>SR Latch</a>
+  <a href="#s06"><span class="toc-num">06</span>D Latch</a>
+  <a href="#s07"><span class="toc-num">07</span>Використання</a>
+</div>
+
+
+<!-- ══════════ 01 ПОНЯТТЯ ══════════ -->
+<div class="section" id="s01">
+  <div class="section-num">01</div>
+  <div class="section-title">Поняття</div>
+
+  <p class="prose">
+    <strong>Latch (защіпка)</strong> — це базовий елемент <strong>послідовнісної логіки</strong>, який
+    зберігає 1 біт стану (0 або 1), є <strong>рівнево-чутливим (level-sensitive)</strong>, а не по фронту,
+    і змінює стан поки дозволяє керуючий сигнал (enable).
+  </p>
+
+  <div class="box box-key">
+    <span class="box-lbl">KEY</span>
+    <span>Latch має <strong>пам'ять через зворотний зв'язок (feedback)</strong> — вихід Q впливає на власний вхід, завдяки чому схема «запам'ятовує» останній стан навіть після зникнення вхідного сигналу.</span>
+  </div>
+</div>
+
+
+<!-- ══════════ 02 ТИПИ ══════════ -->
+<div class="section" id="s02">
+  <div class="section-num">02</div>
+  <div class="section-title">Типи</div>
+
+  <div class="sub-title">Основні</div>
+  <div class="type-grid">
+    <div class="type-card main">
+      <div class="type-card-name">SR Latch</div>
+      <div class="type-card-desc">Set-Reset. Базовий. Два NOR (або NAND) з перехресним зворотним зв'язком. Має заборонений стан S=R=1.</div>
+    </div>
+    <div class="type-card main">
+      <div class="type-card-name">D Latch</div>
+      <div class="type-card-desc">Data latch. Покращений SR: усуває заборонений стан через NOT між входами. Додає Enable.</div>
+    </div>
+  </div>
+
+  <div class="sub-title">Інші</div>
+  <div class="type-grid">
+    <div class="type-card">
+      <div class="type-card-name">Gated SR</div>
+      <div class="type-card-desc">SR + вхід Enable. Відкриває/закриває защіпку.</div>
+    </div>
+    <div class="type-card">
+      <div class="type-card-name">JK Latch</div>
+      <div class="type-card-desc">Усуває forbidden state. Частіше у flip-flop.</div>
+    </div>
+    <div class="type-card">
+      <div class="type-card-name">T Latch</div>
+      <div class="type-card-desc">Toggle. Через перетворення JK або D.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════ 03 БУДОВА ══════════ -->
+<div class="section" id="s03">
+  <div class="section-num">03</div>
+  <div class="section-title">Будова</div>
+
+  <p class="prose">
+    Latch будується на логічних елементах (<strong>NOR або NAND</strong>) і
+    <strong>позитивному зворотному зв'язку</strong>: вихід Q впливає на вхід іншого елемента,
+    що дозволяє «запам'ятати» стан.
+  </p>
+
+  <div class="box box-inf">
+    <span class="box-lbl">INF</span>
+    <span>NOR-варіант: <code>Q=1</code> при <code>S=1</code>. NAND-варіант: логіка інверсна, <code>Q=1</code> при <code>S=0</code>. У embedded зазвичай зустрічаються NOR-реалізації всередині периферії MCU.</span>
+  </div>
+</div>
+
+
+<!-- ══════════ 04 БАЗОВИЙ ЕЛЕМЕНТ ══════════ -->
+<div class="section" id="s04">
+  <div class="section-num">04</div>
+  <div class="section-title">Базовий елемент: NOR + зворотній зв'язок</div>
+
+  <div class="sub-title">Truth table для NOR</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>A</th><th>B</th><th>Y = NOR(A,B)</th><th>Умова</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>0</td><td class="td-hi">1</td><td>обидва LOW → вихід HIGH</td></tr>
+        <tr><td>1</td><td>0</td><td>0</td><td>хоча б один HIGH → вихід LOW</td></tr>
+        <tr><td>0</td><td>1</td><td>0</td><td>хоча б один HIGH → вихід LOW</td></tr>
+        <tr><td>1</td><td>1</td><td>0</td><td>обидва HIGH → вихід LOW</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- INTERACTIVE 1 — one NOR with feedback -->
+  <div class="widget-wrap">
+    <div class="widget-head">
+      <span class="widget-title">Один NOR зі зворотним зв'язком · Чому цього замало?</span>
+      <div class="live-dot"></div><span class="live-label">LIVE</span>
+    </div>
+    <div style="padding:20px 20px 4px; display:flex; justify-content:center; overflow-x:auto;">
+      <svg id="svgOne" viewBox="0 0 420 160" width="420" height="160" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(160,80)">
+          <path class="gate-body" d="M0,-36 Q36,-36 63,0 Q36,36 0,36 Q16,0 0,-36 Z"/>
+          <path style="fill:none;stroke:#38444f;stroke-width:1.5" d="M0,-36 Q11,0 0,36"/>
+          <circle class="gate-body" cx="67" cy="0" r="5"/>
+          <text class="gate-lbl" x="14" y="4">NOR</text>
+        </g>
+        <line id="o_wA" class="wire" x1="40" y1="58" x2="160" y2="58"/>
+        <line id="o_wY" class="wire" x1="232" y1="80" x2="370" y2="80"/>
+        <polyline id="o_fb" class="wire" points="310,80 310,130 90,130 90,102 160,102"/>
+        <circle id="o_jY" class="node" cx="310" cy="80" r="4"/>
+        <text class="pin-lbl" x="12" y="62">A</text>
+        <text class="pin-lbl" x="376" y="84">Y</text>
+        <text style="fill:#2e3a4a;font-family:var(--mono);font-size:10px;letter-spacing:.06em" x="155" y="148">зворотній зв'язок (Y → вхід B)</text>
+        <text id="o_svA" class="sig v0" x="50"  y="50">0</text>
+        <text id="o_svY" class="sig v0" x="340" y="70">?</text>
+        <text id="o_svB" class="sig v0" x="98"  y="118">?</text>
+        <circle id="o_nA" class="node" cx="40"  cy="58" r="4"/>
+        <circle id="o_nY" class="node" cx="368" cy="80" r="4"/>
+      </svg>
+    </div>
+    <div style="padding:0 20px 20px;">
+      <div class="pin-group">
+        <div class="pin-name">Вхід A</div>
+        <div class="btn-row" style="max-width:280px;">
+          <button class="pin-btn" id="oBtnA0" onclick="setOneNor(0)">A = 0</button>
+          <button class="pin-btn" id="oBtnA1" onclick="setOneNor(1)">A = 1</button>
+        </div>
+      </div>
+    </div>
+    <div class="explain-wrap">
+      <div class="sig-rows" id="oneNorRows"></div>
+      <div id="oneNorWarn" class="osc-box" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div class="sub-title">Принцип роботи</div>
+  <div class="principle-list">
+    <div class="principle-item">
+      <span class="pi-signal sr0">S=R=0</span>
+      <span class="pi-text">Обидва вентилі отримують <code>0</code> на зовнішньому вході і <strong>тримаються на попередньому стані через зворотний зв'язок</strong>. Вихід одного NOR підтримує вхід іншого — схема стабільно самопідтримується. Це і є пам'ять.</span>
+    </div>
+    <div class="principle-item">
+      <span class="pi-signal s1">S = 1</span>
+      <span class="pi-text">Примусово <strong>встановлює Q = 1</strong>. NOR1 отримує HIGH → Q̄=0 → NOR2 бачить обидва входи LOW → Q=1. Зворотній зв'язок Q→NOR1 фіксує цей стан.</span>
+    </div>
+    <div class="principle-item">
+      <span class="pi-signal r1">R = 1</span>
+      <span class="pi-text">Примусово <strong>скидає Q = 0</strong>. NOR2 отримує HIGH → Q=0 → NOR1 бачить обидва входи LOW → Q̄=1. Зворотній зв'язок Q̄→NOR2 фіксує цей стан.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════ 05 SR LATCH ══════════ -->
+<div class="section" id="s05">
+  <div class="section-num">05</div>
+  <div class="section-title">SR Latch</div>
+
+  <div class="sub-title">Будова</div>
+  <p class="prose">
+    Два NOR-вентилі з <strong>перехресним зворотним зв'язком</strong> + два входи:
+    <code>S</code> (Set) і <code>R</code> (Reset) + два виходи <code>Q</code> і <code>Q̄</code>.
+    Вихід першого NOR іде на вхід другого — і навпаки.
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>S</th><th>R</th><th>Q(next)</th><th>Пояснення</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>0</td><td class="td-hi">Q(prev)</td><td>пам'ять — зворотній зв'язок тримає стан</td></tr>
+        <tr><td>1</td><td>0</td><td class="td-hi">1</td><td>SET — Q встановлено в 1</td></tr>
+        <tr><td>0</td><td>1</td><td>0</td><td>RESET — Q скинуто в 0</td></tr>
+        <tr class="tr-warn"><td>1</td><td>1</td><td>❌</td><td>FORBIDDEN — заборонено</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- INTERACTIVE 2a — SR diagram -->
+  <div class="widget-wrap">
+    <div class="widget-head">
+      <span class="widget-title">SR Latch (NOR-NOR) · Схема</span>
+    </div>
+    <div style="padding:24px 20px; display:flex; justify-content:center; overflow-x:auto;">
+      <svg id="svgDiagram" viewBox="0 0 440 370" width="440" height="370" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(180,90)">
+          <path class="gate-body" d="M0,-40 Q40,-40 70,0 Q40,40 0,40 Q18,0 0,-40 Z"/>
+          <path style="fill:none;stroke:#38444f;stroke-width:1.5" d="M0,-40 Q12,0 0,40"/>
+          <circle class="gate-body" cx="74" cy="0" r="5"/>
+          <text class="gate-lbl" x="16" y="4">NOR</text>
+        </g>
+        <g transform="translate(180,280)">
+          <path class="gate-body" d="M0,-40 Q40,-40 70,0 Q40,40 0,40 Q18,0 0,-40 Z"/>
+          <path style="fill:none;stroke:#38444f;stroke-width:1.5" d="M0,-40 Q12,0 0,40"/>
+          <circle class="gate-body" cx="74" cy="0" r="5"/>
+          <text class="gate-lbl" x="16" y="4">NOR</text>
+        </g>
+        <line id="wR"   class="wire" x1="40"  y1="65"  x2="180" y2="65"/>
+        <line id="wS"   class="wire" x1="40"  y1="305" x2="180" y2="305"/>
+        <line id="wQ"   class="wire" x1="259" y1="90"  x2="412" y2="90"/>
+        <line id="wQb"  class="wire" x1="259" y1="280" x2="412" y2="280"/>
+        <polyline id="fbQ"  class="wire" points="322,90  347,90  133,255 180,255"/>
+        <polyline id="fbQb" class="wire" points="322,280 347,280 133,115 180,115"/>
+        <circle id="jQ"  class="node" cx="322" cy="90"  r="4"/>
+        <circle id="jQb" class="node" cx="322" cy="280" r="4"/>
+        <text class="pin-lbl" x="12"  y="69">R</text>
+        <text class="pin-lbl" x="12"  y="309">S</text>
+        <text class="pin-lbl" x="418" y="94">Q</text>
+        <text class="pin-lbl" x="418" y="284"><tspan text-decoration="overline">Q</tspan></text>
+        <text id="sv_R"  class="sig v0" x="56"  y="57">0</text>
+        <text id="sv_S"  class="sig v0" x="56"  y="322">0</text>
+        <text id="sv_Q"  class="sig v0" x="380" y="80">0</text>
+        <text id="sv_Qb" class="sig v0" x="380" y="270">1</text>
+        <circle id="dn_R"  class="node" cx="40"  cy="65"  r="4"/>
+        <circle id="dn_S"  class="node" cx="40"  cy="305" r="4"/>
+        <circle id="dn_Q"  class="node" cx="410" cy="90"  r="4"/>
+        <circle id="dn_Qb" class="node" cx="410" cy="280" r="4"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE 2b — SR control -->
+  <div class="widget-wrap">
+    <div class="widget-head">
+      <span class="widget-title">SR Latch · Інтерактивне керування</span>
+      <div class="live-dot"></div><span class="live-label">LIVE</span>
+    </div>
+    <div class="controls">
+      <div class="pin-group">
+        <div class="pin-name">S — Set (встановити Q=1)</div>
+        <div class="btn-row">
+          <button class="pin-btn" id="btnS0" onclick="setPin('S',0)">S = 0</button>
+          <button class="pin-btn" id="btnS1" onclick="setPin('S',1)">S = 1</button>
+        </div>
+      </div>
+      <div class="pin-group">
+        <div class="pin-name">R — Reset (скинути Q=0)</div>
+        <div class="btn-row">
+          <button class="pin-btn" id="btnR0" onclick="setPin('R',0)">R = 0</button>
+          <button class="pin-btn" id="btnR1" onclick="setPin('R',1)">R = 1</button>
+        </div>
+      </div>
+    </div>
+    <div class="explain-wrap">
+      <div class="sig-rows" id="sigRows"></div>
+    </div>
+  </div>
+
+  <div class="sub-title">Принцип роботи</div>
+  <div class="principle-list">
+    <div class="principle-item">
+      <span class="pi-signal s1">S = 1</span>
+      <span class="pi-text">Примусово <strong>встановлює Q = 1</strong>.</span>
+    </div>
+    <div class="principle-item">
+      <span class="pi-signal r1">R = 1</span>
+      <span class="pi-text">Примусово <strong>скидає Q = 0</strong>.</span>
+    </div>
+    <div class="principle-item">
+      <span class="pi-signal sr0">S=R=0</span>
+      <span class="pi-text">Обидва вентилі отримують 0 на зовнішньому вході і <strong>тримаються на попередньому стані через зворотний зв'язок</strong>. Пам'ять.</span>
+    </div>
+  </div>
+
+  <div class="sub-title">Проблема SR latch</div>
+  <div class="box box-wrn">
+    <span class="box-lbl">WRN</span>
+    <span>
+      <strong>S=1 і R=1 одночасно</strong> — обидва виходи стають 0 (для NOR), що <strong>порушує інваріант Q ≠ Q̄</strong>.
+      Після повернення до 0,0 — результат <strong>непередбачуваний (race condition)</strong>:
+      схема «вгадує» стан залежно від фізичних затримок вентилів. Це головний недолік SR latch.
+    </span>
+  </div>
+</div>
+
+
+<!-- ══════════ 06 D LATCH ══════════ -->
+<div class="section" id="s06">
+  <div class="section-num">06</div>
+  <div class="section-title">D Latch</div>
+
+  <div class="sub-title">Будова</div>
+  <p class="prose">
+    SR latch + один додатковий вхід <code>D</code> (Data) і вхід <code>Enable</code> (E).
+    Між D і SR стоять два AND-вентилі: <code>S = D AND E</code>, <code>R = (NOT D) AND E</code>.
+    Таким чином, S і R <strong>ніколи не можуть бути одночасно 1</strong> — заборонений стан виключений апаратно.
+  </p>
+
+  <!-- INTERACTIVE 3 — D-latch -->
+  <div class="widget-wrap">
+    <div class="widget-head">
+      <span class="widget-title">D-Latch · Схема і керування</span>
+      <div class="live-dot"></div><span class="live-label">LIVE</span>
+    </div>
+    <div style="padding:20px 20px 8px; display:flex; justify-content:center; overflow-x:auto;">
+      <svg id="svgD" viewBox="0 0 580 250" width="580" height="250" xmlns="http://www.w3.org/2000/svg">
+        <!-- NOT gate -->
+        <g transform="translate(110,158)">
+          <polygon class="gate-body" points="0,-14 28,0 0,14"/>
+          <circle  class="gate-body" cx="32" cy="0" r="4"/>
+          <text class="gate-lbl" x="4" y="4" style="font-size:9px">NOT</text>
+        </g>
+        <!-- AND1 -->
+        <g transform="translate(220,72)">
+          <path class="gate-body" d="M0,-22 L28,-22 Q52,-22 52,0 Q52,22 28,22 L0,22 Z"/>
+          <text class="gate-lbl" x="8" y="4" style="font-size:9px">AND</text>
+        </g>
+        <!-- AND2 -->
+        <g transform="translate(220,160)">
+          <path class="gate-body" d="M0,-22 L28,-22 Q52,-22 52,0 Q52,22 28,22 L0,22 Z"/>
+          <text class="gate-lbl" x="8" y="4" style="font-size:9px">AND</text>
+        </g>
+        <!-- NOR1 -->
+        <g transform="translate(346,85)">
+          <path class="gate-body" d="M0,-28 Q28,-28 50,0 Q28,28 0,28 Q12,0 0,-28 Z"/>
+          <path style="fill:none;stroke:#38444f;stroke-width:1.2" d="M0,-28 Q8,0 0,28"/>
+          <circle class="gate-body" cx="53" cy="0" r="4"/>
+          <text class="gate-lbl" x="10" y="3" style="font-size:9px">NOR</text>
+        </g>
+        <!-- NOR2 -->
+        <g transform="translate(346,170)">
+          <path class="gate-body" d="M0,-28 Q28,-28 50,0 Q28,28 0,28 Q12,0 0,-28 Z"/>
+          <path style="fill:none;stroke:#38444f;stroke-width:1.2" d="M0,-28 Q8,0 0,28"/>
+          <circle class="gate-body" cx="53" cy="0" r="4"/>
+          <text class="gate-lbl" x="10" y="3" style="font-size:9px">NOR</text>
+        </g>
+        <!-- D wires -->
+        <line id="d_wD"      class="wire" x1="20"  y1="82"  x2="90"  y2="82"/>
+        <line id="d_wD_and1" class="wire" x1="90"  y1="82"  x2="90"  y2="57"/>
+        <line id="d_wD_and1b"class="wire" x1="90"  y1="57"  x2="220" y2="57"/>
+        <line id="d_wD_not"  class="wire" x1="90"  y1="82"  x2="90"  y2="158"/>
+        <line id="d_wD_not2" class="wire" x1="90"  y1="158" x2="110" y2="158"/>
+        <circle id="d_jD" class="node" cx="90" cy="82" r="4"/>
+        <!-- NOT → AND2 -->
+        <line id="d_wDb"  class="wire" x1="146" y1="158" x2="165" y2="158"/>
+        <line id="d_wDb2" class="wire" x1="165" y1="158" x2="165" y2="178"/>
+        <line id="d_wDb3" class="wire" x1="165" y1="178" x2="220" y2="178"/>
+        <!-- EN wires -->
+        <line id="d_wEN"     class="wire" x1="20"  y1="130" x2="55"  y2="130"/>
+        <line id="d_wEN_a1"  class="wire" x1="55"  y1="130" x2="55"  y2="87"/>
+        <line id="d_wEN_a1b" class="wire" x1="55"  y1="87"  x2="220" y2="87"/>
+        <line id="d_wEN_a2"  class="wire" x1="55"  y1="130" x2="55"  y2="145"/>
+        <line id="d_wEN_a2b" class="wire" x1="55"  y1="145" x2="220" y2="145"/>
+        <circle id="d_jEN" class="node" cx="55" cy="130" r="4"/>
+        <!-- S wire (AND1 → NOR1 top) -->
+        <line id="d_wS"  class="wire" x1="272" y1="72"  x2="310" y2="72"/>
+        <line id="d_wS2" class="wire" x1="310" y1="72"  x2="310" y2="70"/>
+        <line id="d_wS3" class="wire" x1="310" y1="70"  x2="346" y2="70"/>
+        <!-- R wire (AND2 → NOR2 bottom) -->
+        <line id="d_wR2" class="wire" x1="272" y1="160" x2="316" y2="160"/>
+        <line id="d_wR3" class="wire" x1="316" y1="160" x2="316" y2="185"/>
+        <line id="d_wR4" class="wire" x1="316" y1="185" x2="346" y2="185"/>
+        <!-- Output wires -->
+        <line id="d_wQ"  class="wire" x1="403" y1="85"  x2="530" y2="85"/>
+        <line id="d_wQb" class="wire" x1="403" y1="170" x2="530" y2="170"/>
+        <!-- Feedback -->
+        <polyline id="d_fbQ"  class="wire" points="472,85  492,85  492,228  328,228  328,155  346,155"/>
+        <polyline id="d_fbQb" class="wire" points="472,170 492,170 492,32  328,32  328,100  346,100"/>
+        <!-- Junction dots -->
+        <circle id="d_jQ"  class="node" cx="472" cy="85"  r="4"/>
+        <circle id="d_jQb" class="node" cx="472" cy="170" r="4"/>
+        <!-- Labels -->
+        <text class="pin-lbl" x="4"   y="86" >D</text>
+        <text class="pin-lbl" x="4"   y="134">EN</text>
+        <text class="pin-lbl" x="536" y="89" >Q</text>
+        <text class="pin-lbl" x="536" y="174"><tspan text-decoration="overline">Q</tspan></text>
+        <text style="fill:#2e3a4a;font-family:var(--mono);font-size:9px" x="282" y="63">S</text>
+        <text style="fill:#2e3a4a;font-family:var(--mono);font-size:9px" x="282" y="155">R</text>
+        <text style="fill:#2e3a4a;font-family:var(--mono);font-size:9px" x="150" y="148">D̄</text>
+        <!-- Signal values -->
+        <text id="d_svD"  class="sig v0" x="28"  y="74">0</text>
+        <text id="d_svEN" class="sig v0" x="28"  y="144">0</text>
+        <text id="d_svDb" class="sig v0" x="152" y="188">1</text>
+        <text id="d_svS"  class="sig v0" x="290" y="62">0</text>
+        <text id="d_svR"  class="sig v0" x="290" y="150">1</text>
+        <text id="d_svQ"  class="sig v0" x="508" y="75">0</text>
+        <text id="d_svQb" class="sig v0" x="508" y="160">1</text>
+        <!-- Endpoint nodes -->
+        <circle id="d_nD"  class="node" cx="20"  cy="82"  r="4"/>
+        <circle id="d_nEN" class="node" cx="20"  cy="130" r="4"/>
+        <circle id="d_nQ"  class="node" cx="528" cy="85"  r="4"/>
+        <circle id="d_nQb" class="node" cx="528" cy="170" r="4"/>
+      </svg>
+    </div>
+    <div class="controls">
+      <div class="pin-group">
+        <div class="pin-name">D — Data (що записати)</div>
+        <div class="btn-row">
+          <button class="pin-btn" id="dBtnD0" onclick="setD('D',0)">D = 0</button>
+          <button class="pin-btn" id="dBtnD1" onclick="setD('D',1)">D = 1</button>
+        </div>
+      </div>
+      <div class="pin-group">
+        <div class="pin-name">EN — Enable (відкрити защіпку)</div>
+        <div class="btn-row">
+          <button class="pin-btn" id="dBtnEN0" onclick="setD('EN',0)">EN = 0</button>
+          <button class="pin-btn" id="dBtnEN1" onclick="setD('EN',1)">EN = 1</button>
+        </div>
+      </div>
+    </div>
+    <div class="explain-wrap">
+      <div class="sig-rows" id="dRows"></div>
+    </div>
+  </div>
+
+  <div class="sub-title">Принцип роботи</div>
+  <div class="principle-list">
+    <div class="principle-item">
+      <span class="pi-signal en1">EN = 1</span>
+      <span class="pi-text">Latch <strong>«прозорий»</strong>: Q = D. AND-вентилі відкриваються — D напряму керує SR-latch.</span>
+    </div>
+    <div class="principle-item">
+      <span class="pi-signal en0">EN = 0</span>
+      <span class="pi-text">Latch <strong>«закритий»</strong>: зберігає попередній стан. AND-вентилі блокують D — S=R=0, latch у режимі HOLD.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════ 07 ВИКОРИСТАННЯ ══════════ -->
+<div class="section" id="s07">
+  <div class="section-num">07</div>
+  <div class="section-title">Використання</div>
+
+  <div class="use-list">
+    <div class="use-item">
+      <span class="use-num">1</span>
+      <span class="use-text"><strong>Базова цифрова логіка</strong> — зберігання стану, debounce кнопок.</span>
+    </div>
+    <div class="use-item">
+      <span class="use-num">2</span>
+      <span class="use-text"><strong>Всередині периферії MCU</strong> — регістри, буфери, FSM (finite state machines). GPIO ODR на STM32 — SR-latch на кожен пін.</span>
+    </div>
+    <div class="use-item">
+      <span class="use-num">3</span>
+      <span class="use-text"><strong>Побудова flip-flop</strong> — flip-flop = 2 latch (master-slave). D Flip-Flop = два D-latch послідовно з інвертованим CLK між ними.</span>
+    </div>
+    <div class="use-item">
+      <span class="use-num">4</span>
+      <span class="use-text"><strong>Шини та інтерфейси</strong> — тимчасове збереження даних, адресні latch у старих MCU (наприклад 8051: ALE + зовнішній 74HC373).</span>
+    </div>
+    <div class="use-item">
+      <span class="use-num">5</span>
+      <span class="use-text"><strong>Асинхронна логіка</strong> — коли немає глобального clock. Latch реагує на рівень, а не на фронт — це і перевага, і ризик (glitch sensitivity).</span>
+    </div>
+  </div>
+
+  <div class="box box-inf" style="margin-top:20px;">
+    <span class="box-lbl">INF</span>
+    <span>Коли пишеш <code>HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET)</code> — ти встановлюєш S=1 в SR-latch всередині GPIO. Регістр <code>BSRR</code> розділяє Set (нижні 16 біт) і Reset (верхні 16 біт) — атомарна операція без forbidden state.</span>
+  </div>
+</div>
+
+</div><!-- /page -->
+
+<script>
+const $id = id => document.getElementById(id);
+
+// ═══════════════════════════════════════
+//  shared row builder
+// ═══════════════════════════════════════
+function row(name, nameCls, borderCls, val, valCls, reason) {
+  return `<div class="sig-row hi-border-${borderCls}">` +
+    `<span class="sr-name c-${nameCls}">${name}</span>` +
+    `<span class="sr-eq">=</span>` +
+    `<span class="sr-val c-${valCls}">${val}</span>` +
+    `<span class="sr-arr">→</span>` +
+    `<span class="sr-why">${reason}</span>` +
+  `</div>`;
+}
+
+// ═══════════════════════════════════════
+//  SINGLE NOR WITH FEEDBACK
+// ═══════════════════════════════════════
+let norA = 0;
+
+function setOneNor(val) { norA = val; paintOneNor(); }
+
+function paintOneNor() {
+  const A = norA;
+  $id('oBtnA0').className = 'pin-btn' + (A===0 ? ' act-a0' : '');
+  $id('oBtnA1').className = 'pin-btn' + (A===1 ? ' act-a1' : '');
+
+  const ss = (id,c) => { const e=$id(id); if(e) e.className.baseVal=c; };
+  const st = (id,t,c) => { const e=$id(id); if(!e)return; e.textContent=t; e.className.baseVal=c; };
+
+  if (A === 1) {
+    ss('o_wA','wire hi-red'); ss('o_wY','wire'); ss('o_fb','wire');
+    ss('o_jY','node'); ss('o_nA','node hi-red'); ss('o_nY','node');
+    st('o_svA','1','sig v1-red'); st('o_svY','0','sig v0'); st('o_svB','0','sig v0');
+    $id('oneNorRows').innerHTML = [
+      row('A',      'red',   'red',   '1',   'red',   `вручну → <span class="c-red">HIGH</span>`),
+      row('NOR вх.','orange','orange','1,B', 'orange',`A=<span class="c-red">1</span> — одного HIGH вже достатньо, B не важливий`),
+      row('Y',      'dim',   'blue',  '0',   'dim',   `NOR(<span class="c-red">1</span>, B) = <span class="c-dim">0</span> — вихід завжди LOW`),
+      row('B (fb)', 'dim',   'blue',  '0',   'dim',   `зворотній зв'язок Y=<span class="c-dim">0</span> → стабільно, не змінює результат`),
+    ].join('');
+    $id('oneNorWarn').style.display = 'flex';
+    $id('oneNorWarn').className = 'osc-box';
+    $id('oneNorWarn').innerHTML = `<span class="osc-box-icon">⚠</span><span>A=1 дає стабільний Y=0 — але <strong>тільки один стан</strong>. Коли A повернеться до 0, схема знову потрапить в осциляцію. Один NOR <em>не може</em> «пам'ятати» що було до цього.</span>`;
+  } else {
+    ss('o_wA','wire hi-blue'); ss('o_wY','wire oscillate'); ss('o_fb','wire oscillate');
+    ss('o_jY','node hi-orange'); ss('o_nA','node hi-blue'); ss('o_nY','node hi-orange');
+    st('o_svA','0','sig v0'); st('o_svY','?','sig vX-orange'); st('o_svB','?','sig vX-orange');
+    $id('oneNorRows').innerHTML = [
+      row('A',      'blue',  'blue',  '0',  'blue',  `вручну → <span class="c-blue">LOW</span>`),
+      row('NOR вх.','orange','orange','0,Y','orange',`A=<span class="c-blue">0</span> — результат повністю залежить від Y (зворотній зв'язок)`),
+      row('Y=0?',  'orange','orange','?',  'orange',`якби Y=0: NOR(0,0)=<span class="c-green">1</span> → B стає 1 → NOR(0,1)=<span class="c-dim">0</span> → суперечність`),
+      row('Y=1?',  'orange','orange','?',  'orange',`якби Y=1: NOR(0,1)=<span class="c-dim">0</span> → B стає 0 → NOR(0,0)=<span class="c-green">1</span> → суперечність`),
+    ].join('');
+    $id('oneNorWarn').style.display = 'flex';
+    $id('oneNorWarn').className = 'osc-box';
+    $id('oneNorWarn').innerHTML = `<span class="osc-box-icon">〰</span><span>Немає жодного стабільного стану — схема <strong>осцилює</strong>: вихід нескінченно перемикається 0→1→0→1. Саме тому потрібен <strong>другий NOR</strong>: він розриває петлю і дає схемі два <em>різних</em> стабільних стани.</span>`;
+  }
+}
+
+// ═══════════════════════════════════════
+//  SR LATCH
+// ═══════════════════════════════════════
+let S = 0, R = 0, Q = 0, Qb = 1;
+
+function setPin(pin, val) {
+  if (pin === 'S') S = val; else R = val;
+  if      (S===1 && R===1) { Q=0; Qb=0; }
+  else if (S===1)           { Q=1; Qb=0; }
+  else if (R===1)           { Q=0; Qb=1; }
+  repaint();
+}
+
+function repaint() { paintDiagram(); paintButtons(); paintExplanation(); }
+
+function paintDiagram() {
+  const set = (id,c) => { const e=$id(id); if(e) e.className.baseVal=c; };
+  const wc = (on,col) => 'wire' + (on ? ' hi-'+col : '');
+  const nc = (on,col) => 'node' + (on ? ' hi-'+col : '');
+  set('wR',   wc(R, 'red'));   set('wS',   wc(S, 'green'));
+  set('wQ',   wc(Q, 'blue'));  set('wQb',  wc(Qb,'red'));
+  set('fbQ',  wc(Q, 'blue'));  set('fbQb', wc(Qb,'red'));
+  set('jQ',   nc(Q, 'blue'));  set('jQb',  nc(Qb,'red'));
+  set('dn_R', nc(R, 'red'));   set('dn_S', nc(S, 'green'));
+  set('dn_Q', nc(Q, 'blue'));  set('dn_Qb',nc(Qb,'red'));
+  const setSig = (id,val,col) => {
+    const e=$id(id); if(!e)return;
+    e.textContent=val; e.className.baseVal=val?`sig v1-${col}`:'sig v0';
+  };
+  setSig('sv_R',R,'red'); setSig('sv_S',S,'green');
+  setSig('sv_Q',Q,'blue'); setSig('sv_Qb',Qb,'red');
+}
+
+function paintButtons() {
+  $id('btnS0').className = 'pin-btn' + (S===0 ? ' act-s0' : '');
+  $id('btnS1').className = 'pin-btn' + (S===1 ? ' act-s1' : '');
+  $id('btnR0').className = 'pin-btn' + (R===0 ? ' act-r0' : '');
+  $id('btnR1').className = 'pin-btn' + (R===1 ? ' act-r1' : '');
+}
+
+function paintExplanation() {
+  const v = (n,c) => `<span class="c-${c}">${n}</span>`;
+  const fb = S===1&&R===1, sm=S===1&&R===0, rm=S===0&&R===1;
+  let rows=[];
+  if (fb) {
+    rows=[
+      row('S','green','green','1','green',`вручну → ${v('HIGH','green')}`),
+      row('R','red','red','1','red',`вручну → ${v('HIGH','red')}`),
+      row('NOR1 вх.','orange','orange','1,Q','orange',`S=${v('1','green')} → хоча б один HIGH → вихід = ${v('0','dim')}`),
+      row('Q','dim','red','0','dim',`NOR(${v('1','green')}, Q) = ${v('0','dim')} — будь-який 1 → вихід 0`),
+      row('NOR2 вх.','orange','orange','Qb,1','orange',`R=${v('1','red')} → хоча б один HIGH → вихід = ${v('0','dim')}`),
+      row('Q̄','dim','red','0','dim',`NOR(Qb,${v('1','red')}) = ${v('0','dim')} — ${v('Q = Q̄ = 0, інваріант порушено!','red')}`),
+    ];
+  } else if (sm) {
+    rows=[
+      row('S','green','green','1','green',`вручну → ${v('HIGH','green')}`),
+      row('R','blue','blue','0','blue',`вручну → ${v('LOW','blue')}`),
+      row('NOR1 вх.','orange','orange','1,…','orange',`S=${v('1','green')} — достатньо одного HIGH щоб NOR дав ${v('0','dim')}`),
+      row('Q̄','red','red','0','dim',`NOR1(${v('1','green')}, …) = ${v('0','dim')} — зворотній зв'язок іде на NOR2`),
+      row('NOR2 вх.','blue','blue','0,0','blue',`R=${v('0','blue')} і Q̄=${v('0','dim')} (fb) — ${v('обидва LOW','blue')}`),
+      row('Q','blue','blue','1','blue',`NOR2(${v('0','blue')},${v('0','blue')}) = ${v('1','blue')} — всі LOW → HIGH`),
+    ];
+  } else if (rm) {
+    rows=[
+      row('S','green','green','0','green',`вручну → ${v('LOW','green')}`),
+      row('R','red','red','1','red',`вручну → ${v('HIGH','red')}`),
+      row('NOR2 вх.','orange','orange','…,1','orange',`R=${v('1','red')} — достатньо одного HIGH щоб NOR дав ${v('0','dim')}`),
+      row('Q','dim','red','0','dim',`NOR2(…,${v('1','red')}) = ${v('0','dim')} — зворотній зв'язок іде на NOR1`),
+      row('NOR1 вх.','green','green','0,0','green',`S=${v('0','green')} і Q=${v('0','dim')} (fb) — ${v('обидва LOW','green')}`),
+      row('Q̄','red','red','1','red',`NOR1(${v('0','green')},${v('0','dim')}) = ${v('1','red')} — всі LOW → HIGH`),
+    ];
+  } else {
+    const qV=Q?v('1','blue'):v('0','dim'), qbV=Qb?v('1','red'):v('0','dim');
+    rows=[
+      row('S','green','green','0','green',`вручну → ${v('LOW','green')}`),
+      row('R','blue','blue','0','blue',`вручну → ${v('LOW','blue')}`),
+      row('NOR1 вх.','orange','orange',`0,${Q}`,Q?'orange':'green',`S=${v('0','green')} і Q=${qV} (зворотній зв'язок з NOR2)`),
+      row('Q̄',Qb?'red':'dim',Qb?'red':'orange',Qb,Qb?'red':'dim',`NOR1(${v('0','green')},${qV}) = ${qbV} — ${v('зберігає стан','orange')}`),
+      row('NOR2 вх.','orange','orange',`${Qb},0`,Qb?'orange':'blue',`Q̄=${qbV} (зворотній зв'язок з NOR1) і R=${v('0','blue')}`),
+      row('Q',Q?'blue':'dim',Q?'blue':'orange',Q,Q?'blue':'dim',`NOR2(${qbV},${v('0','blue')}) = ${qV} — ${v('зберігає стан','orange')}`),
+    ];
+  }
+  $id('sigRows').innerHTML = rows.join('');
+}
+
+// ═══════════════════════════════════════
+//  D-LATCH
+// ═══════════════════════════════════════
+let dD=0, dEN=0, dQ=0, dQb=1;
+
+function setD(pin,val) {
+  if (pin==='D') dD=val; else dEN=val;
+  const Sv=dEN&dD, Rv=dEN&(1-dD);
+  if      (Sv) { dQ=1; dQb=0; }
+  else if (Rv) { dQ=0; dQb=1; }
+  paintD();
+}
+
+function paintD() {
+  const D=dD, EN=dEN, Q=dQ, Qb=dQb, Db=1-dD;
+  const Sv=EN&D, Rv=EN&Db;
+  const sv=(id,c)=>{const e=$id(id);if(e)e.className.baseVal='wire'+(c?' hi-'+c:'');};
+  const sn=(id,c)=>{const e=$id(id);if(e)e.className.baseVal='node'+(c?' hi-'+c:'');};
+  const st=(id,v,c)=>{
+    const e=$id(id);if(!e)return; e.textContent=v;
+    e.className.baseVal=(v==='?')?'sig vX-orange':(v&&v!=='0'?`sig v1-${c}`:'sig v0');
+  };
+  sv('d_wD',D?'green':'');      sv('d_wD_and1',D?'green':'');
+  sv('d_wD_and1b',D?'green':'');sv('d_wD_not',D?'green':'');
+  sv('d_wD_not2',D?'green':''); sn('d_jD',D?'green':''); sn('d_nD',D?'green':'');
+  sv('d_wDb',Db?'red':'');      sv('d_wDb2',Db?'red':''); sv('d_wDb3',Db?'red':'');
+  sv('d_wEN',EN?'blue':'');     sv('d_wEN_a1',EN?'blue':'');
+  sv('d_wEN_a1b',EN?'blue':''); sv('d_wEN_a2',EN?'blue':'');
+  sv('d_wEN_a2b',EN?'blue':''); sn('d_jEN',EN?'blue':''); sn('d_nEN',EN?'blue':'');
+  sv('d_wS',Sv?'green':'');  sv('d_wS2',Sv?'green':''); sv('d_wS3',Sv?'green':'');
+  sv('d_wR2',Rv?'red':'');   sv('d_wR3',Rv?'red':'');   sv('d_wR4',Rv?'red':'');
+  sv('d_wQ',Q?'blue':'');    sv('d_wQb',Qb?'red':'');
+  sv('d_fbQ',Q?'blue':'');   sv('d_fbQb',Qb?'red':'');
+  sn('d_jQ',Q?'blue':'');    sn('d_jQb',Qb?'red':'');
+  sn('d_nQ',Q?'blue':'');    sn('d_nQb',Qb?'red':'');
+  st('d_svD',D,'green');   st('d_svEN',EN,'blue');
+  st('d_svDb',Db,'red');   st('d_svS',Sv,'green');
+  st('d_svR',Rv,'red');    st('d_svQ',Q,'blue');   st('d_svQb',Qb,'red');
+  $id('dBtnD0').className  = 'pin-btn'+(D===0 ?' act-s0':'');
+  $id('dBtnD1').className  = 'pin-btn'+(D===1 ?' act-s1':'');
+  $id('dBtnEN0').className = 'pin-btn'+(EN===0?' act-r0':'');
+  $id('dBtnEN1').className = 'pin-btn'+(EN===1?' act-a1':'');
+  const vv=(n,c)=>`<span class="c-${c}">${n}</span>`;
+  let rows=[];
+  if (EN===0) {
+    const qV=Q?vv('1','blue'):vv('0','dim'), qbV=Qb?vv('1','red'):vv('0','dim');
+    rows=[
+      row('EN','blue','blue','0','blue',`защіпка ${vv('ЗАКРИТА','blue')} — D ігнорується`),
+      row('D','dim','blue',D,D?'green':'dim',`значення на вході, але до схеми ${vv('не проходить','dim')}`),
+      row('S','dim','orange','0','dim',`AND(${vv('0','blue')}, D) = ${vv('0','dim')} — EN блокує`),
+      row('R','dim','orange','0','dim',`AND(${vv('0','blue')}, D̄) = ${vv('0','dim')} — EN блокує`),
+      row('Q',Q?'blue':'dim',Q?'blue':'orange',Q,Q?'blue':'dim',`SR=00 → ${vv('HOLD','orange')} — latch тримає ${qV}`),
+      row('Q̄',Qb?'red':'dim',Qb?'red':'orange',Qb,Qb?'red':'dim',`протилежний до Q = ${qbV}`),
+    ];
+  } else if (D===1) {
+    rows=[
+      row('EN','blue','blue','1','blue',`защіпка ${vv('ВІДКРИТА','blue')} — D проходить до SR`),
+      row('D','green','green','1','green',`вхід даних → ${vv('HIGH','green')}`),
+      row('D̄','dim','red','0','dim',`NOT(${vv('1','green')}) = ${vv('0','dim')}`),
+      row('S','green','green','1','green',`AND(${vv('1','blue')},${vv('1','green')}) = ${vv('1','green')} → SET`),
+      row('R','dim','red','0','dim',`AND(${vv('1','blue')},${vv('0','dim')}) = ${vv('0','dim')} — D̄=0 блокує`),
+      row('Q','blue','blue','1','blue',`SR-latch: S=1,R=0 → ${vv('Q=1','blue')} — записано D`),
+      row('Q̄','red','red','0','dim',`протилежний до Q = ${vv('0','dim')}`),
+    ];
+  } else {
+    rows=[
+      row('EN','blue','blue','1','blue',`защіпка ${vv('ВІДКРИТА','blue')} — D проходить до SR`),
+      row('D','dim','green','0','dim',`вхід даних → ${vv('LOW','dim')}`),
+      row('D̄','red','red','1','red',`NOT(${vv('0','dim')}) = ${vv('1','red')}`),
+      row('S','dim','green','0','dim',`AND(${vv('1','blue')},${vv('0','dim')}) = ${vv('0','dim')} — D=0 блокує`),
+      row('R','red','red','1','red',`AND(${vv('1','blue')},${vv('1','red')}) = ${vv('1','red')} → RESET`),
+      row('Q','dim','blue','0','dim',`SR-latch: S=0,R=1 → ${vv('Q=0','dim')} — записано D`),
+      row('Q̄','red','red','1','red',`протилежний до Q = ${vv('1','red')}`),
+    ];
+  }
+  $id('dRows').innerHTML=rows.join('');
+}
+
+// ── init ──
+paintOneNor();
+repaint();
+paintD();
+</script>
+</body>
+</html>
