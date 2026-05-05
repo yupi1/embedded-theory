@@ -1,0 +1,1105 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0f0f0f;
+  --bg2:#111;
+  --bg3:#141414;
+  --bg4:#181818;
+  --border:#1e1e1e;
+  --border2:#242424;
+  --text:#c8c4bc;
+  --text2:#888;
+  --text3:#555;
+  --text4:#333;
+  --green:#4caf6a;
+  --green-dim:#2a6640;
+  --green-bg:#0d1f14;
+  --green-border:#1e3d28;
+  --blue:#7b9fd4;
+  --purple:#9b8ec4;
+  --orange:#c8a97a;
+  --fn:#8abf6e;
+  --comment:#394839;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Inter',sans-serif;
+}
+
+body,html{background:var(--bg)}
+
+.page{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:14px;
+  line-height:1.7;
+  padding:40px 32px 60px;
+  max-width:900px;
+  margin:0 auto;
+}
+
+/* ── nav ── */
+.nav{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text4);
+  margin-bottom:36px;
+  display:flex;align-items:center;gap:8px;
+}
+.nav a{color:var(--text3);text-decoration:none;border-bottom:1px solid var(--border2)}
+.nav a:hover{color:var(--text2)}
+
+/* ── page header ── */
+.page-header{margin-bottom:12px}
+.page-tag{
+  font-family:var(--mono);font-size:10px;
+  color:var(--text4);letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:12px;display:flex;align-items:center;gap:16px;
+}
+.page-title{
+  font-family:var(--sans);font-size:26px;font-weight:600;
+  color:#ddd;line-height:1.2;margin-bottom:14px;
+}
+.page-lead{
+  font-size:14px;color:var(--text3);
+  max-width:600px;line-height:1.7;margin-bottom:20px;
+}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px}
+.chip{
+  font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+  padding:3px 10px;border:1px solid var(--border);border-radius:2px;
+  color:var(--text4);background:var(--bg3);
+}
+
+/* ── table of contents ── */
+.toc{
+  border:1px solid var(--border);border-radius:2px;
+  background:var(--bg3);padding:16px 20px;margin-bottom:40px;
+}
+.toc-title{font-family:var(--mono);font-size:10px;color:var(--text4);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+.toc-list{list-style:none;display:flex;flex-direction:column;gap:3px}
+.toc-list li a{
+  font-family:var(--mono);font-size:12px;color:var(--text3);
+  text-decoration:none;display:flex;align-items:center;gap:10px;
+}
+.toc-list li a:hover{color:var(--text2)}
+.toc-n{color:var(--text4);min-width:28px}
+
+/* ── section header ── */
+.sec-header{
+  display:flex;align-items:baseline;gap:16px;
+  margin-bottom:20px;padding-bottom:12px;
+  border-bottom:1px solid var(--border);
+}
+.sec-num{font-family:var(--mono);color:var(--text4);font-size:11px;letter-spacing:.12em}
+.sec-title{font-family:var(--mono);color:var(--text3);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+
+/* ── section ── */
+.section{margin-bottom:52px}
+
+/* ── prose ── */
+.prose{font-size:14px;color:var(--text2);line-height:1.75;margin-bottom:16px}
+.prose strong{color:var(--text)}
+.prose code{font-family:var(--mono);font-size:12px;background:var(--bg3);border:1px solid var(--border);padding:1px 5px;border-radius:2px;color:var(--orange)}
+
+/* ── callout ── */
+.callout{
+  border-left:2px solid var(--border2);
+  padding:12px 16px;
+  background:var(--bg3);
+  margin-bottom:16px;
+  border-radius:0 2px 2px 0;
+}
+.callout.key{border-left-color:var(--green)}
+.callout.inf{border-left-color:#5a8aaf}
+.callout.wrn{border-left-color:#c8a030}
+.callout-label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.callout.key .callout-label{color:var(--green)}
+.callout.inf .callout-label{color:#7b9fd4}
+.callout.wrn .callout-label{color:#c8a030}
+.callout p{font-size:13px;color:var(--text2);line-height:1.6}
+.callout strong{color:var(--text)}
+
+/* ── bullet list ── */
+.note-list{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:16px}
+.note-list li{
+  display:flex;align-items:baseline;gap:10px;
+  font-size:13px;color:var(--text2);
+}
+.note-list li::before{
+  content:'◈';font-size:9px;color:var(--text4);flex-shrink:0;margin-top:2px;
+}
+.note-list li code{font-family:var(--mono);font-size:11px;background:var(--bg3);border:1px solid var(--border);padding:1px 5px;border-radius:2px;color:var(--orange)}
+.note-list strong{color:var(--text)}
+
+/* ── sub-heading ── */
+.sub-h{
+  font-family:var(--mono);font-size:12px;color:var(--text3);
+  letter-spacing:.06em;text-transform:uppercase;
+  margin-bottom:10px;margin-top:20px;
+}
+
+/* ── table ── */
+.tbl-wrap{overflow-x:auto;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{
+  font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text4);padding:8px 12px;text-align:left;
+  border-bottom:1px solid var(--border);background:var(--bg3);
+}
+td{padding:8px 12px;color:var(--text2);border-bottom:1px solid var(--bg4)}
+tr:last-child td{border-bottom:none}
+td code{font-family:var(--mono);font-size:11px;color:var(--orange);background:var(--bg3);border:1px solid var(--border);padding:1px 4px;border-radius:2px}
+
+/* ── inline formula ── */
+.formula{
+  font-family:var(--mono);font-size:12px;
+  background:var(--bg3);border:1px solid var(--border);
+  padding:8px 14px;border-radius:2px;color:var(--text);
+  margin-bottom:8px;display:inline-block;
+}
+.formula span{color:var(--green)}
+
+/* ══════════════════════════════════════════
+   FSM INTERACTIVE (first iteration)
+══════════════════════════════════════════ */
+.fsm-sim{
+  border:1px solid var(--border);border-radius:2px;
+  background:var(--bg3);overflow:hidden;
+  margin-bottom:20px;
+}
+.fsm-sim-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;background:var(--bg4);
+  border-bottom:1px solid var(--border);
+}
+.fsm-sim-label{font-family:var(--mono);font-size:10px;color:var(--text4);letter-spacing:.1em;text-transform:uppercase}
+.fsm-sim-badge{
+  font-family:var(--mono);font-size:9px;letter-spacing:.1em;
+  color:var(--text4);border:1px solid var(--border);
+  padding:2px 8px;border-radius:1px;transition:all .3s;
+}
+.fsm-sim-badge.on{color:var(--green);border-color:var(--green-border)}
+
+.fsm-body{display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:start}
+@media(max-width:540px){.fsm-body{grid-template-columns:1fr}}
+
+/* states col */
+.fsm-states-col{
+  padding:16px;
+  border-right:1px solid var(--border);
+}
+@media(max-width:540px){.fsm-states-col{border-right:none;border-bottom:1px solid var(--border)}}
+
+.fsm-st-row{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 0;border-bottom:1px solid var(--bg4);
+  transition:all .25s;
+}
+.fsm-st-row:last-child{border-bottom:none}
+.fsm-dot{width:6px;height:6px;border-radius:50%;background:var(--bg);border:1px solid var(--border2);flex-shrink:0;transition:all .3s}
+.fsm-st-row.done .fsm-dot{background:var(--green-bg);border-color:var(--green-dim)}
+.fsm-st-row.active .fsm-dot{background:var(--green);border-color:var(--green);box-shadow:0 0 5px #4caf6a44}
+.fsm-tag{font-family:var(--mono);font-size:11px;color:var(--text4);transition:color .3s;flex:1}
+.fsm-st-row.done .fsm-tag{color:var(--green-dim)}
+.fsm-st-row.active .fsm-tag{color:var(--green)}
+.fsm-cm{font-family:var(--mono);font-size:10px;color:#1e1e1e;transition:color .3s}
+.fsm-st-row.done .fsm-cm{color:#1a3a1e}
+.fsm-st-row.active .fsm-cm{color:#2a7040}
+
+.fsm-arr{display:flex;align-items:center;height:17px;padding-left:1px}
+.fsm-arr-v{width:1px;height:100%;background:var(--bg4);margin-right:12px;flex-shrink:0;transition:background .3s}
+.fsm-arr-v.lit{background:var(--green-border)}
+.fsm-arr-ev{font-family:var(--mono);font-size:10px;color:#1e1e1e;transition:color .3s}
+.fsm-arr-v.lit + .fsm-arr-ev{color:#1e4228}
+
+/* sim col */
+.fsm-sim-col{padding:14px}
+.fsm-screen{
+  background:var(--bg);border:1px solid var(--border);border-radius:2px;
+  padding:12px 14px;margin-bottom:10px;
+}
+.fsm-sc-top{display:flex;justify-content:space-between;margin-bottom:6px}
+.fsm-sc-st{font-family:var(--mono);font-size:10px;color:var(--text4)}
+.fsm-sc-main{font-family:var(--sans);font-size:14px;color:#a0a090;font-weight:500;margin-bottom:2px}
+.fsm-sc-sub{font-family:var(--mono);font-size:10px;color:var(--text4);min-height:14px}
+.fsm-brew{height:2px;background:var(--bg3);border-radius:1px;margin-top:8px;overflow:hidden;display:none}
+.fsm-brew-f{height:100%;background:var(--green);width:0;transition:width .08s linear}
+.fsm-bal{
+  margin-top:8px;padding-top:8px;border-top:1px solid var(--bg4);
+  display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:10px;color:var(--text4);
+}
+.fsm-bal span:last-child{color:var(--text3);transition:color .3s}
+.fsm-bal.pay span:last-child{color:var(--green)}
+
+.fsm-drinks{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
+.fsm-d{
+  background:var(--bg);border:1px solid var(--border);color:var(--text4);
+  font-family:var(--mono);font-size:11px;padding:7px 9px;border-radius:2px;
+  cursor:pointer;text-align:left;line-height:1.4;transition:all .15s;
+}
+.fsm-d:hover:not(:disabled){border-color:var(--border2);color:var(--text3)}
+.fsm-d:active:not(:disabled){transform:scale(.98)}
+.fsm-d:disabled{opacity:.18;cursor:default}
+.fsm-d.sel{border-color:var(--green-border);color:var(--green);background:var(--green-bg)}
+.fsm-d-price{font-size:10px;color:#252525;display:block;margin-top:1px}
+.fsm-d.sel .fsm-d-price{color:#1e4a2a}
+
+.fsm-acts{display:flex;flex-direction:column;gap:5px}
+.fsm-btn{
+  background:transparent;border:1px solid var(--border);
+  color:var(--text4);font-family:var(--mono);font-size:11px;
+  padding:7px 10px;border-radius:2px;cursor:pointer;
+  text-align:left;letter-spacing:.03em;transition:all .15s;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.fsm-btn:hover:not(:disabled){border-color:var(--border2);color:var(--text3)}
+.fsm-btn:active:not(:disabled){transform:scale(.99)}
+.fsm-btn:disabled{opacity:.18;cursor:default}
+.fsm-btn.gr{border-color:var(--green-border);color:var(--green)}
+.fsm-btn.gr:hover:not(:disabled){background:var(--green-bg)}
+.fsm-btn.dm{border-color:var(--bg4);color:#242424}
+.fsm-a-row{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.fsm-arr2{font-size:10px;color:var(--text4)}
+.fsm-btn.gr .fsm-arr2{color:#1e4a2a}
+
+/* log */
+.log-block{margin-top:12px}
+.log-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 0;border-bottom:1px solid var(--border);margin-bottom:8px;
+}
+.log-bar-l{font-family:var(--mono);font-size:10px;color:var(--text4);letter-spacing:.1em;text-transform:uppercase}
+.log-bar-r{font-family:var(--mono);font-size:10px;color:var(--text4)}
+.log-entries{display:flex;flex-direction:column}
+.log-e{display:flex;gap:14px;font-family:var(--mono);font-size:11px;padding:4px 0;border-bottom:1px solid #111}
+.log-e:last-child{border-bottom:none}
+.l-n{color:var(--text4);min-width:22px;flex-shrink:0}
+.l-ev{color:#2d4d35;flex:1}
+.l-tr{color:#222;white-space:nowrap}
+.log-e.new .l-ev{color:var(--green)}
+.log-e.new .l-tr{color:var(--green-dim)}
+</style>
+
+<div class="page">
+
+  <!-- nav -->
+  <div class="nav">
+    <a href="#">← повернутись до конспекту</a>
+  </div>
+
+  <!-- header -->
+  <div class="page-header">
+    <div class="page-tag">
+      <span>Конспект · Embedded · FSM</span>
+    </div>
+    <div class="page-title">FSM · Кінцевий автомат</div>
+    <div class="page-lead">
+      Модель логіки, де система має обмежену кількість станів і переходить між ними по подіях. Основа будь-якого embedded-прошивку.
+    </div>
+    <div class="chips">
+      <span class="chip">STM32</span>
+      <span class="chip">ESP32</span>
+      <span class="chip">Embedded</span>
+      <span class="chip">Fundamentals</span>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">Зміст</div>
+    <ul class="toc-list">
+      <li><a href="#s1"><span class="toc-n">01 —</span> Поняття</a></li>
+      <li><a href="#s2"><span class="toc-n">02 —</span> Складові</a></li>
+      <li><a href="#s3"><span class="toc-n">03 —</span> Аналогія · Автомат з кавою</a></li>
+      <li><a href="#s4"><span class="toc-n">04 —</span> Принцип роботи</a></li>
+      <li><a href="#s5"><span class="toc-n">05 —</span> Типи FSM</a></li>
+    </ul>
+  </div>
+
+  <!-- 01 — Поняття -->
+  <div class="section" id="s1">
+    <div class="sec-header">
+      <span class="sec-num">01 —</span>
+      <span class="sec-title">Поняття</span>
+    </div>
+
+    <div class="callout key">
+      <div class="callout-label">Ключова ідея</div>
+      <p><strong>FSM (кінцевий автомат)</strong> — це модель логіки, де система має обмежену кількість станів, перебуває тільки в одному стані одночасно і переходить між станами по подіях/умовах.</p>
+    </div>
+
+    <div class="callout inf">
+      <div class="callout-label">«Що робити далі» залежить від</div>
+      <p>поточного стану та вхідної події (<code>байт</code>, <code>сигнал</code>, <code>таймер</code>)</p>
+    </div>
+  </div>
+
+  <!-- 02 — Складові -->
+  <div class="section" id="s2">
+    <div class="sec-header">
+      <span class="sec-num">02 —</span>
+      <span class="sec-title">Складові</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Елемент</th>
+            <th>Опис</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>State</strong> (стан)</td><td>Поточний режим роботи</td></tr>
+          <tr><td><strong>Input</strong> (подія)</td><td>Нові дані / сигнал</td></tr>
+          <tr><td><strong>Transition</strong> (перехід)</td><td>Зміна стану</td></tr>
+          <tr><td><strong>Action</strong> (дія)</td><td>Що виконується при переході</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 03 — Аналогія -->
+  <div class="section" id="s3">
+    <div class="sec-header">
+      <span class="sec-num">03 —</span>
+      <span class="sec-title">Аналогія · Автомат з кавою</span>
+    </div>
+
+    <p class="prose">Перехід між станами відбувається тільки після конкретної події — натиск кнопки, оплата, завершення приготування. Нижче — інтерактивна симуляція.</p>
+
+    <!-- widget var bridge -->
+    <style>
+      .fsm-sim {
+        --font-sans: 'Inter', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        --border-radius-lg: 4px;
+        --border-radius-md: 3px;
+        --color-background-primary: #111111;
+        --color-background-secondary: #181818;
+        --color-border-tertiary: #222222;
+        --color-border-secondary: #2a2a2a;
+        --color-text-primary: #c8c4bc;
+        --color-text-secondary: #888;
+        --color-text-tertiary: #444;
+        --color-text-info: #7b9fd4;
+        --color-text-success: #4caf6a;
+        --color-text-danger: #c85a5a;
+        --color-border-info: #1e2e3d;
+        --color-border-success: #1e3d28;
+        --color-border-danger: #3d1e1e;
+        --color-background-info: #0d1520;
+        --color-background-success: #0d1f14;
+      }
+    </style>
+    <!-- ══ FSM INTERACTIVE ══ -->
+    <div class="fsm-sim">
+<style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    .wrap{padding:1rem 0;font-family:var(--font-sans);color:var(--color-text-primary)}
+    h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+
+    .machine-layout{display:grid;grid-template-columns:1fr 260px;gap:16px;align-items:start}
+    .fsm-panel{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-primary)}
+
+    .states-flow{padding:16px 12px;display:flex;flex-direction:column;gap:0}
+
+    .state-node{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--border-radius-md);border:1.5px solid transparent;transition:all .25s;cursor:default;position:relative}
+    .state-node.idle-s{background:var(--color-background-secondary);border-color:var(--color-border-tertiary)}
+    .state-node.active-s{border-color:var(--color-border-info);background:var(--color-background-info)}
+    .state-node.done-s{border-color:var(--color-border-success);background:var(--color-background-success)}
+
+    .state-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:var(--color-border-secondary);transition:background .25s}
+    .active-s .state-dot{background:var(--color-text-info)}
+    .done-s .state-dot{background:var(--color-text-success)}
+
+    .state-name{font-size:13px;font-weight:500;flex:1;color:var(--color-text-secondary);transition:color .25s}
+    .active-s .state-name{color:var(--color-text-info)}
+    .done-s .state-name{color:var(--color-text-success)}
+
+    .state-sub{font-size:11px;color:var(--color-text-tertiary);line-height:1.4}
+    .active-s .state-sub{color:var(--color-text-info);opacity:.8}
+    .done-s .state-sub{color:var(--color-text-success);opacity:.7}
+
+    .arrow-gap{display:flex;align-items:center;padding:0 14px;height:24px;position:relative}
+    .arrow-line{width:1px;height:100%;background:var(--color-border-tertiary);margin-left:4px}
+    .arrow-label{font-size:11px;color:var(--color-text-tertiary);margin-left:14px;white-space:nowrap}
+    .arrow-gap.active-arrow .arrow-line{background:var(--color-text-info)}
+    .arrow-gap.active-arrow .arrow-label{color:var(--color-text-info)}
+
+    .control-panel{display:flex;flex-direction:column;gap:10px}
+
+    .machine-display{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);padding:14px 16px}
+    .display-screen{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px;margin-bottom:12px;min-height:72px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+    .screen-state{font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em}
+    .screen-msg{font-size:14px;font-weight:500;color:var(--color-text-primary);line-height:1.4}
+    .screen-sub{font-size:12px;color:var(--color-text-secondary)}
+
+    .drinks-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+    .drink-btn{padding:7px 6px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);font-size:12px;cursor:pointer;transition:background .15s,opacity .15s}
+    .drink-btn:hover:not(:disabled){background:var(--color-background-secondary)}
+    .drink-btn:active:not(:disabled){transform:scale(.97)}
+    .drink-btn:disabled{opacity:.3;cursor:default}
+    .drink-btn.selected{border-color:var(--color-border-info);color:var(--color-text-info);background:var(--color-background-info)}
+
+    .pay-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+    .action-btn{padding:8px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);font-size:12px;cursor:pointer;transition:background .15s,opacity .15s;text-align:center}
+    .action-btn:hover:not(:disabled){background:var(--color-background-secondary)}
+    .action-btn:active:not(:disabled){transform:scale(.97)}
+    .action-btn:disabled{opacity:.25;cursor:default}
+    .action-btn.primary{border-color:var(--color-border-info);color:var(--color-text-info)}
+    .action-btn.success{border-color:var(--color-border-success);color:var(--color-text-success)}
+    .action-btn.danger{border-color:var(--color-border-danger);color:var(--color-text-danger)}
+
+    .progress-bar-wrap{background:var(--color-background-secondary);border-radius:4px;height:4px;overflow:hidden;margin-top:8px}
+    .progress-bar{height:100%;border-radius:4px;background:var(--color-text-info);width:0;transition:width .1s linear}
+
+    .balance-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--color-text-secondary);margin-bottom:8px}
+    .balance-val{font-weight:500;color:var(--color-text-primary)}
+
+    .log-section{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);overflow:hidden}
+    .log-head{padding:8px 14px;background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px;color:var(--color-text-tertiary);display:flex;justify-content:space-between;align-items:center;text-transform:uppercase;letter-spacing:.05em}
+    .log-body{max-height:110px;overflow-y:auto;padding:6px 14px;font-size:11px;font-family:var(--font-mono)}
+    .log-entry{padding:3px 0;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);display:flex;gap:8px}
+    .log-entry:last-child{border-bottom:none;color:var(--color-text-primary)}
+    .log-entry .ev{color:var(--color-text-info)}
+    .log-entry .st{color:var(--color-text-tertiary)}
+
+    @media(max-width:500px){
+      .machine-layout{grid-template-columns:1fr}
+    }
+  </style>
+
+  <div class="wrap">
+    <h2 class="sr-only">Симулятор автомата з кавою — п'ять станів FSM: очікування, вибір, оплата, приготування, видача.</h2>
+
+    <div class="machine-layout">
+
+      <div class="fsm-panel">
+        <div class="states-flow" id="states-flow">
+
+          <div class="state-node active-s" id="node-WAIT_START">
+            <div class="state-dot"></div>
+            <div>
+              <div class="state-name">WAIT_START</div>
+              <div class="state-sub">Очікування клієнта</div>
+            </div>
+          </div>
+
+          <div class="arrow-gap" id="arr-0">
+            <div class="arrow-line"></div>
+            <span class="arrow-label">натиск кнопки напою</span>
+          </div>
+
+          <div class="state-node idle-s" id="node-WAIT_SELECTION">
+            <div class="state-dot"></div>
+            <div>
+              <div class="state-name">WAIT_SELECTION</div>
+              <div class="state-sub">Вибір напою</div>
+            </div>
+          </div>
+
+          <div class="arrow-gap" id="arr-1">
+            <div class="arrow-line"></div>
+            <span class="arrow-label">підтвердження вибору</span>
+          </div>
+
+          <div class="state-node idle-s" id="node-WAIT_PAYMENT">
+            <div class="state-dot"></div>
+            <div>
+              <div class="state-name">WAIT_PAYMENT</div>
+              <div class="state-sub">Очікування оплати</div>
+            </div>
+          </div>
+
+          <div class="arrow-gap" id="arr-2">
+            <div class="arrow-line"></div>
+            <span class="arrow-label">оплата пройшла</span>
+          </div>
+
+          <div class="state-node idle-s" id="node-WAIT_BREW">
+            <div class="state-dot"></div>
+            <div>
+              <div class="state-name">WAIT_BREW</div>
+              <div class="state-sub">Приготування</div>
+            </div>
+          </div>
+
+          <div class="arrow-gap" id="arr-3">
+            <div class="arrow-line"></div>
+            <span class="arrow-label">приготування завершено</span>
+          </div>
+
+          <div class="state-node idle-s" id="node-DELIVER">
+            <div class="state-dot"></div>
+            <div>
+              <div class="state-name">DELIVER</div>
+              <div class="state-sub">Видача напою</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="control-panel">
+
+        <div class="machine-display">
+          <div class="display-screen">
+            <div class="screen-state" id="scr-state">WAIT_START</div>
+            <div class="screen-msg" id="scr-msg">Доброго дня!</div>
+            <div class="screen-sub" id="scr-sub">Оберіть напій</div>
+          </div>
+
+          <div class="balance-row">
+            <span>Баланс</span>
+            <span class="balance-val" id="balance-val">0.00 грн</span>
+          </div>
+
+          <div class="drinks-grid" id="drinks-grid">
+            <button class="drink-btn" data-drink="Еспресо" data-price="25" onclick="selectDrink(this)">Еспресо<br><span style="font-size:10px;opacity:.6">25 грн</span></button>
+            <button class="drink-btn" data-drink="Американо" data-price="28" onclick="selectDrink(this)">Американо<br><span style="font-size:10px;opacity:.6">28 грн</span></button>
+            <button class="drink-btn" data-drink="Латте" data-price="35" onclick="selectDrink(this)">Латте<br><span style="font-size:10px;opacity:.6">35 грн</span></button>
+            <button class="drink-btn" data-drink="Капучино" data-price="35" onclick="selectDrink(this)">Капучино<br><span style="font-size:10px;opacity:.6">35 грн</span></button>
+          </div>
+
+          <button class="action-btn primary" id="btn-confirm" onclick="confirm_selection()" style="width:100%;margin-bottom:6px" disabled="">Підтвердити вибір →</button>
+
+          <div class="pay-row">
+            <button class="action-btn" id="btn-coin10" onclick="addCoin(10)" disabled="">+10 грн</button>
+            <button class="action-btn" id="btn-coin20" onclick="addCoin(20)" disabled="">+20 грн</button>
+          </div>
+          <div class="pay-row">
+            <button class="action-btn" id="btn-coin50" onclick="addCoin(50)" disabled="">+50 грн</button>
+            <button class="action-btn success" id="btn-card" onclick="payCard()" disabled="">Картка</button>
+          </div>
+
+          <div class="progress-bar-wrap" id="brew-wrap" style="display:none">
+            <div class="progress-bar" id="brew-bar"></div>
+          </div>
+
+          <button class="action-btn success" id="btn-take" onclick="takeDrink()" style="width:100%;margin-top:8px;display:none">Забрати напій ✓</button>
+          <button class="action-btn danger" id="btn-cancel" onclick="cancelOrder()" style="width:100%;margin-top:6px;display:none">Скасувати / повернути</button>
+          <button class="action-btn" id="btn-reset" onclick="resetMachine()" style="width:100%;margin-top:6px;display:none">↺ Новий клієнт</button>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="log-section" style="margin-top:12px">
+      <div class="log-head">
+        <span>Журнал подій</span>
+        <span id="log-count" style="font-size:10px">0</span>
+      </div>
+      <div class="log-body" id="log-body">
+        <div class="log-entry"><span class="st">—</span><span>Автомат готовий до роботи</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const STATES = ['WAIT_START','WAIT_SELECTION','WAIT_PAYMENT','WAIT_BREW','DELIVER'];
+    let state = 'WAIT_START', selected = null, price = 0, balance = 0, brewTimer = null, logEntries = [];
+
+    const MSGS = {
+      WAIT_START:    {msg:'Доброго дня!', sub:'Оберіть напій'},
+      WAIT_SELECTION:{msg:'Вибір напою', sub:'Оберіть та підтвердіть'},
+      WAIT_PAYMENT:  {msg:'Оплата', sub:'Внесіть кошти або прикладіть картку'},
+      WAIT_BREW:     {msg:'Готуємо…', sub:'Зачекайте, будь ласка'},
+      DELIVER:       {msg:'Ваш напій готовий!', sub:'Забирайте з лотка'}
+    };
+
+    function setState(s, event) {
+      const prev = state;
+      state = s;
+      logEntries.unshift({from: prev, to: s, event});
+      render();
+    }
+
+    function render() {
+      STATES.forEach((s, i) => {
+        const node = document.getElementById('node-' + s);
+        node.className = 'state-node';
+        const idx = STATES.indexOf(state);
+        if (s === state) node.classList.add('active-s');
+        else if (STATES.indexOf(s) < idx) node.classList.add('done-s');
+        else node.classList.add('idle-s');
+
+        if (i < STATES.length - 1) {
+          const arr = document.getElementById('arr-' + i);
+          arr.className = 'arrow-gap';
+          if (STATES.indexOf(s) < idx) arr.classList.add('active-arrow');
+        }
+      });
+
+      const m = MSGS[state];
+      document.getElementById('scr-state').textContent = state;
+      document.getElementById('scr-msg').textContent = state === 'WAIT_SELECTION' && selected ? selected : m.msg;
+      document.getElementById('scr-sub').textContent = state === 'WAIT_PAYMENT'
+              ? 'Потрібно: ' + price + ' грн · Внесено: ' + balance.toFixed(0) + ' грн'
+              : m.sub;
+      document.getElementById('balance-val').textContent = balance.toFixed(2) + ' грн';
+
+      const s = state;
+      document.querySelectorAll('.drink-btn').forEach(b => b.disabled = s !== 'WAIT_START' && s !== 'WAIT_SELECTION');
+      document.getElementById('btn-confirm').disabled = s !== 'WAIT_SELECTION' || !selected;
+      ['btn-coin10','btn-coin20','btn-coin50','btn-card'].forEach(id => {
+        document.getElementById(id).disabled = s !== 'WAIT_PAYMENT';
+      });
+      document.getElementById('brew-wrap').style.display = s === 'WAIT_BREW' ? 'block' : 'none';
+      document.getElementById('btn-take').style.display = s === 'DELIVER' ? 'block' : 'none';
+      document.getElementById('btn-cancel').style.display = (s === 'WAIT_SELECTION' || s === 'WAIT_PAYMENT') ? 'block' : 'none';
+      document.getElementById('btn-reset').style.display = s === 'DELIVER' ? 'none' : (s === 'WAIT_START' ? 'none' : 'none');
+
+      renderLog();
+    }
+
+    function selectDrink(btn) {
+      if (state !== 'WAIT_START' && state !== 'WAIT_SELECTION') return;
+      document.querySelectorAll('.drink-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selected = btn.dataset.drink;
+      price = parseInt(btn.dataset.price);
+      if (state === 'WAIT_START') setState('WAIT_SELECTION', 'натиск кнопки напою');
+      else render();
+    }
+
+    function confirm_selection() {
+      if (state !== 'WAIT_SELECTION' || !selected) return;
+      balance = 0;
+      setState('WAIT_PAYMENT', 'підтвердження вибору');
+    }
+
+    function addCoin(amount) {
+      if (state !== 'WAIT_PAYMENT') return;
+      balance += amount;
+      logEntries.unshift({from: state, to: state, event: '+' + amount + ' грн монетою'});
+      if (balance >= price) startBrew();
+      else render();
+    }
+
+    function payCard() {
+      if (state !== 'WAIT_PAYMENT') return;
+      balance = price;
+      logEntries.unshift({from: state, to: state, event: 'оплата карткою'});
+      startBrew();
+    }
+
+    function startBrew() {
+      setState('WAIT_BREW', 'оплата пройшла');
+      let pct = 0;
+      const bar = document.getElementById('brew-bar');
+      bar.style.width = '0%';
+      const interval = setInterval(() => {
+        pct += 2;
+        bar.style.width = Math.min(pct, 100) + '%';
+        if (pct >= 100) {
+          clearInterval(interval);
+          setTimeout(() => setState('DELIVER', 'приготування завершено'), 200);
+        }
+      }, 60);
+    }
+
+    function takeDrink() {
+      if (state !== 'DELIVER') return;
+      const change = balance - price;
+      logEntries.unshift({from: state, to: 'WAIT_START', event: 'напій забрано' + (change > 0 ? ', решта ' + change.toFixed(0) + ' грн' : '')});
+      resetMachine(false);
+    }
+
+    function cancelOrder() {
+      const ret = balance > 0 ? 'повернуто ' + balance.toFixed(0) + ' грн' : 'скасовано';
+      logEntries.unshift({from: state, to: 'WAIT_START', event: ret});
+      resetMachine(false);
+    }
+
+    function resetMachine(log = true) {
+      if (log) logEntries.unshift({from: state, to: 'WAIT_START', event: 'скидання'});
+      state = 'WAIT_START';
+      selected = null; price = 0; balance = 0;
+      document.querySelectorAll('.drink-btn').forEach(b => b.classList.remove('selected'));
+      document.getElementById('brew-bar').style.width = '0%';
+      render();
+    }
+
+    function renderLog() {
+      const body = document.getElementById('log-body');
+      document.getElementById('log-count').textContent = logEntries.length;
+      if (!logEntries.length) return;
+      body.innerHTML = logEntries.slice(0, 15).map(e =>
+              `<div class="log-entry"><span class="ev">${e.event}</span><span class="st">${e.from} → ${e.to}</span></div>`
+      ).join('');
+    }
+
+    render();
+  </script>
+</div>
+<div id="copy-toast"></div>
+    </div>
+
+  <!-- 04 — Принцип роботи -->
+  <div class="section" id="s4">
+    <div class="sec-header">
+      <span class="sec-num">04 —</span>
+      <span class="sec-title">Принцип роботи</span>
+    </div>
+
+    <ul class="note-list">
+      <li>система стартує в початковому стані</li>
+      <li>чекає вхідну подію (<code>байт</code>, <code>сигнал</code>, <code>таймер</code>)</li>
+      <li>перевіряє поточний стан</li>
+      <li>застосовує умови переходу</li>
+      <li>виконує дію (якщо потрібно)</li>
+      <li>змінює стан або залишається в тому ж</li>
+      <li>повторює цикл для наступної події</li>
+    </ul>
+  </div>
+
+  <!-- 05 — Типи FSM -->
+  <div class="section" id="s5">
+    <div class="sec-header">
+      <span class="sec-num">05 —</span>
+      <span class="sec-title">Типи FSM</span>
+    </div>
+
+    <div class="sub-h">Moore FSM</div>
+    <ul class="note-list">
+      <li>вихід залежить тільки від стану</li>
+      <li>більш стабільний і передбачуваний</li>
+      <li>часто використовується для основної логіки процесів</li>
+    </ul>
+
+    <div class="sub-h">Mealy FSM</div>
+    <ul class="note-list">
+      <li>вихід залежить від стану + вхідної події</li>
+      <li>швидша реакція на input</li>
+      <li>часто використовується для UI та обробки подій</li>
+    </ul>
+
+    <div class="callout inf">
+      <div class="callout-label">Формально</div>
+      <p>Moore і Mealy — формальні математичні моделі FSM.</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Модель</th><th>Формула</th><th>Застосування</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Moore</strong></td>
+            <td><code>output = f(state)</code></td>
+            <td>Основні стани процесу</td>
+          </tr>
+          <tr>
+            <td><strong>Mealy</strong></td>
+            <td><code>output = f(state, input)</code></td>
+            <td>Реакція на input, UI, обробка подій</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout key">
+      <div class="callout-label">На практиці</div>
+      <p>Системи зазвичай <strong>гібридні</strong>: Moore — для основних станів процесу, Mealy — для реакції на input.</p>
+    </div>
+  </div>
+
+  <!-- 06 — Код -->
+  <div class="section" id="s6">
+    <div class="sec-header">
+      <span class="sec-num">06 —</span>
+      <span class="sec-title">Код · C · switch/case</span>
+    </div>
+
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 15px;background:var(--bg4);border-bottom:1px solid var(--border)">
+        <span style="font-family:var(--mono);font-size:10px;color:var(--text4);letter-spacing:.1em;text-transform:uppercase">C · FSM</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--text4)">coffee_machine.c</span>
+      </div>
+      <pre style="padding:18px 16px;overflow-x:auto;font-size:12px;line-height:1.75;background:transparent"><code style="font-family:'JetBrains Mono',monospace"><span style="color:#9b8ec4">typedef</span> <span style="color:#9b8ec4">enum</span> {
+    <span style="color:#4caf6a">WAIT_START</span>, <span style="color:#4caf6a">WAIT_SELECTION</span>, <span style="color:#4caf6a">WAIT_PAYMENT</span>, <span style="color:#4caf6a">WAIT_BREW</span>, <span style="color:#4caf6a">DELIVER</span>
+} <span style="color:#9b8ec4">state_t</span>;
+
+<span style="color:#9b8ec4">typedef</span> <span style="color:#9b8ec4">enum</span> {
+    <span style="color:#c8c4bc">NO_EVENT</span>, <span style="color:#c8c4bc">CLIENT_DETECTED</span>, <span style="color:#c8c4bc">BUTTON_PRESSED</span>, <span style="color:#c8c4bc">PAYMENT_DONE</span>, <span style="color:#c8c4bc">BREW_DONE</span>
+} <span style="color:#9b8ec4">event_t</span>;
+
+<span style="color:#9b8ec4">void</span> <span style="color:#8abf6e">process_event</span>(<span style="color:#9b8ec4">state_t</span> <span style="color:#555">*</span><span style="color:#c8c4bc">state</span>, <span style="color:#9b8ec4">event_t</span> <span style="color:#c8c4bc">event</span>) {
+    <span style="color:#7b9fd4">switch</span> (<span style="color:#555">*</span><span style="color:#c8c4bc">state</span>) {
+
+    <span style="color:#7b9fd4">case</span> <span style="color:#4caf6a">WAIT_START</span>:
+        <span style="color:#7b9fd4">if</span> (<span style="color:#c8c4bc">event</span> <span style="color:#555">==</span> <span style="color:#c8c4bc">CLIENT_DETECTED</span>) {
+            <span style="color:#555">*</span><span style="color:#c8c4bc">state</span> <span style="color:#555">=</span> <span style="color:#4caf6a">WAIT_SELECTION</span>;
+        }
+        <span style="color:#7b9fd4">break</span>;
+
+    <span style="color:#7b9fd4">case</span> <span style="color:#4caf6a">WAIT_SELECTION</span>:
+        <span style="color:#7b9fd4">if</span> (<span style="color:#c8c4bc">event</span> <span style="color:#555">==</span> <span style="color:#c8c4bc">BUTTON_PRESSED</span>) {
+            <span style="color:#555">*</span><span style="color:#c8c4bc">state</span> <span style="color:#555">=</span> <span style="color:#4caf6a">WAIT_PAYMENT</span>;
+        }
+        <span style="color:#7b9fd4">break</span>;
+
+    <span style="color:#7b9fd4">case</span> <span style="color:#4caf6a">WAIT_PAYMENT</span>:
+        <span style="color:#7b9fd4">if</span> (<span style="color:#c8c4bc">event</span> <span style="color:#555">==</span> <span style="color:#c8c4bc">PAYMENT_DONE</span>) {
+            <span style="color:#555">*</span><span style="color:#c8c4bc">state</span> <span style="color:#555">=</span> <span style="color:#4caf6a">WAIT_BREW</span>;
+        }
+        <span style="color:#7b9fd4">break</span>;
+
+    <span style="color:#7b9fd4">case</span> <span style="color:#4caf6a">WAIT_BREW</span>:
+        <span style="color:#7b9fd4">if</span> (<span style="color:#c8c4bc">event</span> <span style="color:#555">==</span> <span style="color:#c8c4bc">BREW_DONE</span>) {
+            <span style="color:#555">*</span><span style="color:#c8c4bc">state</span> <span style="color:#555">=</span> <span style="color:#4caf6a">DELIVER</span>;
+        }
+        <span style="color:#7b9fd4">break</span>;
+
+    <span style="color:#7b9fd4">case</span> <span style="color:#4caf6a">DELIVER</span>:
+        <span style="color:#8abf6e">printf</span>(<span style="color:#c8a97a">"Coffee delivered\n"</span>);
+        <span style="color:#555">*</span><span style="color:#c8c4bc">state</span> <span style="color:#555">=</span> <span style="color:#4caf6a">WAIT_START</span>;
+        <span style="color:#7b9fd4">break</span>;
+    }
+}</code></pre>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── FSM data ──────────────────────────────────────────────────
+const FSTATES = ['WAIT_START','WAIT_SELECTION','WAIT_PAYMENT','WAIT_BREW','DELIVER'];
+
+const FSM_NODES = [
+  {id:'WAIT_START',    label:'WAIT_START',    x:70,  y:115, color:'#2a2a2a', activeColor:'#1a3a22', textColor:'#555', activeTextColor:'#4caf6a'},
+  {id:'WAIT_SELECTION',label:'WAIT_SELECTION',x:220, y:115, color:'#2a2a2a', activeColor:'#1a3a22', textColor:'#555', activeTextColor:'#4caf6a'},
+  {id:'WAIT_PAYMENT',  label:'WAIT_PAYMENT',  x:370, y:115, color:'#2a2a2a', activeColor:'#1a3a22', textColor:'#555', activeTextColor:'#4caf6a'},
+  {id:'WAIT_BREW',     label:'WAIT_BREW',     x:510, y:115, color:'#2a2a2a', activeColor:'#1a3a22', textColor:'#555', activeTextColor:'#4caf6a'},
+  {id:'DELIVER',       label:'DELIVER',       x:630, y:115, color:'#2a2a2a', activeColor:'#1a3a22', textColor:'#555', activeTextColor:'#4caf6a', accept:true},
+];
+
+const FSM_TRANSITIONS = [
+  {from:'WAIT_START',    to:'WAIT_SELECTION', label:'BTN_PRESS',   cx:145, cy:68},
+  {from:'WAIT_SELECTION',to:'WAIT_PAYMENT',   label:'CONFIRM',     cx:295, cy:68},
+  {from:'WAIT_PAYMENT',  to:'WAIT_BREW',      label:'PAYMENT_OK',  cx:440, cy:68},
+  {from:'WAIT_BREW',     to:'DELIVER',        label:'BREW_DONE',   cx:570, cy:68},
+  {from:'WAIT_SELECTION',to:'WAIT_START',     label:'CANCEL',      cx:145, cy:170},
+  {from:'WAIT_PAYMENT',  to:'WAIT_START',     label:'CANCEL',      cx:220, cy:195},
+  {from:'DELIVER',       to:'WAIT_START',     label:'TAKE_CUP',    cx:350, cy:195},
+];
+
+const R = 38;
+
+const FM = {
+  WAIT_START:    {m:'Доброго дня',   s:'оберіть напій'},
+  WAIT_SELECTION:{m:'вибір напою',   s:'підтвердіть вибір'},
+  WAIT_PAYMENT:  {m:'оплата',        s:''},
+  WAIT_BREW:     {m:'готуємо…',      s:'зачекайте'},
+  DELIVER:       {m:'напій готовий', s:'забирайте з лотка'},
+};
+
+let fstate='WAIT_START', sel=null, price=0, bal=0, steps=0, flog=[];
+
+// ── actions ───────────────────────────────────────────────────
+function go(next, ev) {
+  const prev = fstate; fstate = next; steps++;
+  flog.unshift({n:steps, ev, from:prev, to:next});
+  frender();
+}
+
+function pick(b) {
+  if(fstate!=='WAIT_START' && fstate!=='WAIT_SELECTION') return;
+  document.querySelectorAll('.fsm-d').forEach(x => x.classList.remove('sel'));
+  b.classList.add('sel'); sel = b.dataset.n; price = +b.dataset.p;
+  if(fstate==='WAIT_START') go('WAIT_SELECTION','EVT_BTN_PRESS → '+sel);
+  else frender();
+}
+
+function doConfirm() {
+  if(fstate!=='WAIT_SELECTION' || !sel) return;
+  bal = 0; go('WAIT_PAYMENT','EVT_CONFIRM → '+sel);
+}
+
+function doCoin(v) {
+  if(fstate!=='WAIT_PAYMENT') return;
+  bal += v; steps++;
+  flog.unshift({n:steps, ev:'+'+v+' грн → bal='+bal, from:fstate, to:fstate});
+  if(bal >= price) brewStart(); else frender();
+}
+
+function doCard() {
+  if(fstate!=='WAIT_PAYMENT') return;
+  bal = price;
+  flog.unshift({n:++steps, ev:'EVT_PAYMENT_OK (card)', from:fstate, to:fstate});
+  brewStart();
+}
+
+function brewStart() {
+  go('WAIT_BREW','EVT_PAYMENT_OK');
+  let p = 0;
+  document.getElementById('brew-t').style.display = 'block';
+  const f = document.getElementById('brew-f'); f.style.width = '0%';
+  const t = setInterval(() => {
+    p += 2; f.style.width = Math.min(p,100)+'%';
+    if(p >= 100) { clearInterval(t); setTimeout(() => go('DELIVER','EVT_BREW_DONE'), 150); }
+  }, 55);
+}
+
+function doTake() {
+  if(fstate!=='DELIVER') return;
+  const ch = bal - price;
+  flog.unshift({n:++steps, ev:'EVT_TAKE_CUP'+(ch>0?' change='+ch:''), from:'DELIVER', to:'WAIT_START'});
+  resetFSM();
+}
+
+function doCancel() {
+  flog.unshift({n:++steps, ev:'EVT_CANCEL → returned '+bal+'грн', from:fstate, to:'WAIT_START'});
+  resetFSM();
+}
+
+function resetFSM() {
+  fstate='WAIT_START'; sel=null; price=0; bal=0;
+  document.querySelectorAll('.fsm-d').forEach(b => b.classList.remove('sel'));
+  document.getElementById('brew-f').style.width = '0%';
+  document.getElementById('brew-t').style.display = 'none';
+  frender();
+}
+
+// ── SVG render ────────────────────────────────────────────────
+function renderSVG() {
+  const g = document.getElementById('fsm-g');
+  if(!g) return;
+  g.innerHTML = '';
+  const idx = FSTATES.indexOf(fstate);
+  const ns = 'http://www.w3.org/2000/svg';
+
+  // transitions
+  FSM_TRANSITIONS.forEach(t => {
+    const fromN = FSM_NODES.find(n => n.id === t.from);
+    const toN   = FSM_NODES.find(n => n.id === t.to);
+    const isActive = (t.from === fstate || t.to === fstate);
+    const isDone   = FSTATES.indexOf(t.from) < idx && FSTATES.indexOf(t.to) <= idx;
+
+    const dx = toN.x - fromN.x, dy = toN.y - fromN.y;
+    const angle = Math.atan2(dy, dx);
+    const x1 = fromN.x + R * Math.cos(angle);
+    const y1 = fromN.y + R * Math.sin(angle);
+    const x2 = toN.x   - (R+5) * Math.cos(angle);
+    const y2 = toN.y   - (R+5) * Math.sin(angle);
+
+    const path = document.createElementNS(ns,'path');
+    path.setAttribute('d', `M${x1},${y1} Q${t.cx},${t.cy} ${x2},${y2}`);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', isActive ? '#378ADD' : isDone ? '#1e3d28' : '#232323');
+    path.setAttribute('stroke-width', isActive ? '1.5' : '1');
+    path.setAttribute('marker-end', isActive ? 'url(#arr-a)' : 'url(#arr-d)');
+    g.appendChild(path);
+
+    const lbl = document.createElementNS(ns,'text');
+    lbl.setAttribute('x', t.cx);
+    lbl.setAttribute('y', t.cy - 6);
+    lbl.setAttribute('text-anchor','middle');
+    lbl.style.fontSize = '9px';
+    lbl.style.fontFamily = 'JetBrains Mono, monospace';
+    lbl.style.fill = isActive ? '#378ADD' : isDone ? '#1e4228' : '#2a2a2a';
+    lbl.textContent = t.label;
+    g.appendChild(lbl);
+  });
+
+  // initial arrow
+  const first = FSM_NODES[0];
+  const ia = document.createElementNS(ns,'line');
+  ia.setAttribute('x1', first.x - R - 22); ia.setAttribute('y1', first.y);
+  ia.setAttribute('x2', first.x - R - 3);  ia.setAttribute('y2', first.y);
+  ia.setAttribute('stroke','#232323'); ia.setAttribute('stroke-width','1');
+  ia.setAttribute('marker-end','url(#arr-d)');
+  g.appendChild(ia);
+
+  // nodes
+  FSM_NODES.forEach((n, i) => {
+    const isActive = n.id === fstate;
+    const isDone   = i < idx;
+
+    const circle = document.createElementNS(ns,'circle');
+    circle.setAttribute('cx', n.x); circle.setAttribute('cy', n.y); circle.setAttribute('r', R);
+    circle.setAttribute('fill',   isActive ? '#0d1828' : isDone ? '#0a1a10' : '#111');
+    circle.setAttribute('stroke', isActive ? '#3d6e9e' : isDone ? '#1e3d28' : '#252525');
+    circle.setAttribute('stroke-width', isActive ? '1.5' : '1');
+    g.appendChild(circle);
+
+    // accept double ring
+    if(n.accept) {
+      const inner = document.createElementNS(ns,'circle');
+      inner.setAttribute('cx', n.x); inner.setAttribute('cy', n.y); inner.setAttribute('r', R-5);
+      inner.setAttribute('fill','none');
+      inner.setAttribute('stroke', isActive ? '#2a4a6a' : isDone ? '#1a3028' : '#1e1e1e');
+      inner.setAttribute('stroke-width','0.5');
+      g.appendChild(inner);
+    }
+
+    // split label into two lines if needed
+    const words = n.label.split('_');
+    if(words.length >= 2) {
+      const line1 = document.createElementNS(ns,'text');
+      line1.setAttribute('x', n.x); line1.setAttribute('y', n.y - 5);
+      line1.setAttribute('text-anchor','middle'); line1.setAttribute('dominant-baseline','central');
+      line1.style.fontSize = '9px'; line1.style.fontFamily = 'JetBrains Mono, monospace'; line1.style.fontWeight = '500';
+      line1.style.fill = isActive ? '#7b9fd4' : isDone ? '#2a6030' : '#3a3a3a';
+      line1.textContent = words[0];
+      g.appendChild(line1);
+      const line2 = document.createElementNS(ns,'text');
+      line2.setAttribute('x', n.x); line2.setAttribute('y', n.y + 7);
+      line2.setAttribute('text-anchor','middle'); line2.setAttribute('dominant-baseline','central');
+      line2.style.fontSize = '9px'; line2.style.fontFamily = 'JetBrains Mono, monospace'; line2.style.fontWeight = '500';
+      line2.style.fill = isActive ? '#7b9fd4' : isDone ? '#2a6030' : '#3a3a3a';
+      line2.textContent = words.slice(1).join('_');
+      g.appendChild(line2);
+    } else {
+      const lbl = document.createElementNS(ns,'text');
+      lbl.setAttribute('x', n.x); lbl.setAttribute('y', n.y);
+      lbl.setAttribute('text-anchor','middle'); lbl.setAttribute('dominant-baseline','central');
+      lbl.style.fontSize = '9px'; lbl.style.fontFamily = 'JetBrains Mono, monospace'; lbl.style.fontWeight = '500';
+      lbl.style.fill = isActive ? '#7b9fd4' : isDone ? '#2a6030' : '#3a3a3a';
+      lbl.textContent = n.label;
+      g.appendChild(lbl);
+    }
+  });
+}
+
+// ── full render ───────────────────────────────────────────────
+function frender() {
+  renderSVG();
+
+  const bd = document.getElementById('sim-badge');
+  bd.textContent = fstate;
+  bd.className = 'fsm-sim-badge' + (fstate !== 'WAIT_START' ? ' on' : '');
+
+  document.getElementById('sc-state').textContent = fstate;
+  document.getElementById('sc-step').textContent  = 'step ' + steps;
+  document.getElementById('sc-main').textContent  = (fstate==='WAIT_SELECTION' && sel) ? sel : FM[fstate].m;
+  document.getElementById('sc-sub').textContent   = fstate==='WAIT_PAYMENT'
+    ? 'потрібно '+price+' · внесено '+bal.toFixed(0)+' грн'
+    : FM[fstate].s;
+  document.getElementById('sc-bal-v').textContent = bal.toFixed(2)+' грн';
+  document.getElementById('sc-bal').className = 'fsm-bal'+(fstate==='WAIT_PAYMENT'?' pay':'');
+
+  const wp = fstate==='WAIT_PAYMENT', ws = fstate==='WAIT_SELECTION';
+  document.querySelectorAll('.fsm-d').forEach(b => b.disabled = fstate!=='WAIT_START' && !ws);
+  document.getElementById('b-confirm').disabled = !ws || !sel;
+  ['b-c10','b-c20','b-c50','b-card'].forEach(id => document.getElementById(id).disabled = !wp);
+  document.getElementById('b-take').style.display   = fstate==='DELIVER' ? 'flex' : 'none';
+  document.getElementById('b-cancel').style.display = (ws||wp) ? 'flex' : 'none';
+  if(fstate !== 'WAIT_BREW') document.getElementById('brew-t').style.display = 'none';
+
+  document.getElementById('log-cnt').textContent = flog.length;
+  if(!flog.length) return;
+  document.getElementById('log-b').innerHTML = flog.slice(0,16).map((e,i) =>
+    `<div class="log-e${i===0?' new':''}"><span class="l-n">${String(e.n).padStart(2,'0')}</span><span class="l-ev">${e.ev}</span><span class="l-tr">${e.from===e.to?'↺ '+e.to:e.from+' → '+e.to}</span></div>`
+  ).join('');
+}
+
+frender();
+</script>
