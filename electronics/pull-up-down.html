@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pull-up / Pull-down · Конспект · Embedded Systems</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0a0c10;
+  --surf:   #111318;
+  --surf2:  #181c24;
+  --brd:    #1f2633;
+  --brd2:   #2a3347;
+  --text:   #c8d4e8;
+  --dim:    #5a6880;
+  --muted:  #3a4a60;
+  --cyan:   #00d4ff;
+  --orange: #ff6b35;
+  --green:  #7cf08a;
+  --yellow: #f0c040;
+  --purple: #c084fc;
+  --red:    #ff5577;
+  --mono:   'JetBrains Mono', monospace;
+  --sans:   'Syne', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14px;line-height:1.7;min-height:100vh}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:var(--bg);border-bottom:1px solid var(--brd);
+  height:46px;padding:0 28px;
+  display:flex;align-items:center;gap:14px;
+}
+.topbar a{color:var(--dim);text-decoration:none;font-size:12px;transition:color .2s}
+.topbar a:hover{color:var(--cyan)}
+.topbar-sep{color:var(--muted);font-size:12px}
+.topbar-cur{color:var(--text);font-size:12px}
+
+/* ── LAYOUT ── */
+.page{display:flex}
+
+/* ── TOC ── */
+.toc{
+  display:none;
+  position:fixed;top:46px;left:0;bottom:0;width:200px;
+  border-right:1px solid var(--brd);
+  padding:24px 0;overflow-y:auto;
+  background:var(--bg);
+}
+@media(min-width:1080px){.toc{display:block}}
+.toc-label{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding:0 18px;margin-bottom:10px}
+.toc a{
+  display:block;padding:5px 18px;font-size:11px;color:var(--dim);
+  text-decoration:none;border-left:2px solid transparent;transition:all .15s;
+  line-height:1.4;
+}
+.toc a:hover{color:var(--text);border-left-color:var(--brd2)}
+.toc a.active{color:var(--cyan);border-left-color:var(--cyan)}
+
+/* ── WRAPPER ── */
+.wrapper{
+  max-width:860px;margin:0 auto;
+  padding:76px 28px 120px;
+  width:100%;
+}
+@media(min-width:1080px){.wrapper{margin-left:200px}}
+
+/* ── HEADER ── */
+.page-meta{font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+h1{
+  font-family:var(--sans);font-size:clamp(28px,5vw,50px);font-weight:800;
+  color:#fff;line-height:1.1;letter-spacing:-.02em;margin-bottom:18px;
+}
+.page-intro{font-size:14px;color:var(--dim);max-width:640px;line-height:1.9;margin-bottom:24px}
+.page-intro strong{color:var(--text)}
+.tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:60px}
+.tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border:1px solid var(--brd2);color:var(--dim);border-radius:2px}
+.tag.c{border-color:#1a2e4a;color:var(--cyan);background:rgba(0,212,255,.04)}
+.tag.g{border-color:#1a3020;color:var(--green);background:rgba(124,240,138,.04)}
+.tag.o{border-color:#342810;color:var(--orange);background:rgba(255,107,53,.04)}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:68px}
+.section:nth-child(1){animation:fadeUp .45s .05s both}
+.section:nth-child(2){animation:fadeUp .45s .10s both}
+.section:nth-child(3){animation:fadeUp .45s .15s both}
+.section:nth-child(4){animation:fadeUp .45s .20s both}
+.section:nth-child(5){animation:fadeUp .45s .25s both}
+.section:nth-child(6){animation:fadeUp .45s .30s both}
+.section:nth-child(7){animation:fadeUp .45s .35s both}
+.section:nth-child(8){animation:fadeUp .45s .40s both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+.sec-num{font-size:10px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+.sec-title{
+  font-family:var(--sans);font-size:22px;font-weight:700;color:#fff;margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--brd)}
+.sec-text{color:var(--dim);line-height:1.85;margin-bottom:14px;font-size:13px}
+.sec-text strong{color:var(--text)}
+
+/* ── PROSE ── */
+code{background:#1a2030;color:var(--cyan);padding:1px 6px;border-radius:3px;font-size:12px}
+pre{
+  background:var(--surf2);border:1px solid var(--brd);border-radius:6px;
+  padding:14px 18px;font-size:12px;color:var(--green);line-height:1.7;
+  overflow-x:auto;margin:14px 0;
+}
+
+ul{margin:10px 0;padding:0;list-style:none}
+ul li{padding:5px 0 5px 20px;color:var(--dim);position:relative;font-size:13px;line-height:1.7}
+ul li::before{content:'—';position:absolute;left:0;color:var(--muted)}
+ul li strong{color:var(--text)}
+ul li code{font-size:11px}
+
+ol{margin:12px 0;padding:0;list-style:none;counter-reset:ol}
+ol li{
+  padding:7px 0 7px 28px;color:var(--dim);position:relative;
+  font-size:13px;line-height:1.7;border-bottom:1px solid var(--brd);
+  counter-increment:ol;
+}
+ol li:last-child{border-bottom:none}
+ol li::before{
+  content:counter(ol);position:absolute;left:0;
+  color:var(--muted);font-size:10px;top:10px;
+  letter-spacing:.06em;
+}
+ol li strong{color:var(--text)}
+
+/* ── CALLOUTS ── */
+.key{background:#0d1f1a;border-left:3px solid var(--cyan);padding:13px 17px;margin:16px 0;border-radius:0 4px 4px 0}
+.key .badge{font-size:9px;letter-spacing:.12em;color:var(--cyan);text-transform:uppercase;margin-bottom:4px}
+.warn{background:#1a0d0d;border-left:3px solid var(--orange);padding:13px 17px;margin:16px 0;border-radius:0 4px 4px 0}
+.warn .badge{font-size:9px;letter-spacing:.12em;color:var(--orange);text-transform:uppercase;margin-bottom:4px}
+.inf{background:#0d1520;border-left:3px solid var(--purple);padding:13px 17px;margin:16px 0;border-radius:0 4px 4px 0}
+.inf .badge{font-size:9px;letter-spacing:.12em;color:var(--purple);text-transform:uppercase;margin-bottom:4px}
+.good{background:#0d1f14;border-left:3px solid var(--green);padding:13px 17px;margin:16px 0;border-radius:0 4px 4px 0}
+.good .badge{font-size:9px;letter-spacing:.12em;color:var(--green);text-transform:uppercase;margin-bottom:4px}
+.callout-text{font-size:13px;color:var(--dim);line-height:1.8}
+.callout-text strong{color:var(--text)}
+
+/* ── COMPARE TABLE ── */
+.tbl-wrap{overflow-x:auto;margin:16px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{
+  text-align:left;padding:9px 14px;border-bottom:1px solid var(--brd2);
+  color:var(--dim);font-weight:600;font-size:10px;
+  letter-spacing:.08em;text-transform:uppercase;
+}
+td{padding:9px 14px;border-bottom:1px solid var(--brd);color:var(--dim);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.td-c{color:var(--cyan);font-weight:600}
+.td-g{color:var(--green);font-weight:600}
+.td-o{color:var(--orange);font-weight:600}
+.td-r{color:var(--red);font-weight:600}
+.td-y{color:var(--yellow);font-weight:600}
+.td-br{color:var(--text);font-weight:600}
+
+/* ── TWO-COL GRID ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:16px 18px}
+.card-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;font-weight:700}
+.card.pu{border-top:2px solid var(--cyan)}
+.card.pu .card-title{color:var(--cyan)}
+.card.pd{border-top:2px solid var(--orange)}
+.card.pd .card-title{color:var(--orange)}
+.card-text{font-size:12px;color:var(--dim);line-height:1.65}
+.card-text strong{color:var(--text)}
+
+/* ── FLOW ── */
+.flow{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:16px 0}
+.flow-box{
+  background:var(--surf2);border:1px solid var(--brd2);border-radius:4px;
+  padding:5px 11px;font-size:11px;color:var(--text);white-space:nowrap;
+}
+.flow-box.c{border-color:var(--cyan); color:var(--cyan); background:rgba(0,212,255,.05)}
+.flow-box.y{border-color:var(--yellow);color:var(--yellow);background:rgba(240,192,64,.05)}
+.flow-box.p{border-color:var(--purple);color:var(--purple);background:rgba(192,132,252,.05)}
+.flow-box.g{border-color:var(--green); color:var(--green); background:rgba(124,240,138,.05)}
+.flow-box.o{border-color:var(--orange);color:var(--orange);background:rgba(255,107,53,.05)}
+.flow-box.r{border-color:var(--red);   color:var(--red);   background:rgba(255,85,119,.05)}
+.flow-arr{color:var(--muted);font-size:13px;padding:0 1px}
+
+/* ── INTERACTIVE WIDGET ── */
+.widget{
+  background:var(--surf);border:1px solid var(--brd2);
+  border-radius:10px;overflow:hidden;margin:20px 0;
+}
+.widget-header{
+  padding:12px 20px;border-bottom:1px solid var(--brd);
+  display:flex;align-items:center;gap:10px;
+}
+.widget-title{font-size:13px;color:var(--text)}
+.wdot{width:7px;height:7px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 7px var(--green);margin-left:auto;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.wdot-label{font-size:11px;color:var(--green);letter-spacing:.08em}
+
+.sim-body{padding:20px;display:flex;flex-direction:column;gap:18px}
+
+/* circuit SVG area */
+.circuit-wrap{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;overflow:hidden}
+
+/* controls row */
+.ctrl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.mode-tabs{display:flex;border:1px solid var(--brd2);border-radius:6px;overflow:hidden}
+.mode-tab{
+  padding:7px 16px;font-size:12px;color:var(--dim);background:none;
+  border:none;font-family:var(--mono);cursor:pointer;transition:all .15s;
+}
+.mode-tab.active{background:var(--surf2);color:var(--cyan)}
+.mode-tab:hover:not(.active){color:var(--text)}
+
+.btn-toggle{
+  padding:7px 18px;border-radius:6px;border:1px solid var(--brd2);
+  background:var(--surf2);color:var(--dim);font-family:var(--mono);font-size:12px;
+  cursor:pointer;transition:all .15s;
+}
+.btn-toggle:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn-toggle.pressed{background:#0d1f1a;border-color:var(--cyan);color:var(--cyan);
+  box-shadow:0 0 10px rgba(0,212,255,.2)}
+
+/* state display */
+.state-row{display:flex;gap:10px;flex-wrap:wrap}
+.state-pill{
+  padding:5px 14px;border-radius:20px;font-size:11px;letter-spacing:.08em;
+  border:1px solid var(--brd);background:var(--surf2);color:var(--dim);
+  transition:all .22s;
+}
+.state-pill.hi{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.07);
+  box-shadow:0 0 10px rgba(0,212,255,.15)}
+.state-pill.lo{border-color:var(--muted);color:var(--muted)}
+.state-pill.float{border-color:var(--orange);color:var(--orange);background:rgba(255,107,53,.07);
+  animation:flick .5s ease-in-out infinite alternate}
+@keyframes flick{from{opacity:.5}to{opacity:1}}
+
+.explain-box{background:var(--surf2);border:1px solid var(--brd);border-radius:7px;
+  padding:13px 16px;font-size:12px;color:var(--dim);line-height:1.7;transition:all .22s}
+.explain-box strong{color:var(--text)}
+.explain-box.warn-state{border-color:var(--orange);background:rgba(255,107,53,.05)}
+.explain-box.ok-state{border-color:var(--green);background:rgba(124,240,138,.04)}
+
+/* ── INTERVIEW Q&A ── */
+.qa-list{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.qa-item{border:1px solid var(--brd);border-radius:8px;overflow:hidden}
+.qa-q{
+  padding:12px 16px;background:var(--surf2);color:var(--text);font-size:13px;
+  cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+  transition:background .15s;
+}
+.qa-q:hover{background:#1f2535}
+.qa-q .qa-arrow{color:var(--muted);font-size:11px;transition:transform .2s}
+.qa-item.open .qa-arrow{transform:rotate(180deg)}
+.qa-a{
+  display:none;padding:14px 16px;font-size:12px;color:var(--dim);
+  border-top:1px solid var(--brd);line-height:1.8;
+}
+.qa-item.open .qa-a{display:block}
+.qa-a strong{color:var(--text)}
+.qa-a code{font-size:11px}
+
+/* ── DIVIDER ── */
+.divider{border:none;border-top:1px solid var(--brd);margin:56px 0}
+
+/* ── FORMULA BOX ── */
+.formula{
+  background:var(--surf2);border:1px solid var(--brd2);border-radius:6px;
+  padding:14px 20px;margin:14px 0;font-size:13px;color:var(--yellow);
+  text-align:center;letter-spacing:.04em;
+}
+.formula span{color:var(--dim);font-size:11px;display:block;margin-top:4px}
+
+/* ── FLOATING/UNDEFINED STATE ANIMATION ── */
+.float-demo{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:4px;border:1px solid var(--orange);
+  background:rgba(255,107,53,.08);color:var(--orange);font-size:12px;
+  animation:flick .4s ease-in-out infinite alternate;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+  <a href="../index.html">← конспекти</a>
+  <span class="topbar-sep">·</span>
+  <span class="topbar-cur">Embedded Systems · GPIO · Pull-up / Pull-down</span>
+</div>
+
+<!-- ══ TOC ══ -->
+<nav class="toc" id="toc">
+  <div class="toc-label">зміст</div>
+  <a href="#s1">01 — Навіщо взагалі?</a>
+  <a href="#s2">02 — Pull-up резистор</a>
+  <a href="#s3">03 — Pull-down резистор</a>
+  <a href="#s4">04 — Порівняння</a>
+  <a href="#s5">05 — Номінал резистора</a>
+  <a href="#s6">06 — Внутрішні vs зовнішні</a>
+  <a href="#s7">07 — Open-drain / Open-collector</a>
+  <a href="#s8">08 — Типові схеми</a>
+  <a href="#s9">09 — Симулятор</a>
+  <a href="#s10">10 — Питання на співбесіді</a>
+</nav>
+
+<!-- ══ CONTENT ══ -->
+<div class="page">
+<div class="wrapper">
+
+<!-- HEADER -->
+<div class="page-meta">GPIO · Embedded Systems · Fundamentals</div>
+<h1>Pull-up /<br>Pull-down</h1>
+<p class="page-intro">
+  Один резистор — і лінія ніколи не «висить у повітрі».
+  <strong>Floating state</strong> — найпоширеніша причина глюків на GPIO.
+  Ці конспект пояснює як, чому і коли використовувати підтягуючі резистори.
+</p>
+<div class="tags">
+  <span class="tag c">STM32</span>
+  <span class="tag c">ESP32</span>
+  <span class="tag c">Arduino</span>
+  <span class="tag g">GPIO</span>
+  <span class="tag g">Electronics</span>
+  <span class="tag o">Fundamentals</span>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<div class="section" id="s1">
+  <div class="sec-num">01</div>
+  <div class="sec-title">Навіщо взагалі потрібні?</div>
+
+  <p class="sec-text">
+    Цифровий вхід МК читає <strong>HIGH</strong> або <strong>LOW</strong> — і більше нічого.
+    Але якщо пін нікуди не підключений (або підключений через кнопку, яка зараз розімкнута),
+    він знаходиться в стані <strong>floating</strong> — невизначеному стані, де
+    випадковий електромагнітний шум, ємнісні наводки або залишковий заряд дають
+    хаотичний 0 або 1.
+  </p>
+
+  <div class="flow">
+    <div class="flow-box r">Кнопка розімкнута</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box o">Пін ні з чим не з'єднаний</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box o">Floating state</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box r">Хаотичний 0/1 🐛</div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-box g">Кнопка розімкнута</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box c">Пін через R з'єднаний з VCC або GND</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box g">Стабільний рівень ✓</div>
+  </div>
+
+  <div class="warn">
+    <div class="badge">⚠ Floating State</div>
+    <div class="callout-text">
+      <strong>Floating</strong> — це не «десь між 0 і 1». Це непередбачуваний стан,
+      де значення може спонтанно змінюватись навіть без жодної зовнішньої дії.
+      Особливо небезпечний для входів типу <strong>Reset</strong>, <strong>Enable</strong>,
+      <strong>CS</strong> — де хибний рівень може перезавантажити або вимкнути пристрій.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<div class="section" id="s2">
+  <div class="sec-num">02</div>
+  <div class="sec-title">Pull-up резистор</div>
+
+  <p class="sec-text">
+    <strong>Pull-up</strong> — резистор, підключений між піном і <strong>VCC</strong>.
+    Він «підтягує» лінію до HIGH, коли вона ні з чим не з'єднана.
+  </p>
+
+  <!-- SVG схема pull-up -->
+  <div class="circuit-wrap" style="padding:20px">
+    <svg viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:420px;display:block;margin:0 auto">
+      <!-- VCC -->
+      <text x="60" y="22" font-family="JetBrains Mono,monospace" font-size="12" fill="#00d4ff" text-anchor="middle">VCC</text>
+      <line x1="60" y1="26" x2="60" y2="50" stroke="#00d4ff" stroke-width="2"/>
+      <!-- Резистор -->
+      <rect x="42" y="50" width="36" height="56" rx="3" fill="#181c24" stroke="#2a3347" stroke-width="1.5"/>
+      <text x="60" y="82" font-family="JetBrains Mono,monospace" font-size="10" fill="#f0c040" text-anchor="middle">R</text>
+      <text x="60" y="94" font-family="JetBrains Mono,monospace" font-size="9" fill="#5a6880" text-anchor="middle">10k</text>
+      <!-- Лінія вниз від резистора -->
+      <line x1="60" y1="106" x2="60" y2="130" stroke="#00d4ff" stroke-width="2"/>
+      <!-- Вузол -->
+      <circle cx="60" cy="130" r="4" fill="#00d4ff"/>
+      <!-- Горизонтальна лінія до MCU -->
+      <line x1="60" y1="130" x2="200" y2="130" stroke="#00d4ff" stroke-width="2"/>
+      <!-- MCU box -->
+      <rect x="200" y="108" width="90" height="44" rx="5" fill="#111318" stroke="#2a3347" stroke-width="1.5"/>
+      <text x="245" y="127" font-family="JetBrains Mono,monospace" font-size="11" fill="#c8d4e8" text-anchor="middle">MCU</text>
+      <text x="245" y="141" font-family="JetBrains Mono,monospace" font-size="10" fill="#5a6880" text-anchor="middle">GPIO_IN</text>
+      <!-- Кнопка: лінія вниз від вузла -->
+      <line x1="60" y1="130" x2="60" y2="158" stroke="#5a6880" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <!-- Кнопка символ -->
+      <circle cx="60" cy="162" r="5" fill="none" stroke="#5a6880" stroke-width="1.5"/>
+      <line x1="60" y1="167" x2="60" y2="180" stroke="#5a6880" stroke-width="1.5"/>
+      <!-- GND -->
+      <line x1="54" y1="180" x2="66" y2="180" stroke="#5a6880" stroke-width="2"/>
+      <line x1="57" y1="184" x2="63" y2="184" stroke="#5a6880" stroke-width="1.5"/>
+      <line x1="59" y1="188" x2="61" y2="188" stroke="#5a6880" stroke-width="1"/>
+      <!-- Підписи -->
+      <text x="90" y="125" font-family="JetBrains Mono,monospace" font-size="10" fill="#7cf08a">HIGH (кнопка відпущена)</text>
+      <text x="90" y="155" font-family="JetBrains Mono,monospace" font-size="10" fill="#ff6b35">LOW (кнопка натиснута)</text>
+      <!-- Стрілка до LOW пояснення -->
+      <text x="90" y="170" font-family="JetBrains Mono,monospace" font-size="9" fill="#3a4a60">→ пін замикається на GND через SW</text>
+    </svg>
+  </div>
+
+  <p class="sec-text" style="margin-top:12px">
+    <strong>Логіка роботи:</strong>
+  </p>
+  <ul>
+    <li><strong>Кнопка відпущена</strong> — пін з'єднаний з VCC через R. Читається <strong>HIGH</strong>. Через резистор струм мінімальний (не КЗ).</li>
+    <li><strong>Кнопка натиснута</strong> — пін підключений до GND. Читається <strong>LOW</strong>. Струм через R обмежений: <code>I = VCC / R</code>.</li>
+  </ul>
+
+  <div class="key">
+    <div class="badge">👆 Ключова думка</div>
+    <div class="callout-text">
+      Pull-up → <strong>активний LOW</strong>. Кнопка натиснута — логічний нуль.
+      Саме тому кнопки на платах типу Nucleo, ESP32-DevKit підключені через pull-up:
+      натиснути = LOW.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<div class="section" id="s3">
+  <div class="sec-num">03</div>
+  <div class="sec-title">Pull-down резистор</div>
+
+  <p class="sec-text">
+    <strong>Pull-down</strong> — резистор між піном і <strong>GND</strong>.
+    Утримує лінію в LOW, поки ніхто не подає HIGH.
+  </p>
+
+  <!-- SVG pull-down -->
+  <div class="circuit-wrap" style="padding:20px">
+    <svg viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:420px;display:block;margin:0 auto">
+      <!-- VCC зверху через кнопку -->
+      <text x="60" y="16" font-family="JetBrains Mono,monospace" font-size="12" fill="#00d4ff" text-anchor="middle">VCC</text>
+      <line x1="60" y1="20" x2="60" y2="38" stroke="#5a6880" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <!-- Кнопка символ -->
+      <circle cx="60" cy="42" r="5" fill="none" stroke="#5a6880" stroke-width="1.5"/>
+      <line x1="60" y1="47" x2="60" y2="62" stroke="#5a6880" stroke-width="1.5"/>
+      <!-- Вузол -->
+      <circle cx="60" cy="62" r="4" fill="#ff6b35"/>
+      <!-- Горизонтальна лінія до MCU -->
+      <line x1="60" y1="62" x2="200" y2="62" stroke="#ff6b35" stroke-width="2"/>
+      <!-- MCU box -->
+      <rect x="200" y="40" width="90" height="44" rx="5" fill="#111318" stroke="#2a3347" stroke-width="1.5"/>
+      <text x="245" y="59" font-family="JetBrains Mono,monospace" font-size="11" fill="#c8d4e8" text-anchor="middle">MCU</text>
+      <text x="245" y="73" font-family="JetBrains Mono,monospace" font-size="10" fill="#5a6880" text-anchor="middle">GPIO_IN</text>
+      <!-- Лінія вниз до резистора -->
+      <line x1="60" y1="62" x2="60" y2="90" stroke="#ff6b35" stroke-width="2"/>
+      <!-- Резистор -->
+      <rect x="42" y="90" width="36" height="56" rx="3" fill="#181c24" stroke="#2a3347" stroke-width="1.5"/>
+      <text x="60" y="122" font-family="JetBrains Mono,monospace" font-size="10" fill="#f0c040" text-anchor="middle">R</text>
+      <text x="60" y="134" font-family="JetBrains Mono,monospace" font-size="9" fill="#5a6880" text-anchor="middle">10k</text>
+      <!-- Лінія вниз від резистора -->
+      <line x1="60" y1="146" x2="60" y2="165" stroke="#ff6b35" stroke-width="2"/>
+      <!-- GND -->
+      <line x1="54" y1="165" x2="66" y2="165" stroke="#ff6b35" stroke-width="2"/>
+      <line x1="57" y1="169" x2="63" y2="169" stroke="#ff6b35" stroke-width="1.5"/>
+      <line x1="59" y1="173" x2="61" y2="173" stroke="#ff6b35" stroke-width="1"/>
+      <!-- Підписи -->
+      <text x="90" y="57" font-family="JetBrains Mono,monospace" font-size="10" fill="#ff6b35">LOW (кнопка відпущена)</text>
+      <text x="90" y="80" font-family="JetBrains Mono,monospace" font-size="10" fill="#7cf08a">HIGH (кнопка натиснута)</text>
+      <text x="90" y="95" font-family="JetBrains Mono,monospace" font-size="9" fill="#3a4a60">→ VCC через SW подається на пін</text>
+    </svg>
+  </div>
+
+  <ul>
+    <li><strong>Кнопка відпущена</strong> — пін тягнеться до GND через R. Читається <strong>LOW</strong>.</li>
+    <li><strong>Кнопка натиснута</strong> — пін підключений до VCC. Читається <strong>HIGH</strong>. Струм через R — в GND.</li>
+  </ul>
+
+  <div class="key">
+    <div class="badge">👆 Ключова думка</div>
+    <div class="callout-text">
+      Pull-down → <strong>активний HIGH</strong>. Кнопка натиснута — логічна одиниця.
+      Більш «природна» логіка для початківців, але рідше використовується на платах
+      (бо MCU мають вбудовані pull-up, але зазвичай не мають pull-down).
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<div class="section" id="s4">
+  <div class="sec-num">04</div>
+  <div class="sec-title">Порівняння Pull-up vs Pull-down</div>
+
+  <div class="tbl-wrap">
+    <table>
+      <tr>
+        <th>Параметр</th>
+        <th class="td-c">Pull-up</th>
+        <th class="td-o">Pull-down</th>
+      </tr>
+      <tr>
+        <td>Підключення</td>
+        <td class="td-c">Пін → R → VCC</td>
+        <td class="td-o">Пін → R → GND</td>
+      </tr>
+      <tr>
+        <td>Стан у спокої</td>
+        <td class="td-c">HIGH (1)</td>
+        <td class="td-o">LOW (0)</td>
+      </tr>
+      <tr>
+        <td>Активний сигнал</td>
+        <td class="td-c">LOW (active-low)</td>
+        <td class="td-o">HIGH (active-high)</td>
+      </tr>
+      <tr>
+        <td>Вбудований в MCU</td>
+        <td class="td-g">Майже завжди ✓</td>
+        <td>Рідко (STM32 має)</td>
+      </tr>
+      <tr>
+        <td>I²C, 1-Wire</td>
+        <td class="td-g">Обов'язково pull-up</td>
+        <td class="td-r">Не застосовується</td>
+      </tr>
+      <tr>
+        <td>Open-drain виход</td>
+        <td class="td-g">Обов'язково pull-up</td>
+        <td class="td-r">Не підходить</td>
+      </tr>
+      <tr>
+        <td>Захист від шуму</td>
+        <td>Однаково</td>
+        <td>Однаково</td>
+      </tr>
+      <tr>
+        <td>Reset / Enable піни</td>
+        <td class="td-g">Зазвичай pull-up</td>
+        <td>Залежить від IC</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="grid2">
+    <div class="card pu">
+      <div class="card-title">Pull-up — коли?</div>
+      <div class="card-text">
+        <strong>I²C, SPI CS, UART TX</strong> у спокої HIGH<br>
+        <strong>Кнопки/перемикачі</strong> на GND (active-low)<br>
+        <strong>Open-drain</strong> виходи (I²C, open-collector)<br>
+        <strong>Reset-пін</strong> мікросхеми (active-low)<br>
+        <strong>Вбудовані pull-up</strong> MCU — зручніше
+      </div>
+    </div>
+    <div class="card pd">
+      <div class="card-title">Pull-down — коли?</div>
+      <div class="card-text">
+        <strong>Кнопки до VCC</strong> (active-high логіка)<br>
+        <strong>Enable-піни</strong> active-high мікросхем<br>
+        <strong>MOSFET gate</strong> — щоб не відкрився випадково<br>
+        <strong>ADC вхід</strong> без сигналу → 0 В<br>
+        Коли шина не підтримує pull-up топологію
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<div class="section" id="s5">
+  <div class="sec-num">05</div>
+  <div class="sec-title">Як вибрати номінал резистора?</div>
+
+  <p class="sec-text">
+    Це компроміс між <strong>захистом від шуму</strong> (менший R → сильніше тягне → стабільніше)
+    та <strong>споживанням струму</strong> (менший R → більший струм через R → більше тепла і витрати батареї).
+  </p>
+
+  <div class="formula">
+    I = VCC / R
+    <span>Приклад: VCC=3.3V, R=10kΩ → I = 0.33 мА в активному стані</span>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <tr>
+        <th>Номінал</th>
+        <th>Струм @ 3.3V</th>
+        <th>Типове застосування</th>
+      </tr>
+      <tr>
+        <td class="td-r">470 Ω — 1 kΩ</td>
+        <td>3.3 — 7 мА</td>
+        <td>Дуже шумне середовище, захист. Але велике споживання</td>
+      </tr>
+      <tr>
+        <td class="td-g">4.7 kΩ — 10 kΩ</td>
+        <td>0.33 — 0.7 мА</td>
+        <td><strong>Золотий стандарт.</strong> GPIO кнопки, I²C (4.7k), SPI CS</td>
+      </tr>
+      <tr>
+        <td class="td-y">47 kΩ — 100 kΩ</td>
+        <td>&lt; 0.1 мА</td>
+        <td>Low-power пристрої, повільні лінії. Погана стійкість до ємнісних навантажень</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="warn">
+    <div class="badge">⚠ I²C спеціальний випадок</div>
+    <div class="callout-text">
+      Для <strong>I²C</strong> номінал pull-up залежить від швидкості шини:
+      <strong>Standard Mode (100kHz)</strong> — 4.7 kΩ,
+      <strong>Fast Mode (400kHz)</strong> — 2.2 kΩ,
+      <strong>Fast Mode Plus (1MHz)</strong> — 1 kΩ.
+      Занадто великий R = надто повільний фронт = помилки при великих швидкостях.
+    </div>
+  </div>
+
+  <div class="inf">
+    <div class="badge">📌 Вбудовані pull-up MCU</div>
+    <div class="callout-text">
+      Внутрішні pull-up STM32 — зазвичай <strong>20–50 kΩ</strong>.
+      Це достатньо для кнопок, але <strong>замало для I²C</strong> на 400kHz+.
+      Для I²C завжди ставте зовнішні резистори.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<div class="section" id="s6">
+  <div class="sec-num">06</div>
+  <div class="sec-title">Внутрішні vs зовнішні</div>
+
+  <p class="sec-text">
+    Більшість MCU мають <strong>вбудовані</strong> підтягуючі резистори, які вмикаються програмно.
+    Це зручно — не треба паяти зайві деталі. Але вони мають обмеження.
+  </p>
+
+  <p class="sec-text" style="font-size:12px;color:var(--muted)">Приклади конфігурації:</p>
+
+  <pre>// STM32 HAL — увімкнення внутрішнього pull-up
+GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+GPIO_InitStruct.Pull = GPIO_PULLUP;   // або GPIO_PULLDOWN
+HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);</pre>
+
+  <pre>// ESP32 Arduino — увімкнення внутрішнього pull-up
+pinMode(PIN, INPUT_PULLUP);
+// або
+pinMode(PIN, INPUT_PULLDOWN); // є у ESP32, немає у звичайному Arduino</pre>
+
+  <pre>// Arduino (ATmega) — pull-up через регістр
+PORTB |= (1 << PB0);  // внутрішній pull-up на PB0 в режимі INPUT
+// або через Arduino API:
+pinMode(2, INPUT_PULLUP);</pre>
+
+  <div class="tbl-wrap" style="margin-top:14px">
+    <table>
+      <tr>
+        <th>Критерій</th>
+        <th class="td-g">Внутрішні</th>
+        <th class="td-c">Зовнішні</th>
+      </tr>
+      <tr>
+        <td>Зручність</td>
+        <td class="td-g">Програмна конфігурація</td>
+        <td>Потрібна деталь на платі</td>
+      </tr>
+      <tr>
+        <td>Типовий номінал</td>
+        <td>20–50 kΩ (слабкі)</td>
+        <td class="td-g">Будь-який потрібний</td>
+      </tr>
+      <tr>
+        <td>I²C</td>
+        <td class="td-r">Не підходять (≥400kHz)</td>
+        <td class="td-g">Обов'язково зовнішній</td>
+      </tr>
+      <tr>
+        <td>Шумозахист</td>
+        <td>Слабший</td>
+        <td class="td-g">Сильніший (менший R)</td>
+      </tr>
+      <tr>
+        <td>Low-power режим</td>
+        <td class="td-o">Можуть вимкнутись у Sleep</td>
+        <td class="td-g">Завжди активні</td>
+      </tr>
+      <tr>
+        <td>Підтримка pull-down</td>
+        <td>Не скрізь (STM32 ✓, ATmega ✗)</td>
+        <td class="td-g">Завжди можна</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<div class="section" id="s7">
+  <div class="sec-num">07</div>
+  <div class="sec-title">Open-drain і Open-collector</div>
+
+  <p class="sec-text">
+    <strong>Open-drain</strong> (MOSFET) і <strong>open-collector</strong> (BJT) — це виходи,
+    які можуть тільки <strong>тягнути лінію до GND</strong> (LOW), але не можуть
+    самостійно подати HIGH. Щоб лінія піднялась до HIGH — потрібен зовнішній <strong>pull-up</strong>.
+  </p>
+
+  <div class="flow">
+    <div class="flow-box g">Драйвер пише 1</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">Транзистор ВИМК</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box c">Pull-up тягне лінію HIGH</div>
+  </div>
+  <div class="flow">
+    <div class="flow-box o">Драйвер пише 0</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">Транзистор УВІМК</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box r">Лінія замикається на GND → LOW</div>
+  </div>
+
+  <div class="key">
+    <div class="badge">💡 Чому I²C використовує open-drain</div>
+    <div class="callout-text">
+      На I²C шині може бути <strong>кілька пристроїв</strong>, і кожен може тягнути
+      лінію до LOW (wired-AND). Якщо будь-який тягне LOW — шина LOW. Один pull-up
+      піднімає шину HIGH тільки якщо <em>всі</em> відпустили. Це дозволяє
+      <strong>clock stretching</strong> і <strong>multi-master arbitration</strong>
+      без конфлікту виходів.
+    </div>
+  </div>
+
+  <div class="warn">
+    <div class="badge">⚠ Без pull-up — open-drain не працює</div>
+    <div class="callout-text">
+      Якщо на I²C шині немає pull-up — <strong>SDA і SCL ніколи не підніметься до HIGH</strong>.
+      Мікроконтролер побачить лише LOW. Забутий pull-up — типова помилка при роботі з I²C
+      на power-up / breadboard.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<div class="section" id="s8">
+  <div class="sec-num">08</div>
+  <div class="sec-title">Типові схеми застосування</div>
+
+  <p class="sec-text">Де зустрічається на практиці:</p>
+
+  <ul>
+    <li>
+      <strong>Кнопка до GND + pull-up</strong> — найпоширеніша схема. Кнопка натиснута → LOW.
+      <code>INPUT_PULLUP</code> у Arduino/STM32.
+    </li>
+    <li>
+      <strong>I²C шина</strong> — обов'язково pull-up 4.7k (100kHz) або 2.2k (400kHz)
+      на SDA і SCL до VCC.
+    </li>
+    <li>
+      <strong>Reset пін мікросхеми</strong> — зазвичай active-low. Pull-up утримує
+      чіп у нормальному стані; натискання кнопки → GND → reset.
+    </li>
+    <li>
+      <strong>UART RX у спокої</strong> — pull-up до VCC. Коли нема передачі,
+      лінія стабільно HIGH (idle state протоколу).
+    </li>
+    <li>
+      <strong>SPI CS (Chip Select)</strong> — pull-up щоб CS=HIGH (деселектовано)
+      поки MCU не ініціалізований.
+    </li>
+    <li>
+      <strong>MOSFET gate</strong> — pull-down 10k до GND. Щоб при старті MCU
+      (поки GPIO не ініціалізовано) транзистор не відкрився випадково.
+    </li>
+    <li>
+      <strong>Enable пін силового IC</strong> — pull-down або pull-up залежно від
+      полярності (читайте datasheet: EN або /EN).
+    </li>
+    <li>
+      <strong>1-Wire</strong> (DS18B20 тощо) — pull-up 4.7k обов'язково.
+      Також може живити сенсор через паразитне живлення.
+    </li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<div class="section" id="s9">
+  <div class="sec-num">09</div>
+  <div class="sec-title">Інтерактивний симулятор</div>
+
+  <p class="sec-text">Натискайте кнопку — спостерігайте за станом піна і поясненням.</p>
+
+  <div class="widget" id="sim">
+    <div class="widget-header">
+      <span class="widget-title">GPIO Pin State Simulator</span>
+      <div class="wdot" id="wdot"></div>
+      <span class="wdot-label" id="wlabel">LIVE</span>
+    </div>
+
+    <div class="sim-body">
+      <!-- Mode selector -->
+      <div class="ctrl-row">
+        <div style="font-size:11px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase">Режим:</div>
+        <div class="mode-tabs">
+          <button class="mode-tab active" id="tabPU" onclick="setMode('pullup')">Pull-up</button>
+          <button class="mode-tab" id="tabPD" onclick="setMode('pulldown')">Pull-down</button>
+          <button class="mode-tab" id="tabFL" onclick="setMode('float')">Floating</button>
+        </div>
+      </div>
+
+      <!-- Circuit SVG -->
+      <div class="circuit-wrap">
+        <svg id="simSvg" viewBox="0 0 500 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
+          <!-- VCC label -->
+          <text id="svgVCC" x="80" y="20" font-family="JetBrains Mono,monospace" font-size="12" fill="#00d4ff" text-anchor="middle">VCC</text>
+          <!-- VCC line top -->
+          <line id="svgVCCLine" x1="80" y1="24" x2="80" y2="48" stroke="#00d4ff" stroke-width="2"/>
+          <!-- Resistor box -->
+          <g id="svgRes">
+            <rect x="62" y="48" width="36" height="52" rx="3" fill="#181c24" stroke="#2a3347" stroke-width="1.5"/>
+            <text x="80" y="76" font-family="JetBrains Mono,monospace" font-size="11" fill="#f0c040" text-anchor="middle">R</text>
+            <text x="80" y="89" font-family="JetBrains Mono,monospace" font-size="9" fill="#5a6880" text-anchor="middle">10kΩ</text>
+          </g>
+          <!-- Line resistor to node -->
+          <line id="svgR2N" x1="80" y1="100" x2="80" y2="124" stroke="#2a3347" stroke-width="2"/>
+          <!-- Node -->
+          <circle id="svgNode" cx="80" cy="124" r="5" fill="#2a3347"/>
+          <!-- Line node to MCU -->
+          <line id="svgN2MCU" x1="85" y1="124" x2="220" y2="124" stroke="#2a3347" stroke-width="2"/>
+          <!-- MCU -->
+          <rect x="220" y="102" width="100" height="44" rx="6" fill="#111318" stroke="#2a3347" stroke-width="1.5"/>
+          <text x="270" y="121" font-family="JetBrains Mono,monospace" font-size="12" fill="#c8d4e8" text-anchor="middle">MCU</text>
+          <text x="270" y="136" font-family="JetBrains Mono,monospace" font-size="10" fill="#5a6880" text-anchor="middle">GPIO_IN</text>
+          <!-- Pin value display -->
+          <rect x="340" y="108" width="60" height="32" rx="4" fill="#0d1520" stroke="#2a3347" stroke-width="1"/>
+          <text id="svgPinVal" x="370" y="129" font-family="JetBrains Mono,monospace" font-size="16" fill="#5a6880" text-anchor="middle" font-weight="700">?</text>
+          <!-- Switch -->
+          <line id="svgSWLine" x1="80" y1="124" x2="80" y2="145" stroke="#2a3347" stroke-width="1.5"/>
+          <!-- Switch symbol -->
+          <circle id="svgSWTop" cx="80" cy="148" r="4" fill="none" stroke="#5a6880" stroke-width="1.5"/>
+          <line id="svgSWArc" x1="80" y1="152" x2="80" y2="165" stroke="#5a6880" stroke-width="1.5"/>
+          <!-- GND symbol for switch -->
+          <line id="svgSWGND1" x1="74" y1="165" x2="86" y2="165" stroke="#5a6880" stroke-width="2"/>
+          <line id="svgSWGND2" x1="77" y1="169" x2="83" y2="169" stroke="#5a6880" stroke-width="1.5"/>
+          <line id="svgSWGND3" x1="79" y1="173" x2="81" y2="173" stroke="#5a6880" stroke-width="1"/>
+          <!-- Pull-down GND (bottom resistor placeholder, hidden by default) -->
+          <g id="svgBotRes" style="display:none">
+            <line x1="80" y1="124" x2="80" y2="138" stroke="#ff6b35" stroke-width="2"/>
+            <rect x="62" y="138" width="36" height="36" rx="3" fill="#181c24" stroke="#2a3347" stroke-width="1.5"/>
+            <text x="80" y="158" font-family="JetBrains Mono,monospace" font-size="9" fill="#f0c040" text-anchor="middle">10kΩ</text>
+            <line x1="80" y1="174" x2="80" y2="179" stroke="#ff6b35" stroke-width="2"/>
+            <line x1="74" y1="179" x2="86" y2="179" stroke="#ff6b35" stroke-width="2"/>
+          </g>
+          <!-- Float label -->
+          <text id="svgFloatLbl" x="80" y="162" font-family="JetBrains Mono,monospace" font-size="10" fill="#ff6b35" text-anchor="middle" style="display:none">FLOAT!</text>
+          <!-- State label under node -->
+          <text id="svgStateLbl" x="130" y="118" font-family="JetBrains Mono,monospace" font-size="10" fill="#3a4a60" text-anchor="middle"></text>
+        </svg>
+      </div>
+
+      <!-- Button -->
+      <div class="ctrl-row">
+        <button class="btn-toggle" id="swBtn" onclick="toggleSwitch()">🔘 Кнопка: відпущена</button>
+      </div>
+
+      <!-- State pills -->
+      <div class="state-row" id="statePills">
+        <div class="state-pill" id="pillHigh">HIGH</div>
+        <div class="state-pill" id="pillLow">LOW</div>
+        <div class="state-pill" id="pillFloat">FLOATING ⚡</div>
+      </div>
+
+      <!-- Explanation -->
+      <div class="explain-box" id="explainBox">
+        Виберіть режим і натисніть кнопку.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<div class="section" id="s10">
+  <div class="sec-num">10</div>
+  <div class="sec-title">Питання на співбесіді</div>
+
+  <div class="qa-list">
+    <div class="qa-item" onclick="toggleQA(this)">
+      <div class="qa-q">Що таке floating state і чому він небезпечний? <span class="qa-arrow">▾</span></div>
+      <div class="qa-a">
+        <strong>Floating (high-impedance) state</strong> — стан піна, коли він не підключений до жодного визначеного потенціалу. Вхідний імпеданс GPIO дуже великий, тому навіть мікровольти від EMI можуть змінити стан. Читання такого піна дає непередбачуваний результат — 0 або 1 хаотично. <strong>Небезпечно</strong> особливо для Reset, Enable, CS, IRQ піків — хибний сигнал може перезавантажити систему або включити модуль живлення.
+      </div>
+    </div>
+
+    <div class="qa-item" onclick="toggleQA(this)">
+      <div class="qa-q">Яку типову величину pull-up ставлять на I²C і чому? <span class="qa-arrow">▾</span></div>
+      <div class="qa-a">
+        <strong>4.7 kΩ</strong> для Standard Mode (100 kHz) і <strong>2.2 kΩ</strong> для Fast Mode (400 kHz). Чим менший R — тим швидший фронт наростання напруги (<code>τ = R × C_bus</code>). Але менший R → більший струм при LOW → більше споживання. Вбудовані pull-up MCU (20–50 kΩ) не підходять для I²C — фронт надто повільний при паразитній ємності шини.
+      </div>
+    </div>
+
+    <div class="qa-item" onclick="toggleQA(this)">
+      <div class="qa-q">Чому open-drain потребує зовнішнього pull-up? <span class="qa-arrow">▾</span></div>
+      <div class="qa-a">
+        Open-drain виход має лише <strong>один транзистор</strong>, який може замкнути лінію на GND (LOW), але не може подати HIGH. Щоб лінія стала HIGH — потрібен зовнішній pull-up резистор до VCC. Саме так влаштовано I²C: кілька пристроїв можуть тягнути шину LOW незалежно (wired-AND), і один pull-up піднімає шину HIGH коли всі відпустили.
+      </div>
+    </div>
+
+    <div class="qa-item" onclick="toggleQA(this)">
+      <div class="qa-q">Чим відрізняються вбудовані pull-up від зовнішніх? Коли які використовувати? <span class="qa-arrow">▾</span></div>
+      <div class="qa-a">
+        <strong>Вбудовані</strong>: 20–50 kΩ, конфігуруються програмно (<code>GPIO_PULLUP</code> / <code>INPUT_PULLUP</code>), можуть вимикатись у Sleep-режимі, зручні для кнопок. <strong>Зовнішні</strong>: будь-який номінал, завжди активні, потрібні для I²C, коли потрібен менший R для стійкості до шуму або коли MCU іде в Sleep але підтягування має зберігатись. <strong>Правило</strong>: для кнопок → вбудований, для I²C/1-Wire → зовнішній.
+      </div>
+    </div>
+
+    <div class="qa-item" onclick="toggleQA(this)">
+      <div class="qa-q">Навіщо pull-down на gate MOSFET? <span class="qa-arrow">▾</span></div>
+      <div class="qa-a">
+        При старті MCU GPIO піни знаходяться у high-impedance стані поки firmware не ініціалізує їх. Без pull-down gate міг би отримати хибний HIGH від ємнісного наводу або EMI — <strong>транзистор відкриється</strong> і навантаження увімкнеться ненавмисно. Pull-down 10k утримує gate на GND (LOW) і гарантує, що без явного сигналу MOSFET залишається закритим. Критично для силових кіл.
+      </div>
+    </div>
+
+    <div class="qa-item" onclick="toggleQA(this)">
+      <div class="qa-q">Як вибрати номінал pull-up/pull-down резистора? <span class="qa-arrow">▾</span></div>
+      <div class="qa-a">
+        Компроміс між <strong>споживанням</strong> і <strong>стійкістю до шуму</strong>:
+        <ul style="margin-top:8px">
+          <li><strong>1–4.7 kΩ</strong>: сильне підтягування, низький імпеданс, стійко до шуму, але струм 0.7–3.3 мА при активному рівні</li>
+          <li><strong>10 kΩ</strong>: золотий стандарт для GPIO. Струм 0.33 мА @ 3.3V</li>
+          <li><strong>47–100 kΩ</strong>: low-power режим, повільні лінії без ємнісного навантаження</li>
+        </ul>
+        Для I²C — окрема формула: <code>R ≤ (VCC - V_OL_max) / I_OL_min</code> і обмеження по часу наростання.
+      </div>
+    </div>
+
+    <div class="qa-item" onclick="toggleQA(this)">
+      <div class="qa-q">У проекті I²C перестав працювати після переходу в Sleep. Чому? <span class="qa-arrow">▾</span></div>
+      <div class="qa-a">
+        Найімовірніша причина: <strong>вбудовані pull-up GPIO вимкнулись</strong> разом з GPIO-периферією у Sleep-режимі (особливо актуально для STM32 STOP mode). SDA/SCL повисли у floating стані. <strong>Рішення</strong>: завжди ставити <strong>зовнішні pull-up</strong> на I²C шину — вони живляться від VCC незалежно від стану MCU і працюють навіть коли MK спить. Інший варіант: залишити GPIO clock активним у Sleep, але це збільшить споживання.
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+<p style="font-size:11px;color:var(--muted);text-align:center;padding-bottom:20px">
+  Embedded Systems · GPIO Fundamentals · Pull-up / Pull-down
+</p>
+
+</div><!-- /wrapper -->
+</div><!-- /page -->
+
+<script>
+// ══════════════════════════════════
+// TOC active highlight
+// ══════════════════════════════════
+const tocLinks = document.querySelectorAll('.toc a');
+const sections = document.querySelectorAll('.section[id]');
+function updateToc(){
+  let cur='';
+  sections.forEach(s=>{ if(window.scrollY >= s.offsetTop - 100) cur = s.id; });
+  tocLinks.forEach(a=>{ a.classList.toggle('active', a.getAttribute('href')==='#'+cur); });
+}
+window.addEventListener('scroll', updateToc, {passive:true}); updateToc();
+
+// ══════════════════════════════════
+// Q&A accordion
+// ══════════════════════════════════
+function toggleQA(el){ el.classList.toggle('open'); }
+
+// ══════════════════════════════════
+// SIMULATOR
+// ══════════════════════════════════
+let simMode = 'pullup';  // pullup | pulldown | float
+let btnPressed = false;
+
+const COLORS = {
+  cyan:   '#00d4ff',
+  orange: '#ff6b35',
+  green:  '#7cf08a',
+  red:    '#ff5577',
+  muted:  '#3a4a60',
+  dim:    '#2a3347',
+  text:   '#c8d4e8',
+};
+
+function setMode(m){
+  simMode = m;
+  btnPressed = false;
+  document.getElementById('tabPU').classList.toggle('active', m==='pullup');
+  document.getElementById('tabPD').classList.toggle('active', m==='pulldown');
+  document.getElementById('tabFL').classList.toggle('active', m==='float');
+  document.getElementById('swBtn').textContent = '🔘 Кнопка: відпущена';
+  document.getElementById('swBtn').classList.remove('pressed');
+  renderSim();
+}
+
+function toggleSwitch(){
+  if(simMode === 'float'){ return; } // no button in float mode
+  btnPressed = !btnPressed;
+  const btn = document.getElementById('swBtn');
+  btn.textContent = btnPressed ? '🟢 Кнопка: натиснута' : '🔘 Кнопка: відпущена';
+  btn.classList.toggle('pressed', btnPressed);
+  renderSim();
+}
+
+function renderSim(){
+  const svg = document.getElementById('simSvg');
+  // elements
+  const vccLine = document.getElementById('svgVCCLine');
+  const vccLbl  = document.getElementById('svgVCC');
+  const resG    = document.getElementById('svgRes');
+  const r2n     = document.getElementById('svgR2N');
+  const node    = document.getElementById('svgNode');
+  const n2mcu   = document.getElementById('svgN2MCU');
+  const pinVal  = document.getElementById('svgPinVal');
+  const botRes  = document.getElementById('svgBotRes');
+  const floatLbl= document.getElementById('svgFloatLbl');
+  const stateLbl= document.getElementById('svgStateLbl');
+  const swLine  = document.getElementById('svgSWLine');
+  const swTop   = document.getElementById('svgSWTop');
+  const swArc   = document.getElementById('svgSWArc');
+  const gnd1    = document.getElementById('svgSWGND1');
+  const gnd2    = document.getElementById('svgSWGND2');
+  const gnd3    = document.getElementById('svgSWGND3');
+
+  const pillHigh  = document.getElementById('pillHigh');
+  const pillLow   = document.getElementById('pillLow');
+  const pillFloat = document.getElementById('pillFloat');
+  const explainBox= document.getElementById('explainBox');
+
+  // reset pills
+  pillHigh.className  = 'state-pill lo';
+  pillLow.className   = 'state-pill lo';
+  pillFloat.className = 'state-pill lo';
+
+  if(simMode === 'float'){
+    // floating — no resistor connected
+    vccLbl.setAttribute('fill', COLORS.dim);
+    vccLine.setAttribute('stroke', COLORS.dim);
+    resG.style.opacity = '0.2';
+    r2n.setAttribute('stroke', COLORS.dim);
+    node.setAttribute('fill', COLORS.orange);
+    n2mcu.setAttribute('stroke', COLORS.orange);
+    pinVal.textContent = '?';
+    pinVal.setAttribute('fill', COLORS.orange);
+    botRes.style.display = 'none';
+    floatLbl.style.display = 'block';
+    swLine.setAttribute('stroke', COLORS.dim);
+    swTop.setAttribute('stroke', COLORS.dim);
+    swArc.setAttribute('stroke', COLORS.dim);
+    [gnd1,gnd2,gnd3].forEach(g=>g.setAttribute('stroke', COLORS.dim));
+    stateLbl.textContent = 'невизначено';
+    stateLbl.setAttribute('fill', COLORS.orange);
+
+    pillFloat.className = 'state-pill float';
+    explainBox.className = 'explain-box warn-state';
+    explainBox.innerHTML = '<strong>⚡ Floating!</strong> Пін не підключений до жодного потенціалу. Внутрішній імпеданс GPIO &gt;1 МΩ — будь-який шум дає хаотичний стан. <strong>Читання непередбачуване.</strong> Саме від цього захищають pull-up/pull-down.';
+    return;
+  }
+
+  floatLbl.style.display = 'none';
+  resG.style.opacity = '1';
+
+  if(simMode === 'pullup'){
+    botRes.style.display = 'none';
+    const lineHigh = !btnPressed; // high when btn released
+    const activeCol  = lineHigh ? COLORS.cyan : COLORS.orange;
+    const activeColG = lineHigh ? COLORS.green : COLORS.orange;
+
+    vccLbl.setAttribute('fill', COLORS.cyan);
+    vccLine.setAttribute('stroke', COLORS.cyan);
+    r2n.setAttribute('stroke', activeCol);
+    node.setAttribute('fill', activeCol);
+    n2mcu.setAttribute('stroke', activeCol);
+    pinVal.textContent = lineHigh ? '1' : '0';
+    pinVal.setAttribute('fill', activeColG);
+
+    swLine.setAttribute('stroke', btnPressed ? COLORS.orange : COLORS.dim);
+    swTop.setAttribute('stroke', btnPressed ? COLORS.orange : '#5a6880');
+    swArc.setAttribute('stroke', btnPressed ? COLORS.orange : '#5a6880');
+    [gnd1,gnd2,gnd3].forEach(g=>g.setAttribute('stroke', btnPressed ? COLORS.orange : '#5a6880'));
+
+    stateLbl.textContent = lineHigh ? 'HIGH через R до VCC' : 'LOW: SW замкнений на GND';
+    stateLbl.setAttribute('fill', lineHigh ? COLORS.cyan : COLORS.orange);
+
+    if(lineHigh){
+      pillHigh.className = 'state-pill hi';
+      explainBox.className = 'explain-box ok-state';
+      explainBox.innerHTML = '<strong>HIGH</strong> — кнопка відпущена. Пін підтягнутий до VCC через R=10kΩ. Через резистор тече мізерний струм (~0.33мА @ 3.3V). МК читає логічну <strong>1</strong>.';
+    } else {
+      pillLow.className = 'state-pill hi';
+      explainBox.style.borderColor = COLORS.orange;
+      explainBox.className = 'explain-box';
+      explainBox.style.borderColor = '#ff6b35';
+      explainBox.style.background = 'rgba(255,107,53,.04)';
+      explainBox.innerHTML = '<strong>LOW</strong> — кнопка натиснута. Пін з\'єднаний з GND через кнопку. Pull-up резистор обмежує струм: I=VCC/R ≈ 0.33мА. МК читає логічний <strong>0</strong>. Це <em>active-low</em> логіка.';
+    }
+
+  } else { // pulldown
+    botRes.style.display = 'block';
+    const lineHigh = btnPressed; // high only when pressed (connected to VCC)
+    const activeCol  = lineHigh ? COLORS.green : COLORS.orange;
+
+    vccLbl.setAttribute('fill', lineHigh ? COLORS.cyan : COLORS.dim);
+    vccLine.setAttribute('stroke', lineHigh ? COLORS.cyan : COLORS.dim);
+    r2n.setAttribute('stroke', COLORS.orange);
+    node.setAttribute('fill', activeCol);
+    n2mcu.setAttribute('stroke', activeCol);
+    pinVal.textContent = lineHigh ? '1' : '0';
+    pinVal.setAttribute('fill', lineHigh ? COLORS.green : COLORS.orange);
+
+    swLine.setAttribute('stroke', lineHigh ? COLORS.green : COLORS.dim);
+    swTop.setAttribute('stroke', lineHigh ? COLORS.green : '#5a6880');
+    swArc.setAttribute('stroke', lineHigh ? COLORS.green : '#5a6880');
+    [gnd1,gnd2,gnd3].forEach(g=>g.setAttribute('stroke', lineHigh ? COLORS.green : '#5a6880'));
+
+    stateLbl.textContent = lineHigh ? 'HIGH: SW підключив до VCC' : 'LOW через R до GND';
+    stateLbl.setAttribute('fill', lineHigh ? COLORS.green : COLORS.orange);
+
+    if(lineHigh){
+      pillHigh.className = 'state-pill hi';
+      explainBox.className = 'explain-box ok-state';
+      explainBox.innerHTML = '<strong>HIGH</strong> — кнопка натиснута. VCC через кнопку подається на пін. Струм тече через pull-down R до GND. МК читає логічну <strong>1</strong>. Це <em>active-high</em> логіка.';
+    } else {
+      pillLow.className = 'state-pill hi';
+      explainBox.className = 'explain-box';
+      explainBox.style.borderColor = COLORS.orange;
+      explainBox.style.background = 'rgba(255,107,53,.04)';
+      explainBox.innerHTML = '<strong>LOW</strong> — кнопка відпущена. Пін підтягнутий до GND через R=10kΩ. Стабільний нульовий рівень. МК читає логічний <strong>0</strong>.';
+    }
+  }
+}
+
+renderSim();
+</script>
+</body>
+</html>
