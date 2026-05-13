@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DC-DC Converter · Конспект · Embedded Systems</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0a0c10;
+  --surf:   #111318;
+  --surf2:  #181c24;
+  --brd:    #1f2633;
+  --brd2:   #2a3347;
+  --text:   #c8d4e8;
+  --dim:    #5a6880;
+  --muted:  #3a4a60;
+  --cyan:   #00d4ff;
+  --orange: #ff6b35;
+  --green:  #7cf08a;
+  --yellow: #f0c040;
+  --purple: #c084fc;
+  --mono:   'JetBrains Mono', monospace;
+  --sans:   'Syne', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14px;line-height:1.7;min-height:100vh}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:var(--bg);border-bottom:1px solid var(--brd);
+  height:46px;padding:0 28px;
+  display:flex;align-items:center;gap:14px;
+}
+.topbar a{color:var(--dim);text-decoration:none;font-size:12px;transition:color .2s}
+.topbar a:hover{color:var(--cyan)}
+.topbar-sep{color:var(--muted);font-size:12px}
+.topbar-cur{color:var(--text);font-size:12px}
+
+/* ── LAYOUT ── */
+.page{display:flex}
+
+/* ── TOC ── */
+.toc{
+  display:none;
+  position:fixed;top:46px;left:0;bottom:0;width:196px;
+  border-right:1px solid var(--brd);
+  padding:24px 0;overflow-y:auto;
+  background:var(--bg);
+}
+@media(min-width:1080px){.toc{display:block}}
+.toc-label{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding:0 18px;margin-bottom:10px}
+.toc a{
+  display:block;padding:5px 18px;font-size:11px;color:var(--dim);
+  text-decoration:none;border-left:2px solid transparent;transition:all .15s;
+  line-height:1.4;
+}
+.toc a:hover{color:var(--text);border-left-color:var(--brd2)}
+.toc a.active{color:var(--cyan);border-left-color:var(--cyan)}
+
+/* ── WRAPPER ── */
+.wrapper{
+  max-width:860px;margin:0 auto;
+  padding:76px 28px 120px;
+  width:100%;
+}
+@media(min-width:1080px){.wrapper{margin-left:196px}}
+
+/* ── HEADER ── */
+.page-meta{font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+h1{
+  font-family:var(--sans);font-size:clamp(28px,5vw,50px);font-weight:800;
+  color:#fff;line-height:1.1;letter-spacing:-.02em;margin-bottom:18px;
+}
+.page-intro{font-size:14px;color:var(--dim);max-width:640px;line-height:1.9;margin-bottom:24px}
+.page-intro strong{color:var(--text)}
+.tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:60px}
+.tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border:1px solid var(--brd2);color:var(--dim);border-radius:2px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:68px}
+.section:nth-child(1){animation:fadeUp .45s .05s both}
+.section:nth-child(2){animation:fadeUp .45s .10s both}
+.section:nth-child(3){animation:fadeUp .45s .15s both}
+.section:nth-child(4){animation:fadeUp .45s .20s both}
+.section:nth-child(5){animation:fadeUp .45s .25s both}
+.section:nth-child(6){animation:fadeUp .45s .30s both}
+.section:nth-child(7){animation:fadeUp .45s .35s both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+.sec-num{font-size:10px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+.sec-title{font-family:var(--sans);font-size:20px;font-weight:700;color:#fff;margin-bottom:14px}
+.sec-text{color:var(--dim);line-height:1.85;margin-bottom:14px;font-size:13px}
+.sec-text strong{color:var(--text)}
+
+/* ── PROSE ── */
+code{background:#1a2030;color:var(--cyan);padding:1px 6px;border-radius:3px;font-size:12px}
+pre{
+  background:var(--surf2);border:1px solid var(--brd);border-radius:6px;
+  padding:14px 18px;font-size:12px;color:var(--green);line-height:1.7;
+  overflow-x:auto;margin:14px 0;
+}
+
+ul{margin:10px 0;padding:0;list-style:none}
+ul li{padding:5px 0 5px 20px;color:var(--dim);position:relative;font-size:13px;line-height:1.7}
+ul li::before{content:'—';position:absolute;left:0;color:var(--muted)}
+ul li strong{color:var(--text)}
+ul li code{font-size:11px}
+
+ol{margin:12px 0;padding:0;list-style:none;counter-reset:ol}
+ol li{
+  padding:7px 0 7px 28px;color:var(--dim);position:relative;
+  font-size:13px;line-height:1.7;border-bottom:1px solid var(--brd);
+  counter-increment:ol;
+}
+ol li:last-child{border-bottom:none}
+ol li::before{
+  content:counter(ol);position:absolute;left:0;
+  color:var(--muted);font-size:10px;top:10px;
+  letter-spacing:.06em;
+}
+ol li strong{color:var(--text)}
+ol li p{margin-top:4px}
+
+/* ── CALLOUTS ── */
+.key{background:#0d1f1a;border-left:3px solid var(--cyan);padding:13px 17px;margin:16px 0;border-radius:0 4px 4px 0}
+.key .badge{font-size:9px;letter-spacing:.12em;color:var(--cyan);text-transform:uppercase;margin-bottom:4px}
+.warn{background:#1a0d0d;border-left:3px solid var(--orange);padding:13px 17px;margin:16px 0;border-radius:0 4px 4px 0}
+.warn .badge{font-size:9px;letter-spacing:.12em;color:var(--orange);text-transform:uppercase;margin-bottom:4px}
+.inf{background:#0d1520;border-left:3px solid var(--purple);padding:13px 17px;margin:16px 0;border-radius:0 4px 4px 0}
+.inf .badge{font-size:9px;letter-spacing:.12em;color:var(--purple);text-transform:uppercase;margin-bottom:4px}
+.callout-text{font-size:13px;color:var(--dim);line-height:1.8}
+.callout-text strong{color:var(--text)}
+
+/* ── FLOW DIAGRAM ── */
+.flow{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:16px 0}
+.flow-box{
+  background:var(--surf2);border:1px solid var(--brd2);border-radius:4px;
+  padding:5px 11px;font-size:11px;color:var(--text);white-space:nowrap;
+}
+.flow-box.c{border-color:var(--cyan); color:var(--cyan); background:rgba(0,212,255,.05)}
+.flow-box.y{border-color:var(--yellow);color:var(--yellow);background:rgba(240,192,64,.05)}
+.flow-box.p{border-color:var(--purple);color:var(--purple);background:rgba(192,132,252,.05)}
+.flow-box.g{border-color:var(--green); color:var(--green); background:rgba(124,240,138,.05)}
+.flow-box.o{border-color:var(--orange);color:var(--orange);background:rgba(255,107,53,.05)}
+.flow-arr{color:var(--muted);font-size:13px;padding:0 1px}
+
+/* ── PROS/CONS ── */
+.proscons{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+@media(max-width:540px){.proscons{grid-template-columns:1fr}}
+.pro-card,.con-card{background:var(--surf2);border:1px solid var(--brd);border-radius:6px;padding:14px 16px}
+.pro-card{border-top:2px solid var(--green)}
+.con-card{border-top:2px solid var(--orange)}
+.pc-title{font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.pro-card .pc-title{color:var(--green)}
+.con-card .pc-title{color:var(--orange)}
+.pc-item{font-size:12px;color:var(--dim);padding:4px 0 4px 18px;position:relative;line-height:1.6}
+.pc-item::before{position:absolute;left:0;font-size:11px}
+.pro-card .pc-item::before{content:'✓';color:var(--green)}
+.con-card .pc-item::before{content:'✗';color:var(--orange)}
+
+/* ── HR ── */
+.divider{border:none;border-top:1px solid var(--brd);margin:56px 0}
+
+/* ─────────────────────────────────────────
+   WIDGET STYLES (unchanged from before)
+───────────────────────────────────────── */
+.widget{
+  background:var(--surf);border:1px solid var(--brd2);
+  border-radius:10px;overflow:hidden;margin:0;
+}
+.widget-header{
+  padding:12px 20px;border-bottom:1px solid var(--brd);
+  display:flex;align-items:center;gap:10px;
+}
+.widget-title{font-size:13px;color:var(--text)}
+.live-badge{
+  margin-left:auto;font-size:10px;letter-spacing:.1em;
+  color:var(--green);border:1px solid var(--green);
+  padding:2px 8px;border-radius:2px;animation:blink 2s infinite;
+}
+.live-badge.paused{color:var(--dim);border-color:var(--dim);animation:none}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.topo-tabs{display:flex;border-bottom:1px solid var(--brd)}
+.topo-tab{
+  padding:10px 22px;font-family:var(--mono);font-size:12px;
+  color:var(--dim);cursor:pointer;border:none;background:transparent;
+  border-bottom:2px solid transparent;transition:all .2s;letter-spacing:.06em;
+}
+.topo-tab:hover{color:var(--text)}
+.topo-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.circuit-wrap{width:100%;aspect-ratio:16/7;position:relative;overflow:hidden}
+canvas.cc{width:100%;height:100%;display:block}
+.phase-bar{padding:7px 20px;border-top:1px solid var(--brd);display:flex;gap:14px;align-items:center}
+.phase-pill{font-size:11px;padding:3px 12px;border-radius:3px;border:1px solid transparent;opacity:.3;transition:opacity .25s}
+.phase-pill.active{opacity:1}
+.pill-on{border-color:var(--cyan);color:var(--cyan)}
+.pill-off{border-color:var(--orange);color:var(--orange)}
+.signals{padding:12px 20px;border-top:1px solid var(--brd)}
+.sig-row{display:grid;grid-template-columns:76px 1fr;gap:10px;align-items:center;margin-bottom:8px}
+.sig-row:last-child{margin-bottom:0}
+.sig-lbl{font-size:10px;color:var(--dim);line-height:1.4}
+canvas.sc{width:100%;height:44px;display:block}
+.playback-row{padding:10px 20px;border-top:1px solid var(--brd);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pb-btn{
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  padding:5px 16px;border-radius:3px;cursor:pointer;border:1px solid;
+  transition:all .15s;background:transparent;
+}
+.pb-btn.play{border-color:var(--green);color:var(--green)}
+.pb-btn.play:hover{background:rgba(124,240,138,.1)}
+.pb-btn.stop{border-color:var(--orange);color:var(--orange)}
+.pb-btn.stop:hover{background:rgba(255,107,53,.1)}
+.pb-sep{color:var(--muted)}
+.speed-wrap{display:flex;align-items:center;gap:8px;flex:1;min-width:160px}
+.speed-wrap label{font-size:10px;color:var(--dim);white-space:nowrap;text-transform:uppercase;letter-spacing:.05em}
+.speed-val{font-size:11px;color:var(--yellow);min-width:34px;text-align:right}
+.controls{padding:14px 20px;border-top:1px solid var(--brd);display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ctrl label{display:block;font-size:10px;color:var(--dim);margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase}
+.ctrl-row{display:flex;align-items:center;gap:10px}
+input[type=range]{flex:1;appearance:none;height:2px;background:var(--brd2);border-radius:1px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{
+  appearance:none;width:13px;height:13px;border-radius:50%;
+  background:var(--cyan);cursor:pointer;border:2px solid var(--bg);box-shadow:0 0 5px var(--cyan);
+}
+#sliderSpeed::-webkit-slider-thumb{background:var(--yellow);box-shadow:0 0 5px var(--yellow)}
+.ctrl-val{font-size:11px;color:var(--cyan);min-width:44px;text-align:right}
+.params{padding:12px 20px;border-top:1px solid var(--brd);display:flex;gap:10px;flex-wrap:wrap}
+.pcard{background:var(--surf2);border:1px solid var(--brd);border-radius:4px;padding:10px 14px;flex:1;min-width:110px}
+.pcard .pn{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}
+.pcard .pv{font-size:18px;color:var(--yellow);font-family:var(--sans);font-weight:700;line-height:1}
+.pcard .pu{font-size:10px;color:var(--dim);margin-top:2px}
+.eff-row{padding:8px 20px 14px;border-top:1px solid var(--brd);display:flex;align-items:center;gap:10px}
+.eff-lbl{font-size:10px;color:var(--dim);min-width:50px;text-transform:uppercase;letter-spacing:.05em}
+.eff-bar{flex:1;height:5px;background:var(--brd);border-radius:3px;overflow:hidden}
+.eff-fill{height:100%;border-radius:3px;transition:width .5s;background:linear-gradient(90deg,var(--green),var(--cyan))}
+.eff-val{font-size:11px;color:var(--green);min-width:38px;text-align:right}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a href="#">← конспекти</a>
+  <span class="topbar-sep">·</span>
+  <span class="topbar-cur">Electronics · DC-DC Converter</span>
+</div>
+
+<!-- TOC -->
+<nav class="toc">
+  <div class="toc-label">Зміст</div>
+  <a href="#s1">01 — Поняття</a>
+  <a href="#s2">02 — Типи</a>
+  <a href="#s3">03 — Використання</a>
+  <a href="#s4">04 — Принцип роботи</a>
+  <a href="#s5">05 — Частота перемикання</a>
+  <a href="#s6">06 — Feedback</a>
+  <a href="#s7">07 — Схема (Live)</a>
+  <a href="#s8">08 — Переваги / Недоліки</a>
+</nav>
+
+<!-- MAIN -->
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="page-meta">Electronics · Power · Embedded Systems</div>
+  <h1>DC-DC Converter</h1>
+  <p class="page-intro">
+    <strong>DC-DC converter</strong> — це електронний перетворювач, який змінює один рівень постійної напруги (DC) в інший.
+  </p>
+  <div class="tags">
+    <span class="tag">Power</span>
+    <span class="tag">STM32</span>
+    <span class="tag">ESP32</span>
+    <span class="tag">Electronics</span>
+    <span class="tag">Switching</span>
+    <span class="tag">PWM</span>
+  </div>
+
+  <!-- 01 ПОНЯТТЯ -->
+  <div class="section" id="s1">
+    <div class="sec-num">01 —</div>
+    <div class="sec-title">Поняття</div>
+    <p class="sec-text">
+      DC-DC converter — це електронний перетворювач, який змінює один рівень постійної напруги (DC) в інший.
+    </p>
+  </div>
+
+  <!-- 02 ТИПИ -->
+  <div class="section" id="s2">
+    <div class="sec-num">02 —</div>
+    <div class="sec-title">Типи</div>
+    <ul>
+      <li><strong>Buck converter</strong> — пониження напруги. <code>12V → 5V</code></li>
+      <li><strong>Boost converter</strong> — підвищення напруги. <code>3.7V → 12V</code></li>
+      <li><strong>Buck-Boost converter</strong> — підвищення або пониження напруги</li>
+    </ul>
+  </div>
+
+  <!-- 03 ВИКОРИСТАННЯ -->
+  <div class="section" id="s3">
+    <div class="sec-num">03 —</div>
+    <div class="sec-title">Використання</div>
+    <ul>
+      <li><strong>пониження напруги</strong></li>
+      <li><strong>підвищення напруги</strong></li>
+      <li>
+        <strong>стабілізація живлення</strong> — підтримка стабільної вихідної напруги, навіть якщо:
+        <ul style="margin-top:4px">
+          <li>змінюється вхідна напруга</li>
+          <li>змінюється навантаження</li>
+        </ul>
+      </li>
+      <li>
+        <strong>живлення різних вузлів системи</strong> — одна система часто має кілька різних напруг:
+        <pre>12V  → motors
+5V   → sensors
+3.3V → MCU / ESP32
+1.8V → memory / RF</pre>
+        DC-DC перетворювачі беруть одне джерело живлення і створюють потрібні напруги для кожного вузла.
+      </li>
+    </ul>
+  </div>
+
+  <!-- 04 ПРИНЦИП РОБОТИ -->
+  <div class="section" id="s4">
+    <div class="sec-num">04 —</div>
+    <div class="sec-title">Принцип роботи</div>
+    <p class="sec-text">
+      MOSFET швидко вмикає/вимикає живлення (PWM), дозуючи передачу енергії в індуктор.
+      Індуктор + конденсатор перетворюють імпульси в стабільну DC напругу.
+    </p>
+
+    <div class="flow">
+      <div class="flow-box p">Живлення</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">Input Cap</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box c">IC / MOSFET</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box y">Inductor</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">Output Cap</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box g">Навантаження</div>
+    </div>
+    <div style="font-size:11px;color:var(--dim);margin:-6px 0 14px 0;padding-left:2px">
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓ Diode (OFF фаза)
+    </div>
+
+    <ol>
+      <li>
+        <strong>Живлення (Input Voltage)</strong>
+        <p>Джерело енергії для всієї схеми: 12V, батарея, блок живлення.</p>
+      </li>
+      <li>
+        <strong>Вхідний конденсатор (Input Capacitor)</strong>
+        <p>IC бере струм ривками, а не плавно. Конденсатор швидко віддає локальну енергію.
+        Згладжує просадки, імпульси струму та шум від перемикання MOSFET.</p>
+      </li>
+      <li>
+        <strong>IC / MOSFET — Switching Element</strong>
+        <p>Дуже швидко вмикає/вимикає MOSFET і керує PWM (duty cycle).
+        Вимірює зворотній зв'язок (feedback) і змінює D для стабілізації Vout.</p>
+        <ul style="margin-top:8px">
+          <li>
+            <strong>MOSFET ON:</strong> <code>VIN → Inductor → Load</code> — струм іде в дросель, дросель накопичує енергію, навантаження живиться
+          </li>
+          <li>
+            <strong>MOSFET OFF:</strong> <code>Inductor → Load → Diode</code> — MOSFET розриває ланцюг, струм через індуктор не може миттєво зникнути, тече через діод
+          </li>
+        </ul>
+      </li>
+      <li>
+        <strong>Діод — Schottky</strong>
+        <p>Створює шлях для струму, коли MOSFET OFF. Використовується саме Schottky діод: має низький прямий спад напруги <code>Vf ≈ 0.2–0.4В</code> (звичайний Si-діод — 0.6–0.7В) і майже нульовий час відновлення. Менший Vf → менші втрати → вищий ККД.</p>
+      </li>
+      <li>
+        <strong>Вихідний конденсатор (Output Capacitor)</strong>
+        <p>Згладжує ripple після дроселя.</p>
+      </li>
+      <li>
+        <strong>Навантаження (Load)</strong>
+        <p>Споживає стабілізовану напругу: <code>ESP32, STM32, motor driver, sensor</code></p>
+      </li>
+    </ol>
+  </div>
+
+  <!-- 05 ЧАСТОТА ПЕРЕМИКАННЯ -->
+  <div class="section" id="s5">
+    <div class="sec-num">05 —</div>
+    <div class="sec-title">Частота перемикання (f<sub>sw</sub>)</div>
+    <p class="sec-text">
+      Частота, з якою MOSFET вмикається і вимикається. Типовий діапазон — від <strong>100 кГц до 3 МГц</strong>.
+    </p>
+    <ul>
+      <li>
+        <strong>Вища f<sub>sw</sub></strong> → менший індуктор і конденсатор (менший ripple при тих самих L і C) → менша плата, дешевші компоненти
+      </li>
+      <li>
+        <strong>Вища f<sub>sw</sub></strong> → більше втрат на перемикання в MOSFET → нижчий ККД, більше нагрівання
+      </li>
+      <li>
+        <strong>Нижча f<sub>sw</sub></strong> → вищий ККД, але потрібні більші L і C
+      </li>
+    </ul>
+    <div class="flow" style="margin-top:14px">
+      <div class="flow-box c">f<sub>sw</sub> ↑</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box g">менші L, C</div>
+      <div class="flow-arr">+</div>
+      <div class="flow-box o">більше втрат</div>
+    </div>
+    <div class="flow">
+      <div class="flow-box c">f<sub>sw</sub> ↓</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box o">більші L, C</div>
+      <div class="flow-arr">+</div>
+      <div class="flow-box g">менші втрати</div>
+    </div>
+  </div>
+
+  <!-- 06 FEEDBACK -->
+  <div class="section" id="s6">
+    <div class="sec-num">06 —</div>
+    <div class="sec-title">Feedback / Зворотній зв'язок</div>
+    <p class="sec-text">
+      IC постійно вимірює вихідну напругу і підлаштовує duty cycle щоб тримати Vout стабільним — навіть якщо змінюється навантаження або Vin.
+    </p>
+    <div class="flow">
+      <div class="flow-box g">Vout</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">дільник R1/R2</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box c">FB pin IC</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box y">компаратор</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box p">PWM duty cycle</div>
+    </div>
+    <ol style="margin-top:14px">
+      <li>
+        <strong>Дільник напруги (R1 / R2)</strong>
+        <p>Масштабує Vout до опорного рівня IC — зазвичай <code>0.8В</code> або <code>1.25В</code>. Вибором R1/R2 задається потрібний Vout.</p>
+      </li>
+      <li>
+        <strong>FB pin</strong>
+        <p>IC порівнює напругу на FB з внутрішньою опорою (Vref). Якщо FB &lt; Vref → Vout занизька → IC збільшує D. Якщо FB &gt; Vref → зменшує D.</p>
+      </li>
+      <li>
+        <strong>Результат</strong>
+        <p>Vout залишається стабільним при зміні навантаження або Vin. Це і є регуляція.</p>
+      </li>
+    </ol>
+    <pre>Vout = Vref × (1 + R1/R2)   ← формула для більшості IC</pre>
+  </div>
+
+  <!-- 07 INTERACTIVE WIDGET -->
+  <div class="section" id="s7">
+    <div class="sec-num">07 —</div>
+    <div class="sec-title">Інтерактивна схема</div>
+
+
+    <div class="widget">
+      <div class="widget-header">
+        <span class="widget-title">DC-DC Converter · Live Simulation</span>
+        <span class="live-badge" id="liveBadge">▶ LIVE</span>
+      </div>
+      <div class="topo-tabs">
+        <button class="topo-tab active" data-topo="buck">Buck (Step-Down)</button>
+        <button class="topo-tab" data-topo="boost">Boost (Step-Up)</button>
+        <button class="topo-tab" data-topo="buckboost">Buck-Boost</button>
+      </div>
+      <div class="circuit-wrap">
+        <canvas class="cc" id="cc"></canvas>
+      </div>
+      <div class="phase-bar">
+        <div class="phase-pill pill-on active" id="pillOn">ON: ключ замкнений</div>
+        <div class="phase-pill pill-off"       id="pillOff">OFF: ключ розімкнений</div>
+      </div>
+      <div class="signals">
+        <div class="sig-row">
+          <div class="sig-lbl">PWM<br>(switch Q)</div>
+          <canvas class="sc" id="scSwitch"></canvas>
+        </div>
+        <div class="sig-row">
+          <div class="sig-lbl">Струм I<sub>L</sub></div>
+          <canvas class="sc" id="scIL"></canvas>
+        </div>
+        <div class="sig-row">
+          <div class="sig-lbl">V<sub>out</sub></div>
+          <canvas class="sc" id="scVout"></canvas>
+        </div>
+      </div>
+      <div class="playback-row">
+        <button class="pb-btn play" id="btnPlay">▶ PLAY</button>
+        <button class="pb-btn stop" id="btnStop">■ STOP</button>
+        <span class="pb-sep">·</span>
+        <div class="speed-wrap">
+          <label>Швидкість</label>
+          <input type="range" id="sliderSpeed" min="1" max="60" value="12">
+          <span class="speed-val" id="valSpeed">×1.0</span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="ctrl">
+          <label>Duty Cycle (D)</label>
+          <div class="ctrl-row">
+            <input type="range" id="sliderDuty" min="10" max="90" value="50">
+            <span class="ctrl-val" id="valDuty">50%</span>
+          </div>
+        </div>
+        <div class="ctrl">
+          <label>Вхідна напруга V<sub>in</sub></label>
+          <div class="ctrl-row">
+            <input type="range" id="sliderVin" min="3" max="24" value="12">
+            <span class="ctrl-val" id="valVin">12 В</span>
+          </div>
+        </div>
+        <div class="ctrl">
+          <label>Навантаження R<sub>L</sub></label>
+          <div class="ctrl-row">
+            <input type="range" id="sliderLoad" min="1" max="20" value="5">
+            <span class="ctrl-val" id="valLoad">5 Ω</span>
+          </div>
+        </div>
+      </div>
+      <div class="params">
+        <div class="pcard"><div class="pn">V<sub>out</sub></div><div class="pv" id="pvOut">6.0</div><div class="pu">Вольт</div></div>
+        <div class="pcard"><div class="pn">Коефіцієнт</div><div class="pv" id="pvConv">0.50</div><div class="pu">Vout/Vin</div></div>
+        <div class="pcard"><div class="pn">Потужність</div><div class="pv" id="pvPwr">7.2</div><div class="pu">Ват</div></div>
+      </div>
+      <div class="eff-row">
+        <span class="eff-lbl">ККД η</span>
+        <div class="eff-bar"><div class="eff-fill" id="effFill" style="width:91%"></div></div>
+        <span class="eff-val" id="effVal">91%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 08 ПЕРЕВАГИ / НЕДОЛІКИ -->
+  <div class="section" id="s8">
+    <div class="sec-num">08 —</div>
+    <div class="sec-title">Переваги / Недоліки</div>
+    <div class="proscons">
+      <div class="pro-card">
+        <div class="pc-title">Переваги</div>
+        <div class="pc-item">Висока ефективність (85–95%+)</div>
+        <div class="pc-item">Менше нагрівання</div>
+        <div class="pc-item">Підходить для батарейного живлення</div>
+      </div>
+      <div class="con-card">
+        <div class="pc-title">Недоліки</div>
+        <div class="pc-item">Ripple / EMI</div>
+        <div class="pc-item">Складніший PCB layout</div>
+        <div class="pc-item">Складніший за linear regulator</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<script>
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+const S = {
+  topo:'buck', duty:50, vin:12, load:5,
+  speed:12,
+  t:0, phase:'on', playing:true,
+};
+const simHz = () => S.speed * 0.08;
+
+// ═══════════════════════════════════════
+// CANVAS SETUP
+// ═══════════════════════════════════════
+const cc  = document.getElementById('cc');
+const ctx = cc.getContext('2d');
+const DPR = window.devicePixelRatio || 1;
+
+function resizeCC(){
+  const w = cc.parentElement.clientWidth;
+  const h = Math.round(w * 7/16);
+  cc.width  = w*DPR; cc.height = h*DPR;
+  cc.style.width = w+'px'; cc.style.height = h+'px';
+}
+function resizeSigs(){
+  ['scSwitch','scIL','scVout'].forEach(id=>{
+    const c=document.getElementById(id);
+    const w=c.parentElement.clientWidth;
+    c.width=w*DPR; c.height=44*DPR;
+    c.style.width=w+'px'; c.style.height='44px';
+  });
+}
+resizeCC(); resizeSigs();
+window.addEventListener('resize',()=>{ resizeCC(); resizeSigs(); });
+
+const W  = ()=> cc.width/DPR;
+const H  = ()=> cc.height/DPR;
+const px = v => Math.round(v*DPR);
+
+// ═══════════════════════════════════════
+// MATH
+// ═══════════════════════════════════════
+function calcVout(){
+  const D=S.duty/100;
+  if(S.topo==='buck')      return D*S.vin;
+  if(S.topo==='boost')     return S.vin/Math.max(1-D,0.05);
+  return S.vin*D/Math.max(1-D,0.05);
+}
+function calcEff(){
+  const D=S.duty/100;
+  if(S.topo==='buck')  return Math.max(72,94-(1-D)*10);
+  if(S.topo==='boost') return Math.max(68,91-D*12);
+  return Math.max(65,88-D*10);
+}
+function updateParams(){
+  const vo=calcVout(), pw=vo*vo/S.load, ef=calcEff();
+  document.getElementById('pvOut').textContent  = vo.toFixed(1);
+  document.getElementById('pvConv').textContent = (vo/S.vin).toFixed(2);
+  document.getElementById('pvPwr').textContent  = pw.toFixed(1);
+  document.getElementById('effFill').style.width= ef+'%';
+  document.getElementById('effVal').textContent = ef.toFixed(0)+'%';
+}
+
+// ═══════════════════════════════════════
+// DRAWING PRIMITIVES
+// ═══════════════════════════════════════
+function ln(x1,y1,x2,y2,col,lw=1.5,glow=false){
+  ctx.save();
+  if(glow){ctx.shadowColor=col;ctx.shadowBlur=9*DPR;}
+  ctx.strokeStyle=col; ctx.lineWidth=lw*DPR; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(px(x1),px(y1)); ctx.lineTo(px(x2),px(y2)); ctx.stroke();
+  ctx.restore();
+}
+function lbl(text,x,y,col,sz=10,align='center'){
+  ctx.save();
+  ctx.fillStyle=col; ctx.font=`${sz*DPR}px "JetBrains Mono"`;
+  ctx.textAlign=align; ctx.textBaseline='middle';
+  ctx.fillText(text,px(x),px(y));
+  ctx.restore();
+}
+function drawMosfet(cx,cy,on){
+  const col=on?'#00d4ff':'#2a3347', gc=on?'#7cf08a':'#4a5a70';
+  const bw=22,bh=18;
+  ctx.save();
+  ctx.fillStyle=on?'rgba(0,212,255,0.08)':'rgba(26,32,48,0.6)';
+  ctx.strokeStyle=col; ctx.lineWidth=1.5*DPR;
+  ctx.beginPath(); ctx.rect(px(cx-bw/2),px(cy-bh/2),px(bw),px(bh)); ctx.fill(); ctx.stroke();
+  ctx.fillStyle=col; ctx.font=`bold ${9*DPR}px "JetBrains Mono"`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('Q',px(cx),px(cy));
+  ctx.strokeStyle=gc; ctx.lineWidth=1.2*DPR;
+  ctx.beginPath(); ctx.moveTo(px(cx),px(cy-bh/2-10)); ctx.lineTo(px(cx),px(cy-bh/2)); ctx.stroke();
+  ctx.fillStyle=gc; ctx.font=`${8*DPR}px "JetBrains Mono"`;
+  ctx.textAlign='center'; ctx.textBaseline='bottom';
+  ctx.fillText('PWM',px(cx),px(cy-bh/2-11));
+  ctx.restore();
+}
+function drawMosfetV(cx,cy,on){
+  const col=on?'#00d4ff':'#2a3347', gc=on?'#7cf08a':'#4a5a70';
+  const bw=18,bh=24;
+  ctx.save();
+  ctx.fillStyle=on?'rgba(0,212,255,0.08)':'rgba(26,32,48,0.6)';
+  ctx.strokeStyle=col; ctx.lineWidth=1.5*DPR;
+  ctx.beginPath(); ctx.rect(px(cx-bw/2),px(cy-bh/2),px(bw),px(bh)); ctx.fill(); ctx.stroke();
+  ctx.fillStyle=col; ctx.font=`bold ${9*DPR}px "JetBrains Mono"`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('Q',px(cx),px(cy));
+  ctx.strokeStyle=gc; ctx.lineWidth=1.2*DPR;
+  ctx.beginPath(); ctx.moveTo(px(cx-bw/2-14),px(cy)); ctx.lineTo(px(cx-bw/2),px(cy)); ctx.stroke();
+  ctx.fillStyle=gc; ctx.font=`${8*DPR}px "JetBrains Mono"`;
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  ctx.fillText('PWM',px(cx-bw/2-16),px(cy));
+  ctx.restore();
+}
+function drawInductor(cx,cy,energized){
+  const col=energized?'#f0c040':'#2a3347';
+  const n=4,R=8,tw=n*R*2;
+  ctx.save();
+  if(energized){ctx.shadowColor=col;ctx.shadowBlur=10*DPR;}
+  ctx.strokeStyle=col; ctx.lineWidth=1.8*DPR;
+  ctx.beginPath();
+  for(let i=0;i<n;i++) ctx.arc(px(cx-tw/2+R+i*R*2),px(cy),px(R),Math.PI,0,false);
+  ctx.stroke(); ctx.restore();
+  lbl('L',cx,cy+14,col,9);
+}
+function drawCapacitor(cx,cy,charged){
+  const col=charged?'#c084fc':'#2a3347', pw=16,gap=5;
+  ctx.save();
+  if(charged){ctx.shadowColor=col;ctx.shadowBlur=7*DPR;}
+  ctx.strokeStyle=col; ctx.lineWidth=1.8*DPR;
+  ctx.beginPath(); ctx.moveTo(px(cx-pw),px(cy-gap)); ctx.lineTo(px(cx+pw),px(cy-gap)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(px(cx-pw),px(cy+gap)); ctx.lineTo(px(cx+pw),px(cy+gap)); ctx.stroke();
+  ctx.restore();
+  lbl('C',cx+pw+8,cy,col,9,'left');
+}
+function drawVsource(cx,cy){
+  ctx.save();
+  ctx.strokeStyle='#2a3347'; ctx.lineWidth=1.5*DPR;
+  ctx.beginPath(); ctx.arc(px(cx),px(cy),px(19),0,Math.PI*2); ctx.stroke();
+  lbl('Vin',cx,cy,'#c084fc',10);
+  lbl('+',cx,cy-10,'#c084fc',9);
+  lbl('−',cx,cy+10,'#5a6880',9);
+  ctx.restore();
+}
+function drawResistor(cx,cy,h=30){
+  const rw=8,rh=h*0.6;
+  ctx.save();
+  ctx.strokeStyle='#5a6880'; ctx.lineWidth=1.5*DPR;
+  ctx.beginPath(); ctx.rect(px(cx-rw),px(cy-rh/2),px(rw*2),px(rh)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(px(cx),px(cy-h/2)); ctx.lineTo(px(cx),px(cy-rh/2)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(px(cx),px(cy+rh/2)); ctx.lineTo(px(cx),px(cy+h/2)); ctx.stroke();
+  lbl('R',cx+rw+6,cy,'#5a6880',9,'left');
+  ctx.restore();
+}
+function drawDiode(cx,cy,dir,active){
+  const col=active?'#ff6b35':'#2a3347', S2=10;
+  ctx.save();
+  if(active){ctx.shadowColor=col;ctx.shadowBlur=8*DPR;}
+  ctx.strokeStyle=col; ctx.fillStyle=active?col:'transparent';
+  ctx.lineWidth=1.5*DPR;
+  ctx.translate(px(cx),px(cy));
+  if(dir==='right') ctx.rotate(0);
+  else if(dir==='left') ctx.rotate(Math.PI);
+  else if(dir==='down') ctx.rotate(Math.PI/2);
+  else if(dir==='up')   ctx.rotate(-Math.PI/2);
+  ctx.beginPath();
+  ctx.moveTo(-S2*DPR,-S2*DPR); ctx.lineTo(-S2*DPR,S2*DPR); ctx.lineTo(S2*DPR,0); ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(S2*DPR,-S2*DPR); ctx.lineTo(S2*DPR,S2*DPR); ctx.stroke();
+  ctx.restore();
+  const off={right:{x:0,y:-S2-7},left:{x:0,y:-S2-7},up:{x:S2+8,y:0},down:{x:S2+8,y:0}};
+  const o=off[dir]; lbl('D',cx+o.x,cy+o.y,col,9);
+}
+
+// ═══════════════════════════════════════
+// BUCK
+// ═══════════════════════════════════════
+function layoutBuck(){
+  const w=W(),h=H();
+  const rail=h*0.22,gnd=h*0.80;
+  const vinX=w*0.10,qX=w*0.26,swX=w*0.40;
+  const lCX=w*0.56,capX=w*0.72,loadX=w*0.84;
+  const dY=(rail+gnd)*0.55, vsY=(rail+gnd)/2;
+  return {w,h,rail,gnd,vinX,qX,swX,lCX,capX,loadX,dY,vsY};
+}
+function drawBuck(){
+  const L=layoutBuck();
+  const {w,h,rail,gnd,vinX,qX,swX,lCX,capX,loadX,dY,vsY}=L;
+  const on=S.phase==='on';
+  const CON='#00d4ff',COFF='#ff6b35',CDM='#1f2633';
+  ln(vinX,rail,qX-11,rail,CDM);
+  ln(vinX,rail,vinX,vsY-20,CDM); ln(vinX,vsY+20,vinX,gnd,CDM);
+  ln(capX,gnd,loadX,gnd,CDM); ln(vinX,gnd,capX,gnd,CDM);
+  ln(capX,rail,loadX,rail,'#4a5a70');
+  ln(loadX,rail,loadX,h*0.42,'#4a5a70'); ln(loadX,h*0.58,loadX,gnd,'#4a5a70');
+  ln(capX,rail,capX,h*0.45,CDM); ln(capX,h*0.53,capX,gnd,CDM);
+  ln(qX+11,rail,swX,rail,on?CON:CDM,on?2:1.5,on);
+  ln(swX,rail,lCX-32,rail,on?CON:COFF,2,true);
+  ln(lCX+32,rail,capX,rail,on?CON:COFF,1.5);
+  ln(swX,rail,swX,dY-11,!on?COFF:CDM,!on?2:1.5,!on);
+  ln(swX,dY+11,swX,gnd,!on?COFF:CDM,!on?2:1.5,!on);
+  drawVsource(vinX,vsY);
+  drawMosfet(qX,rail,on);
+  drawInductor(lCX,rail,true);
+  drawDiode(swX,dY,'up',!on);
+  drawCapacitor(capX,h*0.49,true);
+  drawResistor(loadX,h*0.50,32);
+  lbl(`Vin = ${S.vin} В`,vinX,h*0.10,'#c084fc',10);
+  lbl(`Vout = ${calcVout().toFixed(1)} В`,loadX,h*0.10,'#7cf08a',10);
+  lbl(on?'ON: Q замкнений  →  Vin заряджає L → Cout':'OFF: Q розімкнений  →  L розряджається через D (freewheeling)',w*0.50,h*0.92,on?CON:COFF,10);
+}
+function pathBuck(){
+  const {rail,gnd,vinX,qX,swX,lCX,capX,loadX,dY}=layoutBuck();
+  if(S.phase==='on'){
+    return {pts:[{x:vinX,y:rail},{x:qX,y:rail},{x:swX,y:rail},{x:lCX,y:rail},{x:capX,y:rail},{x:loadX,y:rail},{x:loadX,y:gnd},{x:vinX,y:gnd},{x:vinX,y:rail}],col:'#00d4ff'};
+  } else {
+    return {pts:[{x:swX,y:gnd},{x:swX,y:dY+11},{x:swX,y:dY-11},{x:swX,y:rail},{x:lCX,y:rail},{x:capX,y:rail},{x:loadX,y:rail},{x:loadX,y:gnd},{x:capX,y:gnd},{x:swX,y:gnd}],col:'#ff6b35'};
+  }
+}
+
+// ═══════════════════════════════════════
+// BOOST
+// ═══════════════════════════════════════
+function layoutBoost(){
+  const w=W(),h=H();
+  const rail=h*0.25,gnd=h*0.78;
+  const vinX=w*0.10,lCX=w*0.28,swX=w*0.46;
+  const dX=w*0.60,capX=w*0.74,loadX=w*0.86;
+  const qY=(rail+gnd)*0.55, vsY=(rail+gnd)/2;
+  return {w,h,rail,gnd,vinX,lCX,swX,dX,capX,loadX,qY,vsY};
+}
+function drawBoost(){
+  const L=layoutBoost();
+  const {w,h,rail,gnd,vinX,lCX,swX,dX,capX,loadX,qY,vsY}=L;
+  const on=S.phase==='on';
+  const CON='#00d4ff',COFF='#7cf08a',CDM='#1f2633';
+  ln(vinX,rail,vinX,vsY-20,CDM); ln(vinX,vsY+20,vinX,gnd,CDM);
+  ln(vinX,rail,lCX-32,rail,CDM);
+  ln(capX,rail,loadX,rail,'#4a5a70');
+  ln(loadX,rail,loadX,h*0.42,'#4a5a70'); ln(loadX,h*0.58,loadX,gnd,'#4a5a70');
+  ln(capX,rail,capX,h*0.45,CDM); ln(capX,h*0.53,capX,gnd,CDM);
+  ln(vinX,gnd,loadX,gnd,CDM);
+  ln(lCX+32,rail,swX,rail,on?CON:COFF,2,true);
+  ln(swX,rail,swX,qY-12,on?CON:CDM,on?2:1.5,on);
+  ln(swX,qY+12,swX,gnd,on?CON:CDM,on?2:1.5,on);
+  ln(swX,rail,dX-11,rail,!on?COFF:CDM,!on?2:1.5,!on);
+  ln(dX+11,rail,capX,rail,!on?COFF:CDM,!on?2:1.5,!on);
+  drawVsource(vinX,vsY);
+  drawInductor(lCX,rail,true);
+  drawMosfetV(swX,qY,on);
+  drawDiode(dX,rail,'right',!on);
+  drawCapacitor(capX,h*0.49,true);
+  drawResistor(loadX,h*0.50,32);
+  lbl(`Vin = ${S.vin} В`,vinX,h*0.12,'#c084fc',10);
+  lbl(`Vout = ${calcVout().toFixed(1)} В`,loadX,h*0.12,'#7cf08a',10);
+  lbl(on?'ON: Q замкнений  →  L накопичує енергію від Vin':'OFF: Q розімкнений  →  L + Vin → D → Cout (підвищення)',w*0.50,h*0.92,on?CON:COFF,10);
+}
+function pathBoost(){
+  const {rail,gnd,vinX,lCX,swX,dX,capX,loadX,qY}=layoutBoost();
+  if(S.phase==='on'){
+    return {pts:[{x:vinX,y:rail},{x:lCX,y:rail},{x:swX,y:rail},{x:swX,y:qY-12},{x:swX,y:qY+12},{x:swX,y:gnd},{x:vinX,y:gnd},{x:vinX,y:rail}],col:'#00d4ff'};
+  } else {
+    return {pts:[{x:vinX,y:rail},{x:lCX,y:rail},{x:swX,y:rail},{x:dX-11,y:rail},{x:dX+11,y:rail},{x:capX,y:rail},{x:loadX,y:rail},{x:loadX,y:gnd},{x:vinX,y:gnd},{x:vinX,y:rail}],col:'#7cf08a'};
+  }
+}
+
+// ═══════════════════════════════════════
+// BUCK-BOOST
+// ═══════════════════════════════════════
+function layoutBB(){
+  const w=W(),h=H();
+  const rail=h*0.22,gnd=h*0.80;
+  const vinX=w*0.10,qX=w*0.26,swX=w*0.40;
+  const lCX=w*0.57; const lRight=lCX+32;
+  const capX=w*0.75,loadX=w*0.86;
+  const nvY=(rail+gnd)*0.58, dY=(rail+gnd)*0.50, vsY=(rail+gnd)/2;
+  return {w,h,rail,gnd,vinX,qX,swX,lCX,lRight,capX,loadX,nvY,dY,vsY};
+}
+function drawBuckBoost(){
+  const L=layoutBB();
+  const {w,h,rail,gnd,vinX,qX,swX,lCX,lRight,capX,loadX,nvY,dY,vsY}=L;
+  const on=S.phase==='on';
+  const CON='#00d4ff',COFF='#ff6b35',CDM='#1f2633';
+  ln(vinX,rail,vinX,vsY-20,CDM); ln(vinX,vsY+20,vinX,gnd,CDM);
+  ln(vinX,rail,qX-11,rail,CDM);
+  ln(vinX,gnd,loadX,gnd,CDM);
+  ln(loadX,nvY,loadX,h*0.42,'#4a5a70'); ln(loadX,h*0.58,loadX,gnd,'#4a5a70');
+  ln(lRight,rail,lRight,nvY,CDM); ln(lRight,nvY,capX,nvY,CDM); ln(capX,nvY,loadX,nvY,'#4a5a70');
+  const capMid=(nvY+gnd)/2;
+  ln(capX,nvY,capX,capMid-6,CDM); ln(capX,capMid+6,capX,gnd,CDM);
+  ln(qX+11,rail,swX,rail,on?CON:CDM,on?2:1.5,on);
+  ln(swX,rail,lCX-32,rail,on?CON:COFF,2,true);
+  ln(lRight,nvY,capX,nvY,!on?COFF:CDM,!on?2:1.5,!on);
+  ln(swX,rail,swX,dY-11,!on?COFF:CDM,!on?2:1.5,!on);
+  ln(swX,dY+11,swX,gnd,!on?COFF:CDM,!on?2:1.5,!on);
+  drawVsource(vinX,vsY);
+  drawMosfet(qX,rail,on);
+  drawInductor(lCX,rail,true);
+  drawDiode(swX,dY,'up',!on);
+  drawCapacitor(capX,capMid,true);
+  drawResistor(loadX,h*0.50,32);
+  lbl(`Vin = ${S.vin} В`,vinX,h*0.10,'#c084fc',10);
+  lbl(`−Vout = ${calcVout().toFixed(1)} В`,loadX,h*0.10,'#7cf08a',10);
+  lbl(on?'ON: Q замкнений  →  L заряджається від Vin→GND':'OFF: Q розімкнений  →  L → D → −Vout (інверсія полярності)',w*0.50,h*0.92,on?CON:COFF,10);
+}
+function pathBB(){
+  const {rail,gnd,vinX,qX,swX,lCX,lRight,capX,loadX,nvY,dY}=layoutBB();
+  const capMid=(nvY+gnd)/2;
+  if(S.phase==='on'){
+    return {pts:[{x:vinX,y:rail},{x:qX,y:rail},{x:swX,y:rail},{x:lCX,y:rail},{x:lRight,y:rail},{x:lRight,y:nvY},{x:capX,y:nvY},{x:capX,y:capMid+6},{x:capX,y:gnd},{x:vinX,y:gnd},{x:vinX,y:rail}],col:'#00d4ff'};
+  } else {
+    return {pts:[{x:swX,y:gnd},{x:swX,y:dY+11},{x:swX,y:dY-11},{x:swX,y:rail},{x:lCX,y:rail},{x:lRight,y:rail},{x:lRight,y:nvY},{x:capX,y:nvY},{x:capX,y:gnd},{x:swX,y:gnd}],col:'#ff6b35'};
+  }
+}
+
+// ═══════════════════════════════════════
+// PARTICLES
+// ═══════════════════════════════════════
+class Particle {
+  constructor(pts,col){ this.pts=pts; this.col=col; this.t=Math.random(); }
+  _len(){ let l=0; for(let i=1;i<this.pts.length;i++){const dx=this.pts[i].x-this.pts[i-1].x,dy=this.pts[i].y-this.pts[i-1].y;l+=Math.sqrt(dx*dx+dy*dy);} return l; }
+  pos(){ const L=this._len(); let r=this.t*L; for(let i=1;i<this.pts.length;i++){const dx=this.pts[i].x-this.pts[i-1].x,dy=this.pts[i].y-this.pts[i-1].y;const s=Math.sqrt(dx*dx+dy*dy);if(r<=s){const f=r/s;return{x:this.pts[i-1].x+dx*f,y:this.pts[i-1].y+dy*f};}r-=s;} return this.pts[this.pts.length-1]; }
+  update(dt,speed){ this.t=(this.t+dt*speed*0.28)%1; }
+  draw(){ const p=this.pos(); ctx.save(); ctx.fillStyle=this.col; ctx.shadowColor=this.col; ctx.shadowBlur=8*DPR; ctx.beginPath(); ctx.arc(px(p.x),px(p.y),3*DPR,0,Math.PI*2); ctx.fill(); ctx.restore(); }
+}
+let particles=[];
+function buildParticles(){
+  particles=[];
+  let info;
+  if(S.topo==='buck') info=pathBuck();
+  else if(S.topo==='boost') info=pathBoost();
+  else info=pathBB();
+  for(let i=0;i<7;i++){ const p=new Particle(info.pts,info.col); p.t=i/7; particles.push(p); }
+}
+
+// ═══════════════════════════════════════
+// SIGNALS
+// ═══════════════════════════════════════
+const SIG=200;
+const sigH={sw:[],il:[],vo:[]};
+function pushSignal(){
+  const D=S.duty/100,f=simHz(),period=1/f;
+  const tMod=((S.t%period)+period)%period;
+  const sw=tMod<D*period?1:0;
+  const vo=calcVout(),rip=vo*0.035;
+  const il=(S.vin/S.load)*(0.8+sw*0.2);
+  const ph=tMod/period*Math.PI*2;
+  sigH.sw.push(sw); sigH.il.push(il+Math.sin(ph)*il*0.1); sigH.vo.push(vo+Math.sin(ph+Math.PI)*rip);
+  if(sigH.sw.length>SIG){sigH.sw.shift();sigH.il.shift();sigH.vo.shift();}
+}
+function drawSig(id,data,col,mn,mx){
+  const c=document.getElementById(id),cx=c.getContext('2d');
+  const CW=c.width,CH=c.height;
+  cx.clearRect(0,0,CW,CH);
+  cx.strokeStyle='#1f2633'; cx.lineWidth=0.5*DPR;
+  for(let g=0;g<=3;g++){const y=CH*g/3;cx.beginPath();cx.moveTo(0,y);cx.lineTo(CW,y);cx.stroke();}
+  if(data.length<2)return;
+  const rng=mx-mn||1;
+  cx.strokeStyle=col; cx.lineWidth=1.5*DPR; cx.shadowColor=col; cx.shadowBlur=4*DPR;
+  cx.beginPath();
+  data.forEach((v,i)=>{const x=(i/(SIG-1))*CW;const y=CH-((v-mn)/rng)*CH*0.82-CH*0.09;i===0?cx.moveTo(x,y):cx.lineTo(x,y);});
+  cx.stroke();
+}
+function renderSigs(){
+  const vo=calcVout(),maxIL=(S.vin/S.load)*1.5;
+  drawSig('scSwitch',sigH.sw,'#00d4ff',-0.05,1.05);
+  drawSig('scIL',sigH.il,'#f0c040',0,maxIL);
+  drawSig('scVout',sigH.vo,'#7cf08a',0,Math.max(vo*1.6,1));
+}
+
+// ═══════════════════════════════════════
+// PHASE
+// ═══════════════════════════════════════
+function setPhase(p){
+  if(p===S.phase)return; S.phase=p; buildParticles();
+  document.getElementById('pillOn').classList.toggle('active',p==='on');
+  document.getElementById('pillOff').classList.toggle('active',p==='off');
+}
+
+// ═══════════════════════════════════════
+// LOOP
+// ═══════════════════════════════════════
+let last=null;
+function loop(ts){
+  if(!S.playing){last=null;requestAnimationFrame(loop);return;}
+  if(!last)last=ts;
+  const dt=Math.min((ts-last)/1000,0.05); last=ts;
+  S.t+=dt; pushSignal();
+  const f=simHz(),period=1/f;
+  const tMod=((S.t%period)+period)%period;
+  setPhase(tMod<S.duty/100*period?'on':'off');
+  ctx.clearRect(0,0,cc.width,cc.height);
+  if(S.topo==='buck') drawBuck();
+  else if(S.topo==='boost') drawBoost();
+  else drawBuckBoost();
+  particles.forEach(p=>{ p.update(dt,simHz()); p.draw(); });
+  renderSigs(); updateParams();
+  requestAnimationFrame(loop);
+}
+
+// ═══════════════════════════════════════
+// BINDINGS
+// ═══════════════════════════════════════
+document.querySelectorAll('.topo-tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.topo-tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); S.topo=btn.dataset.topo; S.phase='on';
+    sigH.sw=[];sigH.il=[];sigH.vo=[];
+    buildParticles();
+    document.getElementById('pillOn').classList.add('active');
+    document.getElementById('pillOff').classList.remove('active');
+  });
+});
+document.getElementById('sliderSpeed').addEventListener('input',function(){
+  S.speed=parseFloat(this.value);
+  document.getElementById('valSpeed').textContent='×'+(S.speed/12).toFixed(1);
+});
+document.getElementById('sliderDuty').addEventListener('input',function(){
+  S.duty=parseFloat(this.value);
+  document.getElementById('valDuty').textContent=this.value+'%';
+  sigH.sw=[];sigH.il=[];sigH.vo=[];
+});
+document.getElementById('sliderVin').addEventListener('input',function(){
+  S.vin=parseFloat(this.value);
+  document.getElementById('valVin').textContent=this.value+' В';
+});
+document.getElementById('sliderLoad').addEventListener('input',function(){
+  S.load=parseFloat(this.value);
+  document.getElementById('valLoad').textContent=this.value+' Ω';
+});
+document.getElementById('btnPlay').addEventListener('click',()=>{
+  S.playing=true;
+  document.getElementById('liveBadge').textContent='▶ LIVE';
+  document.getElementById('liveBadge').classList.remove('paused');
+});
+document.getElementById('btnStop').addEventListener('click',()=>{
+  S.playing=false;
+  document.getElementById('liveBadge').textContent='■ PAUSE';
+  document.getElementById('liveBadge').classList.add('paused');
+});
+
+// TOC active section
+const tocLinks=document.querySelectorAll('.toc a');
+const sections=document.querySelectorAll('.section[id]');
+function updateToc(){
+  let cur='';
+  sections.forEach(s=>{ if(window.scrollY>=s.offsetTop-100) cur=s.id; });
+  tocLinks.forEach(a=>{ a.classList.toggle('active',a.getAttribute('href')==='#'+cur); });
+}
+window.addEventListener('scroll',updateToc,{passive:true}); updateToc();
+
+// INIT
+buildParticles(); updateParams(); requestAnimationFrame(loop);
+</script>
+</body>
+</html>
