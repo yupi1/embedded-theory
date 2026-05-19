@@ -1,1 +1,1182 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LDO Regulator · Конспект · Embedded Systems</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #161b27;
+    --bg3: #1e2535;
+    --border: #2a3348;
+    --text: #c9d1e0;
+    --text-dim: #6b7a99;
+    --accent: #4f9cf9;
+    --accent2: #38d9a9;
+    --accent3: #f7a94b;
+    --accent4: #f06a6a;
+    --key-bg: #1a2340;
+    --key-border: #3a5080;
+    --inf-bg: #1a2730;
+    --inf-border: #2a5040;
+    --wrn-bg: #2a1f1a;
+    --wrn-border: #6a3020;
+    --tag-bg: #1e2535;
+  }
 
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .back-link {
+    display: inline-block;
+    padding: 16px 24px;
+    color: var(--text-dim);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+  }
+  .back-link:hover { color: var(--text); text-decoration: none; }
+
+  .page-header {
+    padding: 0 24px 32px;
+    border-bottom: 1px solid var(--border);
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .breadcrumb {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #e8edf5;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+
+  .intro-text {
+    color: var(--text-dim);
+    font-size: 13px;
+    max-width: 600px;
+    line-height: 1.8;
+    margin-bottom: 16px;
+  }
+
+  .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tag {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+
+  .content {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── Section ── */
+  .section {
+    padding: 40px 0 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+  .section:last-child { border-bottom: none; }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .section-num {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    min-width: 28px;
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #e8edf5;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Callout boxes ── */
+  .callout {
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  .callout-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .callout.key {
+    background: var(--key-bg);
+    border: 1px solid var(--key-border);
+  }
+  .callout.key .callout-label { color: var(--accent); }
+  .callout.inf {
+    background: var(--inf-bg);
+    border: 1px solid var(--inf-border);
+  }
+  .callout.inf .callout-label { color: var(--accent2); }
+  .callout.wrn {
+    background: var(--wrn-bg);
+    border: 1px solid var(--wrn-border);
+  }
+  .callout.wrn .callout-label { color: var(--accent4); }
+
+  code {
+    background: #1a2035;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-size: 12px;
+    color: var(--accent3);
+    font-family: inherit;
+  }
+
+  /* ── Lists ── */
+  ul.dot-list { list-style: none; padding: 0; }
+  ul.dot-list li {
+    padding: 4px 0 4px 18px;
+    position: relative;
+    color: var(--text);
+    font-size: 13px;
+  }
+  ul.dot-list li::before {
+    content: '◈';
+    position: absolute;
+    left: 0;
+    color: var(--text-dim);
+    font-size: 10px;
+    top: 7px;
+  }
+
+  /* ── Table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 16px 0;
+  }
+  th {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    color: var(--text-dim);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+  td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    vertical-align: top;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  tr:hover td { background: var(--bg3); }
+
+  /* ── Interactive LDO Demo ── */
+  .ldo-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 20px 0;
+  }
+
+  .ldo-panel-title {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .live-badge {
+    background: var(--accent4);
+    color: #fff;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+  /* SVG diagram */
+  .ldo-diagram-wrap {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  #ldoSvg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Controls */
+  .controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .ctrl-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .ctrl-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .ctrl-value {
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { background: #7bb8ff; }
+
+  /* State panel */
+  .state-panel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .state-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+
+  .state-card-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .state-card-value {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .state-card-sub {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .good { color: var(--accent2); }
+  .warn { color: var(--accent3); }
+  .bad  { color: var(--accent4); }
+
+  /* Status message */
+  #statusMsg {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 5px;
+    font-size: 12px;
+    border: 1px solid;
+    transition: all .3s;
+  }
+
+  /* Waveform canvas */
+  .waveform-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 16px;
+  }
+  .waveform-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  canvas#waveCanvas {
+    width: 100%;
+    height: 100px;
+    display: block;
+    border-radius: 4px;
+  }
+
+  /* Q&A */
+  .qa-item {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .qa-q {
+    padding: 14px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg2);
+    transition: background .2s;
+  }
+  .qa-q:hover { background: var(--bg3); }
+  .qa-icon {
+    font-size: 16px;
+    color: var(--text-dim);
+    transition: transform .3s;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+  .qa-a {
+    display: none;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--text-dim);
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    line-height: 1.8;
+  }
+  .qa-item.open .qa-a { display: block; }
+  .qa-item.open .qa-icon { transform: rotate(45deg); color: var(--accent); }
+
+  /* Transistor viz */
+  .transistor-viz {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0;
+  }
+  .transistor-track {
+    flex: 1;
+    height: 20px;
+    background: var(--bg3);
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .transistor-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 10px;
+    transition: width .4s ease;
+  }
+  .transistor-label { font-size: 11px; color: var(--text-dim); width: 70px; text-align: right; }
+  .transistor-pct { font-size: 12px; color: var(--accent); font-weight: 600; width: 40px; }
+
+  p { margin-bottom: 12px; font-size: 13px; }
+  p:last-child { margin-bottom: 0; }
+
+  .section-body { padding-bottom: 40px; }
+
+  /* Two-col advantages */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .adv-item, .dis-item {
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .adv-item { background: #0d2018; border: 1px solid #1a4030; color: var(--accent2); }
+  .dis-item { background: #201010; border: 1px solid #402020; color: var(--accent4); }
+  .adv-item::before { content: '✓'; font-weight: 700; }
+  .dis-item::before { content: '✗'; font-weight: 700; }
+
+  @media(max-width:600px) {
+    .controls-grid { grid-template-columns: 1fr; }
+    .state-panel { grid-template-columns: 1fr 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="../index.html">← повернутись до конспекту</a>
+
+<div class="page-header">
+  <div class="breadcrumb">Конспект · Electronics · Power Management</div>
+  <h1>LDO Regulator</h1>
+  <p class="intro-text">
+    LDO (Low Dropout Regulator) — лінійний стабілізатор напруги, який підтримує стабільну вихідну напругу навіть при мінімальній різниці між VIN і VOUT.
+  </p>
+  <div class="tags">
+    <span class="tag">Power</span>
+    <span class="tag">Analog</span>
+    <span class="tag">Voltage Regulator</span>
+    <span class="tag">Fundamentals</span>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- 01 Поняття -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">Поняття</span>
+    </div>
+    <div class="section-body">
+      <p><strong>LDO</strong> — це лінійний стабілізатор напруги, який підтримує стабільну вихідну напругу.</p>
+      <p>LDO виконує чотири основні функції:</p>
+      <ul class="dot-list">
+        <li>контролює вихідну напругу</li>
+        <li>компенсує зміни навантаження</li>
+        <li>компенсує зміни вхідної напруги</li>
+        <li>перетворює зайву енергію в тепло</li>
+      </ul>
+
+      <div class="callout key">
+        <div class="callout-label">KEY</div>
+        <strong>"Low Dropout"</strong> означає: LDO може працювати навіть при дуже малій різниці між <code>VIN</code> і <code>VOUT</code>.<br>
+        Наприклад: <code>VIN = 3.5V</code> → <code>VOUT = 3.3V</code>
+      </div>
+
+      <div class="callout inf">
+        <div class="callout-label">DROPOUT</div>
+        Dropout — це мінімальна різниця <code>VIN − VOUT</code>, при якій LDO ще може стабілізувати напругу.
+        Звідси і назва — <strong>Low Dropout</strong>.
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 Будова -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">Будова</span>
+    </div>
+    <div class="section-body">
+      <p>LDO складається з чотирьох основних компонентів:</p>
+      <ul class="dot-list">
+        <li><strong>Input Capacitor</strong></li>
+        <li><strong>Pass Transistor</strong> (зазвичай PMOS або PNP)</li>
+        <li><strong>Feedback</strong></li>
+        <li><strong>Error Amplifier</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 03 Принцип роботи — INTERACTIVE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">Принцип роботи</span>
+    </div>
+    <div class="section-body">
+
+      <p>LDO працює як <strong>плавно керований опір (або клапан)</strong>. Він постійно змінює стан Pass Transistor для підтримки стабільного <code>VOUT</code>.</p>
+
+      <div class="ldo-panel">
+        <div class="ldo-panel-title">
+          Інтерактивний симулятор LDO
+          <span class="live-badge">▶ LIVE</span>
+        </div>
+
+        <!-- SVG Diagram -->
+        <div class="ldo-diagram-wrap">
+          <!--
+            Layout (viewBox 0 0 760 280):
+            Row 1 (signal path, y=60..132):  VIN | InCap | PassT | OutCap | VOUT → Load
+            Row 2 (control, y=155..215):           | ErrAmp | Feedback |
+            GND bus at y=250
+          -->
+          <svg id="ldoSvg" viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg"
+               style="font-family:'JetBrains Mono','Fira Code',monospace;width:100%;height:auto;display:block">
+            <defs>
+              <marker id="arrB" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                <path d="M0,0 L0,7 L7,3.5 z" fill="#4f9cf9"/>
+              </marker>
+              <marker id="arrG" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                <path d="M0,0 L0,7 L7,3.5 z" fill="#38d9a9"/>
+              </marker>
+              <marker id="arrO" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                <path d="M0,0 L0,7 L7,3.5 z" fill="#f7a94b"/>
+              </marker>
+              <marker id="arrD" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                <path d="M0,0 L0,7 L7,3.5 z" fill="#3a7060"/>
+              </marker>
+            </defs>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- ROW 1: main signal path at y-center = 95   -->
+            <!-- ═══════════════════════════════════════════ -->
+
+            <!-- VIN block: x=10, w=80, cy=95 -->
+            <rect x="10" y="60" width="80" height="70" rx="6"
+                  fill="#0d1a2a" stroke="#2a4060" stroke-width="1.5"/>
+            <text x="50" y="90"  text-anchor="middle" fill="#4f9cf9" font-size="10" font-weight="700">VIN</text>
+            <text id="vinLabel"
+                  x="50" y="110" text-anchor="middle" fill="#7bb8ff" font-size="12" font-weight="600">5.0V</text>
+
+            <!-- arrow VIN→InCap -->
+            <line x1="90" y1="95" x2="118" y2="95"
+                  stroke="#4f9cf9" stroke-width="2" marker-end="url(#arrB)"/>
+
+            <!-- Input Cap block: x=120, w=80 -->
+            <rect x="120" y="65" width="80" height="60" rx="5"
+                  fill="#101820" stroke="#2a3848" stroke-width="1"/>
+            <text x="160" y="89"  text-anchor="middle" fill="#6b7a99" font-size="9">Input</text>
+            <text x="160" y="103" text-anchor="middle" fill="#6b7a99" font-size="9">Cap</text>
+            <!-- cap symbol -->
+            <line x1="150" y1="110" x2="170" y2="110" stroke="#38d9a9" stroke-width="1.5"/>
+            <line x1="150" y1="115" x2="170" y2="115" stroke="#38d9a9" stroke-width="1.5"/>
+
+            <!-- arrow InCap→PassT -->
+            <line x1="200" y1="95" x2="228" y2="95"
+                  stroke="#4f9cf9" stroke-width="2" marker-end="url(#arrB)"/>
+
+            <!-- Pass Transistor block: x=230, w=110 -->
+            <rect id="transRect" x="230" y="52" width="110" height="86" rx="6"
+                  fill="#101820" stroke="#2a3848" stroke-width="1.5"/>
+            <text x="285" y="82"  text-anchor="middle" fill="#6b7a99" font-size="9">Pass</text>
+            <text x="285" y="96"  text-anchor="middle" fill="#6b7a99" font-size="9">Transistor</text>
+            <text x="285" y="113" text-anchor="middle" fill="#f7a94b" font-size="8">(PMOS)</text>
+            <!-- circle symbol inside -->
+            <circle cx="285" cy="95" r="20" fill="none" stroke="#2a3848" stroke-width="1"/>
+
+            <!-- arrow PassT→OutCap -->
+            <line id="transOut" x1="340" y1="95" x2="428" y2="95"
+                  stroke="#38d9a9" stroke-width="2" marker-end="url(#arrG)"/>
+
+            <!-- Output Cap block: x=430, w=80 -->
+            <rect x="430" y="65" width="80" height="60" rx="5"
+                  fill="#101820" stroke="#2a3848" stroke-width="1"/>
+            <text x="470" y="89"  text-anchor="middle" fill="#6b7a99" font-size="9">Output</text>
+            <text x="470" y="103" text-anchor="middle" fill="#6b7a99" font-size="9">Cap</text>
+            <line x1="460" y1="110" x2="480" y2="110" stroke="#38d9a9" stroke-width="1.5"/>
+            <line x1="460" y1="115" x2="480" y2="115" stroke="#38d9a9" stroke-width="1.5"/>
+
+            <!-- arrow OutCap→VOUT -->
+            <line x1="510" y1="95" x2="538" y2="95"
+                  stroke="#38d9a9" stroke-width="2" marker-end="url(#arrG)"/>
+
+            <!-- VOUT block: x=540, w=90 -->
+            <rect x="540" y="58" width="90" height="74" rx="6"
+                  fill="#0a1f18" stroke="#1a4030" stroke-width="1.5"/>
+            <text x="585" y="87"  text-anchor="middle" fill="#38d9a9" font-size="10" font-weight="700">VOUT</text>
+            <text id="voutLabel"
+                  x="585" y="110" text-anchor="middle" fill="#5df0be" font-size="12" font-weight="600">3.3V</text>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- ROW 2: control blocks at y-center = 185    -->
+            <!-- ═══════════════════════════════════════════ -->
+
+            <!-- Error Amplifier: x=230, w=110, below PassT -->
+            <rect x="230" y="155" width="110" height="60" rx="5"
+                  fill="#0d1a22" stroke="#1a3040" stroke-width="1"/>
+            <text x="285" y="179" text-anchor="middle" fill="#6b7a99" font-size="9">Error</text>
+            <text x="285" y="193" text-anchor="middle" fill="#6b7a99" font-size="9">Amplifier</text>
+            <text x="285" y="228" text-anchor="middle" fill="#3a7060" font-size="8">Vref ↑</text>
+
+            <!-- Feedback block: x=390, w=90, same row -->
+            <rect x="390" y="155" width="90" height="60" rx="5"
+                  fill="#101818" stroke="#1a3020" stroke-width="1"/>
+            <text x="435" y="179" text-anchor="middle" fill="#6b7a99" font-size="9">Feedback</text>
+            <text x="435" y="193" text-anchor="middle" fill="#3a7060" font-size="8">R divider</text>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- CONNECTIONS between rows                   -->
+            <!-- ═══════════════════════════════════════════ -->
+
+            <!-- EA → PassT control (vertical, orange dashed) -->
+            <line x1="285" y1="138" x2="285" y2="155"
+                  stroke="#f7a94b" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrO)"/>
+
+            <!-- VOUT → Feedback (tap between OutCap and VOUT, then down) -->
+            <line x1="524" y1="95" x2="524" y2="175"
+                  stroke="#3a7060" stroke-width="1.2" stroke-dasharray="4,3"/>
+            <line x1="524" y1="175" x2="480" y2="175"
+                  stroke="#3a7060" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrD)"/>
+
+            <!-- Feedback → EA (horizontal in row 2) -->
+            <line x1="390" y1="185" x2="340" y2="185"
+                  stroke="#3a7060" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrD)"/>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- LOAD block: right of VOUT                  -->
+            <!-- ═══════════════════════════════════════════ -->
+
+            <!-- arrow VOUT → Load -->
+            <line x1="630" y1="95" x2="648" y2="95"
+                  stroke="#38d9a9" stroke-width="2" marker-end="url(#arrG)"/>
+
+            <!-- Load block: x=650, w=80 -->
+            <rect x="650" y="62" width="84" height="66" rx="6"
+                  fill="#101820" stroke="#2a4838" stroke-width="1.2"/>
+            <text x="692" y="88"  text-anchor="middle" fill="#6b7a99" font-size="9">Load</text>
+            <!-- resistor zigzag symbol -->
+            <polyline points="672,102 676,96 681,108 686,96 691,108 696,96 701,108 706,96 710,102"
+                      fill="none" stroke="#38d9a9" stroke-width="1.4" stroke-linejoin="round"/>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- GND bus at y=250                           -->
+            <!-- ═══════════════════════════════════════════ -->
+
+            <!-- vertical drop: VIN → GND -->
+            <line x1="50" y1="130" x2="50" y2="250" stroke="#2a3348" stroke-width="1"/>
+
+            <!-- vertical drop: Load → GND -->
+            <line x1="692" y1="128" x2="692" y2="250" stroke="#2a3348" stroke-width="1"/>
+
+            <!-- horizontal GND bus -->
+            <line x1="50" y1="250" x2="692" y2="250" stroke="#2a3348" stroke-width="1.5"/>
+
+            <!-- GND symbol (3 horizontal bars) centered -->
+            <line x1="356" y1="250" x2="404" y2="250" stroke="#3a4560" stroke-width="2"/>
+            <line x1="363" y1="255" x2="397" y2="255" stroke="#3a4560" stroke-width="1.5"/>
+            <line x1="370" y1="260" x2="390" y2="260" stroke="#3a4560" stroke-width="1"/>
+            <text x="380" y="276" text-anchor="middle" fill="#3a4560" font-size="9" letter-spacing="0.05em">GND</text>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- Heat arrow (shown dynamically)             -->
+            <!-- ═══════════════════════════════════════════ -->
+            <g id="heatGroup" opacity="0">
+              <line x1="285" y1="52" x2="285" y2="22"
+                    stroke="#f06a6a" stroke-width="1.8" marker-end="url(#arrO)"/>
+              <text x="300" y="18" fill="#f06a6a" font-size="9" font-weight="600">heat</text>
+            </g>
+
+          </svg>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-grid">
+          <div class="ctrl-group">
+            <div class="ctrl-label">
+              <span>Вхідна напруга (VIN)</span>
+              <span class="ctrl-value" id="vinVal">5.0 V</span>
+            </div>
+            <input type="range" id="vinSlider" min="1.5" max="12" step="0.1" value="5.0">
+          </div>
+          <div class="ctrl-group">
+            <div class="ctrl-label">
+              <span>Бажаний VOUT</span>
+              <span class="ctrl-value" id="voutVal">3.3 V</span>
+            </div>
+            <input type="range" id="voutSlider" min="1.0" max="5.0" step="0.1" value="3.3">
+          </div>
+          <div class="ctrl-group">
+            <div class="ctrl-label">
+              <span>Dropout Voltage</span>
+              <span class="ctrl-value" id="dropVal">200 mV</span>
+            </div>
+            <input type="range" id="dropSlider" min="50" max="600" step="10" value="200">
+          </div>
+          <div class="ctrl-group">
+            <div class="ctrl-label">
+              <span>Навантаження (Load)</span>
+              <span class="ctrl-value" id="loadVal">200 mA</span>
+            </div>
+            <input type="range" id="loadSlider" min="10" max="1000" step="10" value="200">
+          </div>
+        </div>
+
+        <!-- Transistor openness -->
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;letter-spacing:.05em">PASS TRANSISTOR — відкритість</div>
+          <div class="transistor-viz">
+            <span class="transistor-label">закритий</span>
+            <div class="transistor-track">
+              <div class="transistor-fill" id="transBar" style="width:60%"></div>
+            </div>
+            <span class="transistor-pct" id="transPct">60%</span>
+            <span class="transistor-label" style="text-align:left">відкритий</span>
+          </div>
+        </div>
+
+        <!-- State cards -->
+        <div class="state-panel">
+          <div class="state-card">
+            <div class="state-card-label">Actual VOUT</div>
+            <div class="state-card-value good" id="actualVout">3.3 V</div>
+            <div class="state-card-sub">стабілізована</div>
+          </div>
+          <div class="state-card">
+            <div class="state-card-label">VIN − VOUT</div>
+            <div class="state-card-value" id="diffVal" style="color:var(--accent)">1.7 V</div>
+            <div class="state-card-sub">надлишок</div>
+          </div>
+          <div class="state-card">
+            <div class="state-card-label">Тепло (Power Loss)</div>
+            <div class="state-card-value warn" id="heatVal">340 mW</div>
+            <div class="state-card-sub">розсіюється</div>
+          </div>
+        </div>
+
+        <!-- Status message -->
+        <div id="statusMsg"></div>
+
+        <!-- Waveform -->
+        <div class="waveform-wrap">
+          <div class="waveform-label">VOUT — стабільність у часі</div>
+          <canvas id="waveCanvas" width="760" height="100"></canvas>
+        </div>
+      </div>
+
+      <!-- Component descriptions -->
+      <p style="margin-top:16px"><strong>Input Capacitor</strong> зменшує noise, просадки напруги та нестабільність <code>VIN</code>.</p>
+      <p><strong>Pass Transistor</strong> — головний регулюючий елемент, працює як керований опір. Сильніше відкритий → більший струм. Слабше відкритий → менший струм.</p>
+      <p><strong>Feedback</strong> вимірює вихідну напругу: <code>VOUT → Feedback</code>.</p>
+      <p><strong>Error Amplifier</strong> порівнює feedback voltage з internal reference voltage і керує Pass Transistor.</p>
+      <p><strong>Output Capacitor</strong> згладжує noise, transient spikes та коливання навантаження.</p>
+
+    </div>
+  </div>
+
+  <!-- 04 Типи -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">Типи</span>
+    </div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Тип</th>
+            <th>Опис</th>
+            <th>Де застосовується</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Fixed</code></td>
+            <td>фіксована вихідна напруга: <code>5V → 3.3V</code>. Популярні значення: 5V, 3.3V, 1.8V</td>
+            <td>більшість MCU power rails</td>
+          </tr>
+          <tr>
+            <td><code>Adjustable</code></td>
+            <td>вихідна напруга задається зовнішніми резисторами (resistor divider)</td>
+            <td>кастомні схеми, коли потрібна нестандартна VOUT</td>
+          </tr>
+          <tr>
+            <td><code>Ultra Low Noise</code></td>
+            <td>мінімальний шум, високий PSRR</td>
+            <td>analog circuits, ADC, RF circuits</td>
+          </tr>
+          <tr>
+            <td><code>Low IQ</code></td>
+            <td>дуже мале власне споживання струму</td>
+            <td>battery devices, sleep mode systems</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 05 Параметри -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Основні параметри</span>
+    </div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Параметр</th>
+            <th>Визначення</th>
+            <th>Приклад</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><strong>Dropout Voltage</strong></td>
+            <td>мінімальна різниця між <code>VIN</code> і <code>VOUT</code>, при якій LDO ще стабілізує напругу</td>
+            <td><code>VOUT=3.3V</code>, Dropout=200mV → мін. <code>VIN ≈ 3.5V</code></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><strong>Quiescent Current (IQ)</strong></td>
+            <td>струм, який сам LDO споживає для своєї роботи</td>
+            <td>важливо для battery devices, low power systems</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><strong>PSRR</strong></td>
+            <td>Power Supply Rejection Ratio — наскільки добре LDO прибирає шум із VIN</td>
+            <td>високий PSRR → краще для analog/RF circuits</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td><strong>Maximum Output Current</strong></td>
+            <td>максимальний струм навантаження</td>
+            <td><code>100mA</code>, <code>500mA</code>, <code>1A</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 06 Переваги -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">Переваги</span>
+    </div>
+    <div class="section-body">
+      <div class="two-col">
+        <div class="adv-item">низький шум</div>
+        <div class="adv-item">стабільна напруга</div>
+        <div class="adv-item">низький ripple</div>
+        <div class="adv-item">простий PCB layout</div>
+        <div class="adv-item">мало зовнішніх компонентів</div>
+        <div class="adv-item">низький EMI</div>
+        <div class="adv-item" style="grid-column:span 2">швидка реакція на зміни навантаження</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07 Недоліки -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">Недоліки</span>
+    </div>
+    <div class="section-body">
+      <div class="two-col">
+        <div class="dis-item">низька ефективність при великій різниці VIN − VOUT</div>
+        <div class="dis-item">нагрівання</div>
+        <div class="dis-item">зайва енергія перетворюється в тепло</div>
+        <div class="dis-item">не підходить для дуже великих струмів</div>
+        <div class="dis-item" style="grid-column:span 2">VOUT не може бути вищим за VIN</div>
+      </div>
+
+      <div class="callout wrn" style="margin-top:16px">
+        <div class="callout-label">WRN</div>
+        Чим більша різниця <code>VIN − VOUT</code>, тим більше тепла розсіює LDO. При <code>VIN=12V</code>, <code>VOUT=3.3V</code> і <code>I=500mA</code> — LDO розсіює <strong>4.35W</strong>. Без радіатора це критично.
+      </div>
+    </div>
+  </div>
+
+  <!-- Q&A -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">Q&A</span>
+      <span class="section-title">Питання на співбесіді</span>
+    </div>
+    <div class="section-body">
+
+      <div class="qa-item">
+        <div class="qa-q">Що означає "Low Dropout" в назві LDO? <span class="qa-icon">+</span></div>
+        <div class="qa-a">
+          <strong>Dropout</strong> — це мінімальна різниця між <code>VIN</code> і <code>VOUT</code>, при якій регулятор ще підтримує стабільну вихідну напругу.<br><br>
+          "Low Dropout" означає, що цей регулятор може працювати при дуже малому <code>VIN − VOUT</code>. Наприклад: <code>VIN=3.5V → VOUT=3.3V</code> (dropout = 200mV). Звичайний лінійний регулятор (наприклад 7805) потребує кілька вольт різниці.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">Чому LDO нагрівається і як це розрахувати? <span class="qa-icon">+</span></div>
+        <div class="qa-a">
+          LDO працює як керований опір — зайва напруга "падає" на транзисторі і перетворюється на тепло.<br><br>
+          Формула: <code>P_loss = (VIN − VOUT) × I_load</code><br><br>
+          Приклад: <code>VIN=5V</code>, <code>VOUT=3.3V</code>, <code>I=500mA</code><br>
+          <code>P = (5 − 3.3) × 0.5 = 0.85W</code>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">Що таке Quiescent Current (IQ) і чому він важливий? <span class="qa-icon">+</span></div>
+        <div class="qa-a">
+          <strong>IQ</strong> — це струм, який споживає сам LDO для своєї роботи (feedback, error amplifier, reference) — навіть без навантаження.<br><br>
+          Для battery-powered пристроїв або систем з sleep mode — IQ критичний. Low IQ LDO може споживати одиниці мікроампер, що дозволяє роками живити схему від батарейки в режимі очікування.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">Що таке PSRR і коли він важливий? <span class="qa-icon">+</span></div>
+        <div class="qa-a">
+          <strong>PSRR (Power Supply Rejection Ratio)</strong> — показує, наскільки добре LDO фільтрує шум і пульсації з <code>VIN</code>.<br><br>
+          Вимірюється в dB. Чим вище — тим краще. Особливо важливий для: ADC (щоб шум живлення не впливав на точність), RF-схем (шум на живленні → spurious emissions), аудіо підсилювачів.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">В чому різниця між Fixed та Adjustable LDO? <span class="qa-icon">+</span></div>
+        <div class="qa-a">
+          <strong>Fixed LDO</strong> — вихідна напруга фіксована всередині мікросхеми (3.3V, 5V, 1.8V тощо). Простий у використанні, мінімум зовнішніх компонентів.<br><br>
+          <strong>Adjustable LDO</strong> — вихідна напруга задається зовнішнім дільником напруги (два резистори). Дозволяє отримати будь-яке значення <code>VOUT</code> в межах специфікації. Потрібно більше компонентів і розрахунок резисторів за формулою з даташиту.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Simulation logic ──
+const vinSlider  = document.getElementById('vinSlider');
+const voutSlider = document.getElementById('voutSlider');
+const dropSlider = document.getElementById('dropSlider');
+const loadSlider = document.getElementById('loadSlider');
+
+const vinValEl    = document.getElementById('vinVal');
+const voutValEl   = document.getElementById('voutVal');
+const dropValEl   = document.getElementById('dropVal');
+const loadValEl   = document.getElementById('loadVal');
+
+const vinLabelSvg  = document.getElementById('vinLabel');
+const voutLabelSvg = document.getElementById('voutLabel');
+const actualVoutEl = document.getElementById('actualVout');
+const diffValEl    = document.getElementById('diffVal');
+const heatValEl    = document.getElementById('heatVal');
+const statusMsg    = document.getElementById('statusMsg');
+const transBar     = document.getElementById('transBar');
+const transPct     = document.getElementById('transPct');
+const heatGroup    = document.getElementById('heatGroup');
+const transRect    = document.getElementById('transRect');
+const transOut     = document.getElementById('transOut');
+
+// Waveform canvas
+const canvas = document.getElementById('waveCanvas');
+const ctx    = canvas.getContext('2d');
+const W = 760, H = 100;
+canvas.width  = W;
+canvas.height = H;
+let waveHistory = new Array(W).fill(H/2);
+let animFrame;
+let tick = 0;
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+function update() {
+  const VIN    = parseFloat(vinSlider.value);
+  const VOUT_T = parseFloat(voutSlider.value);
+  const DROP   = parseFloat(dropSlider.value) / 1000; // V
+  const LOAD   = parseFloat(loadSlider.value); // mA
+
+  vinValEl.textContent  = VIN.toFixed(1) + ' V';
+  voutValEl.textContent = VOUT_T.toFixed(1) + ' V';
+  dropValEl.textContent = (DROP * 1000).toFixed(0) + ' mV';
+  loadValEl.textContent = LOAD.toFixed(0) + ' mA';
+
+  vinLabelSvg.textContent  = VIN.toFixed(1) + 'V';
+
+  const minVIN = VOUT_T + DROP;
+  const canReg = VIN >= minVIN;
+  const VOUT_A = canReg ? VOUT_T : (VIN - DROP < 0 ? 0 : VIN - DROP);
+  const diff   = VIN - VOUT_A;
+  const pLoss  = diff * (LOAD / 1000); // Watts
+
+  voutLabelSvg.textContent = VOUT_A.toFixed(2) + 'V';
+  actualVoutEl.textContent = VOUT_A.toFixed(2) + ' V';
+
+  // Transistor openness: more open when diff is small (need max current)
+  // When diff large → LDO restricts more (less open %)
+  // conceptually: openness ∝ load / (VIN / VOUT_T)
+  let openness;
+  if (!canReg) {
+    openness = 99;
+  } else {
+    const ratio = LOAD / 1000; // 0..1 A roughly
+    openness = Math.min(95, Math.max(5, 20 + ratio * 70));
+  }
+  transBar.style.width = openness + '%';
+  transPct.textContent = Math.round(openness) + '%';
+
+  diffValEl.textContent = diff.toFixed(2) + ' V';
+  heatValEl.textContent = (pLoss * 1000).toFixed(0) + ' mW';
+
+  // Color diff
+  if (diff > 3) {
+    diffValEl.className = 'state-card-value bad';
+  } else if (diff > 1.5) {
+    diffValEl.className = 'state-card-value warn';
+  } else {
+    diffValEl.className = 'state-card-value good';
+  }
+
+  // Heat color
+  if (pLoss > 1) {
+    heatValEl.className = 'state-card-value bad';
+    heatGroup.style.opacity = '1';
+  } else if (pLoss > 0.3) {
+    heatValEl.className = 'state-card-value warn';
+    heatGroup.style.opacity = '0.6';
+  } else {
+    heatValEl.className = 'state-card-value good';
+    heatGroup.style.opacity = '0';
+  }
+
+  // Transistor rect highlight
+  if (!canReg) {
+    transRect.style.stroke = '#f06a6a';
+    transOut.style.stroke  = '#f06a6a';
+    actualVoutEl.className = 'state-card-value bad';
+  } else {
+    transRect.style.stroke = '#2a3848';
+    transOut.style.stroke  = '#38d9a9';
+    actualVoutEl.className = 'state-card-value good';
+  }
+
+  // Status message
+  if (!canReg) {
+    statusMsg.style.background    = 'var(--wrn-bg)';
+    statusMsg.style.borderColor   = 'var(--wrn-border)';
+    statusMsg.style.color         = 'var(--accent4)';
+    statusMsg.innerHTML = `⚠ Dropout! VIN (${VIN.toFixed(1)}V) &lt; VOUT_target + Dropout (${minVIN.toFixed(2)}V). LDO не може стабілізувати. VOUT просідає до <strong>${VOUT_A.toFixed(2)}V</strong>.`;
+  } else if (pLoss > 1) {
+    statusMsg.style.background    = 'var(--wrn-bg)';
+    statusMsg.style.borderColor   = '#6a2020';
+    statusMsg.style.color         = '#f7a94b';
+    statusMsg.innerHTML = `🔥 Велике тепловиділення! ${(pLoss * 1000).toFixed(0)}mW розсіюється на транзисторі. Розглянь зменшення VIN або використання buck converter.`;
+  } else {
+    statusMsg.style.background    = 'var(--inf-bg)';
+    statusMsg.style.borderColor   = 'var(--inf-border)';
+    statusMsg.style.color         = 'var(--accent2)';
+    statusMsg.innerHTML = `✓ LDO стабілізує. VOUT = <strong>${VOUT_A.toFixed(2)}V</strong>. Dropout margin: ${(diff - DROP).toFixed(3)}V. Power loss: ${(pLoss * 1000).toFixed(0)}mW.`;
+  }
+
+  // Waveform: draw stable VOUT with tiny noise if ok, or drooping if not
+  drawWave(VOUT_A, VOUT_T, canReg, pLoss);
+}
+
+function drawWave(vout, target, stable, pLoss) {
+  // compute y position (inverted, center = target)
+  const maxV = 6;
+  const noiseAmp = stable ? (pLoss > 0.5 ? 2 : 0.5) : 6;
+
+  tick++;
+  const noise = (Math.random() - 0.5) * noiseAmp;
+  const yTarget = H * (1 - vout / maxV);
+  const yNew = yTarget + noise;
+
+  waveHistory.push(yNew);
+  if (waveHistory.length > W) waveHistory.shift();
+
+  ctx.clearRect(0, 0, W, H);
+
+  // grid lines
+  ctx.strokeStyle = '#1e2535';
+  ctx.lineWidth = 1;
+  for (let v = 0; v <= maxV; v += 1) {
+    const y = H * (1 - v / maxV);
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // target line
+  const yRef = H * (1 - target / maxV);
+  ctx.strokeStyle = '#1a4030';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(0, yRef); ctx.lineTo(W, yRef); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // label
+  ctx.fillStyle = '#2a6050';
+  ctx.font = '9px JetBrains Mono, monospace';
+  ctx.fillText('target ' + target.toFixed(1) + 'V', 4, yRef - 3);
+
+  // waveform
+  const color = stable ? '#38d9a9' : '#f06a6a';
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 4;
+  ctx.beginPath();
+  for (let i = 0; i < waveHistory.length; i++) {
+    if (i === 0) ctx.moveTo(i, waveHistory[i]);
+    else ctx.lineTo(i, waveHistory[i]);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+// Continuous animation for waveform
+function animate() {
+  update();
+  animFrame = requestAnimationFrame(animate);
+}
+
+// Sliders
+[vinSlider, voutSlider, dropSlider, loadSlider].forEach(s => {
+  s.addEventListener('input', () => { waveHistory = new Array(W).fill(H/2); });
+});
+
+animate();
+
+// ── Q&A accordion ──
+document.querySelectorAll('.qa-q').forEach(q => {
+  q.addEventListener('click', () => {
+    const item = q.parentElement;
+    item.classList.toggle('open');
+  });
+});
+</script>
+</body>
+</html>
